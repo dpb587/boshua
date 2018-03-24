@@ -47,7 +47,7 @@ func (i *index) loader() ([]stemcellversions.StemcellVersion, error) {
 		stemcellversion := stemcellversions.StemcellVersion{
 			StemcellVersionRef: stemcellversions.StemcellVersionRef{},
 			MetalinkSource: map[string]interface{}{
-				"source": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 				"include_files": []string{
 					"bosh-stemcell-*-warden-boshlite-ubuntu-trusty-go_agent.tgz",
 				},
@@ -56,6 +56,8 @@ func (i *index) loader() ([]stemcellversions.StemcellVersion, error) {
 
 		stemcellversion.StemcellVersionRef.OS = path.Base(path.Dir(path.Dir(meta4Path)))
 		stemcellversion.StemcellVersionRef.Version = path.Base(path.Dir(meta4Path))
+		// stemcells are not currently recording their version
+		// stemcellversion.MetalinkSource["version"] = fmt.Sprintf("%s.0", stemcellversion.StemcellVersionRef.Version)
 
 		inmemory = append(inmemory, stemcellversion)
 	}

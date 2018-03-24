@@ -53,7 +53,7 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 			ReleaseVersionRef: releaseversions.ReleaseVersionRef{},
 			Checksums:         releaseversions.Checksums{},
 			MetalinkSource: map[string]interface{}{
-				"source": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 			},
 		}
 

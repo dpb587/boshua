@@ -1,9 +1,9 @@
 platform: linux
-input:
+inputs:
 - name: env
 - name: bosh-deployment
 - name: bosh-compiled-releases
-output:
+outputs:
 - name: bosh-director
 run:
   path: go

@@ -12,6 +12,7 @@ jobs:
     params:
       acquire: true
   - task: create-bosh-director
+    file: bosh-compiled-releases/ci/tasks/create-bosh-director/task.yml
   - do:
     - task: upload-stemcell
       file: bosh-compiled-releases/ci/tasks/upload-stemcell/task.yml
@@ -25,31 +26,32 @@ jobs:
       - put: index
     ensure:
       task: destroy-bosh-director
-      file: bosh-compiled-releases/ci/tasks/destroy-director/task.yml
+      file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
 resources:
 - name: bosh-compiled-releases
-  check_interval: 24h
+  check_every: 24h
   type: git
   source:
     uri: git@github.com:dpb587/bosh-compiled-releases-v2.git
     private_key: ((bcr_private_key))
 - name: stemcell
-  check_interval: 24h
+  check_every: 24h
   type: metalink-repository
   source: ((stemcell_source))
 - name: release
-  check_interval: 24h
+  check_every: 24h
   type: metalink-repository
   source: ((release_source))
 - name: env
-  check_interval: 24h
+  check_every: 24h
   type: pool
   source:
-    uri: git@github.com:dpb587/bosh-compiled-releases-env.git
-    private_key: ((env_private_key))
+    uri: git@github.com:dpb587/bosh-compiled-releases-envs.git
+    branch: master
+    private_key: ((envs_private_key))
     pool: dpb587-gcp
 - name: index
-  check_interval: 24h
+  check_every: 24h
   type: git
   source:
     uri: git@github.com:dpb587/bosh-compiled-releases-index.git
