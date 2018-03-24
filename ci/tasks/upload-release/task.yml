@@ -7,5 +7,6 @@ image_resource:
 inputs:
 - name: bosh-director
 - name: bosh-compiled-releases
+- name: release
 run:
   path: bosh-compiled-releases/ci/tasks/upload-release/run.sh
