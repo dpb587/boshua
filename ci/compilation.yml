@@ -1,0 +1,61 @@
+jobs:
+- name: compile
+  plan:
+  - aggregate:
+    - get: stemcell
+      trigger: true
+    - get: release
+      trigger: true
+    - get: bosh-compiled-releases
+    - get: index
+  - put: env
+    params:
+      acquire: true
+  - task: create-bosh-director
+  - do:
+    - task: upload-stemcell
+      file: bosh-compiled-releases/ci/tasks/upload-stemcell/task.yml
+    - task: upload-release
+      file: bosh-compiled-releases/ci/tasks/upload-release/task.yml
+    - task: compile-release
+      file: bosh-compiled-releases/ci/tasks/compile-release/task.yml
+    - do:
+      - task: publish-compiled-release
+        file: bosh-compiled-releases/ci/tasks/publish-release/task.yml
+      - put: index
+    ensure:
+      task: destroy-bosh-director
+      file: bosh-compiled-releases/ci/tasks/destroy-director/task.yml
+resources:
+- name: bosh-compiled-releases
+  check_interval: 24h
+  type: git
+  source:
+    uri: git@github.com:dpb587/bosh-compiled-releases-v2.git
+    private_key: ((bcr_private_key))
+- name: stemcell
+  check_interval: 24h
+  type: metalink-repository
+  source: ((stemcell_source))
+- name: release
+  check_interval: 24h
+  type: metalink-repository
+  source: ((release_source))
+- name: env
+  check_interval: 24h
+  type: pool
+  source:
+    uri: git@github.com:dpb587/bosh-compiled-releases-env.git
+    private_key: ((env_private_key))
+    pool: dpb587-gcp
+- name: index
+  check_interval: 24h
+  type: git
+  source:
+    uri: git@github.com:dpb587/bosh-compiled-releases-index.git
+    private_key: ((index_private_key))
+resource_types:
+- name: metalink-repository
+  type: docker-image
+  source:
+    repository: dpb587/metalink-repository-resource

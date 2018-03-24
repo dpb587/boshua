@@ -1,0 +1,11 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: dpb587/bosh-compiled-releases
+    tag: default
+inputs:
+- name: bosh-director
+- name: bosh-compiled-releases
+run:
+  path: bosh-compiled-releases/ci/tasks/upload-stemcell/run.sh

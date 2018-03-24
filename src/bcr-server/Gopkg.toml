@@ -1,0 +1,7 @@
+[prune]
+  unused-packages = true
+  non-go = true
+
+[[constraint]]
+  name = "github.com/dpb587/metalink"
+  version = "0.2.0"

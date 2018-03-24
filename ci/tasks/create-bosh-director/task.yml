@@ -1,0 +1,12 @@
+platform: linux
+input:
+- name: env
+- name: bosh-deployment
+- name: bosh-compiled-releases
+output:
+- name: bosh-director
+run:
+  path: go
+  args:
+  - run
+  - bosh-compiled-releases/ci/tasks/create-bosh-director/run.go

@@ -1,0 +1,11 @@
+platform: linux
+input:
+- name: env
+- name: bosh-director
+- name: bosh-deployment
+- name: bosh-compiled-releases
+run:
+  path: go
+  args:
+  - run
+  - bosh-compiled-releases/ci/tasks/destroy-bosh-director/run.go
