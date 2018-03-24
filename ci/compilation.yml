@@ -8,12 +8,13 @@ jobs:
       trigger: true
     - get: bosh-compiled-releases
     - get: index
+    - get: bosh-deployment
   - put: env
     params:
       acquire: true
-  - task: create-bosh-director
-    file: bosh-compiled-releases/ci/tasks/create-bosh-director/task.yml
   - do:
+    - task: create-bosh-director
+      file: bosh-compiled-releases/ci/tasks/create-bosh-director/task.yml
     - task: upload-stemcell
       file: bosh-compiled-releases/ci/tasks/upload-stemcell/task.yml
     - task: upload-release
@@ -25,9 +26,18 @@ jobs:
         file: bosh-compiled-releases/ci/tasks/publish-release/task.yml
       - put: index
     ensure:
-      task: destroy-bosh-director
-      file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
+      do:
+      - task: destroy-bosh-director
+        file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
+      - put: env
+        params:
+          release: env
 resources:
+- name: bosh-deployment
+  check_every: 24h
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/bosh-deployment.git
 - name: bosh-compiled-releases
   check_every: 24h
   type: git
