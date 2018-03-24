@@ -15,3 +15,4 @@ run:
   args:
   - run
   - bosh-compiled-releases/ci/tasks/create-bosh-director/run.go
+  - env/metadata
