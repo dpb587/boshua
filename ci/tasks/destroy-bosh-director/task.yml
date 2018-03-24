@@ -14,3 +14,4 @@ run:
   args:
   - run
   - bosh-compiled-releases/ci/tasks/destroy-bosh-director/run.go
+  - env/metadata
