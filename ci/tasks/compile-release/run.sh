@@ -36,4 +36,6 @@ bosh-director/bosh export-release "$release_name/$release_version" "$stemcell_os
 
 mv *.tgz compiled-release/$release_name-$release_version-on-$stemcell_os-stemcell-$stemcell_version-compiled-1.$( date -u +%Y%m%d%H%M%S ).0.tgz
 
+bosh-director/bosh inspect-release "$release_name/$release_version"
+
 bosh-director/bosh -n delete-deployment

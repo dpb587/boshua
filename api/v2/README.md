@@ -53,7 +53,7 @@
 
 ## Schedule a Compiled Release
 
-    > POST /schedule
+    > POST /request
     > Accept: application/json
     >
     > {
@@ -77,5 +77,5 @@
     < Content-Type: application/json
     <
     < {
-    <   "status": "scheduled"
+    <   "status": "pending"
     < }

@@ -8,6 +8,12 @@
   revision = "c6a922e299b8eb5eaadad8a2842e3ab7e043dc5d"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/cppforlife/go-patch"
+  packages = ["patch"]
+  revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
+
+[[projects]]
   name = "github.com/dpb587/metalink"
   packages = ["."]
   revision = "482927015674c714e3759d7cd91566dd099a0ac3"
@@ -20,10 +26,22 @@
   version = "v1.1"
 
 [[projects]]
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  revision = "90663712d74cb411cbef281bc1e08c19d1a76145"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/gorilla/mux"
   packages = ["."]
   revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
   version = "v1.6.1"
+
+[[projects]]
+  name = "github.com/jessevdk/go-flags"
+  packages = ["."]
+  revision = "96dc06278ce32a0e9d957d590bb987c81ee66407"
+  version = "v1.3.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -34,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "521434c3ec7c83a5a0a577ed4ae011ba1f047968634410adb822a899f44d3b74"
+  inputs-digest = "5ef6ee1640e16a149857e8d13d614b79a194deb5bb1e324cbba3efb579babe86"
   solver-name = "gps-cdcl"
   solver-version = 1

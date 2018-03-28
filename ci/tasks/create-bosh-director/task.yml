@@ -10,6 +10,8 @@ inputs:
 - name: bosh-compiled-releases
 outputs:
 - name: bosh-director
+caches:
+- path: bosh-director/.bosh
 run:
   path: go
   args:
