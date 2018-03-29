@@ -49,7 +49,7 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 
 	defer file.Close()
 
-	contextBytes, err := json.Marshal(map[string]interface{}{
+	contextBytes, err := json.MarshalIndent(map[string]interface{}{
 		"release": map[string]interface{}{
 			"name":      release.Name,
 			"version":   release.Version,
@@ -59,7 +59,7 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 			"os":      stemcell.OS,
 			"version": stemcell.Version,
 		},
-	})
+	}, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshalling context: %v", err)
 	}

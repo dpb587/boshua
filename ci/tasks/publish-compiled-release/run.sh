@@ -6,7 +6,7 @@ git clone --quiet "file://$PWD/index" index-out
 
 mkdir -p index-out/$storage
 
-tarball_path=$( find "$PWD/release" --name "*.tgz" )
+tarball_path=$( echo $PWD/compiled-release/*.tgz )
 tarball_name="$( basename "$tarball_path" )"
 metalink_path="index-out/$storage/compiled-release.meta4"
 
@@ -18,15 +18,18 @@ sha256=$( meta4 file-hash --metalink="$metalink_path" sha-256 )
 path1=$( echo "$sha256" | cut -c-2 )
 path2=$( echo "$sha256" | cut -c3-4 )
 
-meta4 file-upload --metalink="$metalink_path" --file="$tarball_nice" "$tarball_path" "s3://$s3_host/$s3_bucket/$path1/$path2/$sha256"
+export AWS_ACCESS_KEY_ID="$s3_access_key"
+export AWS_SECRET_ACCESS_KEY="$s3_secret_key"
+
+meta4 file-upload --metalink="$metalink_path" --file="$tarball_name" "$tarball_path" "s3://$s3_host/$s3_bucket/$path1/$path2/$sha256"
 
 echo "$context" > "index-out/$storage/compiled-release.json"
+
+cd index-out
 
 if [[ -z "$( git status --porcelain )" ]]; then
   exit
 fi
-
-cd index-out
 
 export GIT_COMMITTER_EMAIL="concourse.ci@localhost"
 export GIT_COMMITTER_NAME="Concourse"
