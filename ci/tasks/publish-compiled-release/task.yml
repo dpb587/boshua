@@ -1,0 +1,18 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: dpb587/bosh-compiled-releases-v2
+    tag: latest
+inputs:
+- name: bosh-compiled-releases
+- name: compiled-release
+- name: index
+outputs:
+- name: index
+  path: index-out
+run:
+  path: bosh-compiled-releases/ci/tasks/publish-compiled-release/run.sh
+params:
+  storage: ~
+  context: ~

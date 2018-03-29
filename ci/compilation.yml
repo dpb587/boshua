@@ -24,6 +24,9 @@ jobs:
     - do:
       - task: publish-compiled-release
         file: bosh-compiled-releases/ci/tasks/publish-release/task.yml
+        params:
+          storage: ((index_storage))
+          context: ((index_context))
       - put: index
     ensure:
       do:

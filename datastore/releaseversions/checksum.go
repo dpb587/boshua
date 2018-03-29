@@ -1,8 +1,8 @@
 package releaseversions
 
 type Checksum struct {
-	Type  string
-	Value string
+	Type  string `json:"type"`
+	Value string `json:"value"`
 }
 
 func (c Checksum) Equals(cs Checksum) bool {

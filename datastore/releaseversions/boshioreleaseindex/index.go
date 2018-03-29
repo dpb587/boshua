@@ -1,14 +1,15 @@
 package boshioreleaseindex
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
 
 	"github.com/dpb587/metalink"
 	yaml "gopkg.in/yaml.v2"
@@ -75,7 +76,7 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 
 				if hash.Type == "sha-1" {
 					hashType = "sha1"
-				} else if hash.Type != "sha-256" {
+				} else if hash.Type == "sha-256" {
 					hashType = "sha256"
 				} else {
 					continue

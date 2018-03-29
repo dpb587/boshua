@@ -11,25 +11,23 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/dpb587/bosh-compiled-releases/util"
 )
 
 type CRVRequestHandler struct {
 	cc                          *compiler.Compiler
-	releaseVersionIndex         releaseversions.Index
-	stemcellVersionIndex        stemcellversions.Index
+	releaseStemcellResolver     *util.ReleaseStemcellResolver
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
 func NewCRVRequestHandler(
 	cc *compiler.Compiler,
-	releaseVersionIndex releaseversions.Index,
-	stemcellVersionIndex stemcellversions.Index,
+	releaseStemcellResolver *util.ReleaseStemcellResolver,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
 	return &CRVRequestHandler{
-		cc:                          cc,
-		releaseVersionIndex:         releaseVersionIndex,
-		stemcellVersionIndex:        stemcellVersionIndex,
+		cc: cc,
+		releaseStemcellResolver:     releaseStemcellResolver,
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
@@ -72,32 +70,25 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err == compiledreleaseversions.MissingErr {
-		release, err := h.releaseVersionIndex.Find(releaseversions.ReleaseVersionRef{
-			Name:    req.Data.Release.Name,
-			Version: req.Data.Release.Version,
-			Checksum: releaseversions.Checksum{
-				Type:  req.Data.Release.Checksum.Type,
-				Value: req.Data.Release.Checksum.Value,
+		release, stemcell, err := h.releaseStemcellResolver.Resolve(
+			releaseversions.ReleaseVersionRef{
+				Name:    req.Data.Release.Name,
+				Version: req.Data.Release.Version,
+				Checksum: releaseversions.Checksum{
+					Type:  req.Data.Release.Checksum.Type,
+					Value: req.Data.Release.Checksum.Value,
+				},
 			},
-		})
+			stemcellversions.StemcellVersionRef{
+				OS:      req.Data.Stemcell.OS,
+				Version: req.Data.Stemcell.Version,
+			},
+		)
 		if err != nil { // @todo MissingErr
-			log.Printf("resolving release reference: %v", err)
+			log.Printf("resolving references: %v", err)
 
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("ERROR: resolving release reference\n"))
-
-			return
-		}
-
-		stemcell, err := h.stemcellVersionIndex.Find(stemcellversions.StemcellVersionRef{
-			OS:      req.Data.Stemcell.OS,
-			Version: req.Data.Stemcell.Version,
-		})
-		if err != nil { // @todo MissingErr
-			log.Printf("resolving stemcell reference: %v", err)
-
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("ERROR: resolving stemcell reference\n"))
 
 			return
 		}

@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -48,10 +49,30 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 
 	defer file.Close()
 
+	contextBytes, err := json.Marshal(map[string]interface{}{
+		"release": map[string]interface{}{
+			"name":      release.Name,
+			"version":   release.Version,
+			"checksums": release.Checksums,
+		},
+		"stemcell": map[string]interface{}{
+			"os":      stemcell.OS,
+			"version": stemcell.Version,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("marshalling context: %v", err)
+	}
+
 	varsBytes, err := yaml.Marshal(map[string]interface{}{
 		"release_source":  release.MetalinkSource,
 		"stemcell_source": stemcell.MetalinkSource,
+		"index_storage":   fmt.Sprintf("%s/%s/%s-%s/%s", release.Name, release.Version, stemcell.OS, stemcell.Version, release.Checksums.Preferred()),
+		"index_context":   string(contextBytes),
 	})
+	if err != nil {
+		return fmt.Errorf("marshalling vars: %v", err)
+	}
 
 	_, err = file.Write(varsBytes)
 	if err != nil {
@@ -86,7 +107,7 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 		"jobs",
 		"--pipeline", c.pipelineName(release, stemcell),
 	)
-	if err == nil {
+	if err != nil {
 		if strings.Contains(string(stderr), "error: resource not found") {
 			return StatusUnknown, nil
 		}
@@ -104,15 +125,17 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 		return StatusUnknown, errors.New("listing jobs: columns incorrect")
 	}
 
-	if fields[3] == "n/a" {
-		if fields[2] == "succeeded" {
-			return StatusSucceeded, nil
-		} else if fields[2] == "aborted" {
-			return StatusAborted, nil
-		} else if fields[2] == "failed" {
-			return StatusFailed, nil
-		}
+	if fields[2] == "succeeded" {
+		return StatusSucceeded, nil
+	} else if fields[2] == "aborted" {
+		return StatusAborted, nil
+	} else if fields[2] == "failed" {
+		return StatusFailed, nil
 	} else if fields[3] == "pending" {
+		return StatusPending, nil
+	} else if fields[2] == "n/a" && fields[3] == "n/a" {
+		return StatusPending, nil
+	} else if fields[3] == "started" {
 		return StatusPending, nil
 	}
 
@@ -122,7 +145,7 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 func (c Compiler) pipelineName(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) string {
 	return fmt.Sprintf(
 		"bcr:%s:%s-%s-on-%s-stemcell-%s",
-		release.Checksum.Value,
+		release.Checksums.Preferred(),
 		release.Name,
 		release.Version,
 		stemcell.OS,

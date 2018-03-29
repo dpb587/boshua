@@ -10,6 +10,7 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshioreleaseindex"
 	stemcellaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/boshiostemcellindex"
+	"github.com/dpb587/bosh-compiled-releases/util"
 	gorillahandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -31,11 +32,12 @@ func main() {
 		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/bosh-io/stemcells-windows-index/published"),
 	)
 	compiledReleaseIndex := legacybcr.New(releaseIndex, "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases")
+	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseIndex, stemcellIndex)
 
 	r := mux.NewRouter()
-	r.Handle("/v2/compiled-release-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
+	r.Handle("/v2/compiled-release-version/info", handlers.NewCRVInfoHandler(&cc, compiledReleaseIndex, releaseStemcellResolver)).Methods("POST")
 	// r.Handle("/v2/compiled-release-version/log", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
-	r.Handle("/v2/compiled-release-version/request", handlers.NewCRVRequestHandler(&cc, releaseIndex, stemcellIndex, compiledReleaseIndex)).Methods("POST")
+	r.Handle("/v2/compiled-release-version/request", handlers.NewCRVRequestHandler(&cc, releaseStemcellResolver, compiledReleaseIndex)).Methods("POST")
 	r.Handle("/v2/release-versions/list", handlers.NewRVListHandler(releaseIndex)).Methods("POST")
 	// r.Handle("/v2/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
 	// r.Handle("/v2/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")

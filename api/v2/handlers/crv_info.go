@@ -2,22 +2,33 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
+	"github.com/dpb587/bosh-compiled-releases/compiler"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/dpb587/bosh-compiled-releases/util"
 )
 
 type CRVInfoHandler struct {
+	cc                          *compiler.Compiler
 	compiledReleaseVersionIndex compiledreleaseversions.Index
+	releaseStemcellResolver     *util.ReleaseStemcellResolver
 }
 
-func NewCRVInfoHandler(compiledReleaseVersionIndex compiledreleaseversions.Index) http.Handler {
+func NewCRVInfoHandler(
+	cc *compiler.Compiler,
+	compiledReleaseVersionIndex compiledreleaseversions.Index,
+	releaseStemcellResolver *util.ReleaseStemcellResolver,
+) http.Handler {
 	return &CRVInfoHandler{
+		cc: cc,
+		releaseStemcellResolver:     releaseStemcellResolver,
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
@@ -60,8 +71,46 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err == compiledreleaseversions.MissingErr {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("not found\n"))
+		release, stemcell, err := h.releaseStemcellResolver.Resolve(
+			releaseversions.ReleaseVersionRef{
+				Name:    req.Data.Release.Name,
+				Version: req.Data.Release.Version,
+				Checksum: releaseversions.Checksum{
+					Type:  req.Data.Release.Checksum.Type,
+					Value: req.Data.Release.Checksum.Value,
+				},
+			},
+			stemcellversions.StemcellVersionRef{
+				OS:      req.Data.Stemcell.OS,
+				Version: req.Data.Stemcell.Version,
+			},
+		)
+		if err != nil {
+			log.Printf("resolving references: %v", err)
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("ERROR: resolving references\n"))
+
+			return
+		}
+
+		status, err := h.cc.Status(release, stemcell)
+		if err != nil {
+			log.Printf("checking compilation status: %v", err)
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("ERROR: checking compilation status\n"))
+
+			return
+		} else if status == compiler.StatusUnknown {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found\n"))
+
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(fmt.Sprintf(`{"data":{"status":"%s"}}`, status)))
 
 		return
 	} else if err != nil {
@@ -87,11 +136,14 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := models.CRVInfoResponse{
-		Data: models.CRVInfoResponseCompiledRelease{
-			URL:       result.TarballURL,
-			Checksums: checksums,
-			Release:   req.Data.Release,
-			Stemcell:  req.Data.Stemcell,
+		Data: models.CRVInfoResponseData{
+			Status:   models.CRVInfoStatusAvailable,
+			Release:  req.Data.Release,
+			Stemcell: req.Data.Stemcell,
+			Tarball: models.CRVInfoResponseDataCompiled{
+				URL:       result.TarballURL,
+				Checksums: checksums,
+			},
 		},
 	}
 

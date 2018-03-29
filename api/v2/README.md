@@ -1,6 +1,6 @@
 ## Find a Compiled Release
 
-    > POST /lookup
+    > POST /compiled-release-version/info
     > Accept: application/json
     >
     > {

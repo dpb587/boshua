@@ -35,82 +35,71 @@ func (c *PatchManifest) Execute(_ []string) error {
 	}
 
 	for _, rel := range man.Requirements() {
-		res, err := client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+		releaseRef := models.ReleaseRef{
+			Name:    rel.Name,
+			Version: rel.Version,
+			Checksum: models.Checksum{
+				Type:  "sha1",
+				Value: rel.Source.Sha1,
+			},
+		}
+		stemcellRef := models.StemcellRef{
+			OS:      rel.Stemcell.OS,
+			Version: rel.Stemcell.Version,
+		}
+
+		resInfo, err := client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
-				Release: models.ReleaseRef{
-					Name:    rel.Name,
-					Version: rel.Version,
-					Checksum: models.Checksum{
-						Type:  "sha1",
-						Value: rel.Source.Sha1,
-					},
-				},
-				Stemcell: models.StemcellRef{
-					OS:      rel.Stemcell.OS,
-					Version: rel.Stemcell.Version,
-				},
+				Release:  releaseRef,
+				Stemcell: stemcellRef,
 			},
 		})
 		if err != nil {
 			log.Fatalf("finding compiled release: %v", err)
-		} else if res == nil {
+		} else if resInfo == nil || resInfo.Data.Status != "available" {
 			if !c.RequestAndWait {
 				continue
 			}
 
-			fmt.Fprintf(os.Stderr, "[%s %s] waiting for compiled release\n", rel.Stemcell.Slug(), rel.Slug())
-
-			for {
-				sch, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
+			if resInfo == nil {
+				_, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
-						Release: models.ReleaseRef{
-							Name:    rel.Name,
-							Version: rel.Version,
-							Checksum: models.Checksum{
-								Type:  "sha1",
-								Value: rel.Source.Sha1,
-							},
-						},
-						Stemcell: models.StemcellRef{
-							OS:      rel.Stemcell.OS,
-							Version: rel.Stemcell.Version,
-						},
+						Release:  releaseRef,
+						Stemcell: stemcellRef,
 					},
 				})
 				if err != nil {
 					log.Fatalf("requesting compiled release: %v", err)
 				}
 
-				if sch.Status == "succeeded" || sch.Status == "failed" || sch.Status == "aborted" {
-					break
-				}
-
-				time.Sleep(10 * time.Second)
+				fmt.Fprintf(os.Stderr, "[%s %s] requested compiled release\n", rel.Stemcell.Slug(), rel.Slug())
 			}
 
-			res, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
-				Data: models.CRVInfoRequestData{
-					Release: models.ReleaseRef{
-						Name:    rel.Name,
-						Version: rel.Version,
-						Checksum: models.Checksum{
-							Type:  "sha1",
-							Value: rel.Source.Sha1,
-						},
+			for {
+				fmt.Fprintf(os.Stderr, "[%s %s] waiting for compiled release\n", rel.Stemcell.Slug(), rel.Slug())
+
+				time.Sleep(10 * time.Second)
+
+				resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+					Data: models.CRVInfoRequestData{
+						Release:  releaseRef,
+						Stemcell: stemcellRef,
 					},
-					Stemcell: models.StemcellRef{
-						OS:      rel.Stemcell.OS,
-						Version: rel.Stemcell.Version,
-					},
-				},
-			})
-			if err != nil {
-				log.Fatalf("finding compiled release again: %v", err)
+				})
+				if err != nil {
+					log.Fatalf("finding compiled release: %v", err)
+				} else if resInfo == nil {
+					log.Fatalf("finding compiled release: unable to verify request")
+				}
+
+				if resInfo.Data.Status == "available" && resInfo.Data.Tarball.URL != "" {
+					break
+				}
 			}
 		}
 
-		rel.Compiled.Sha1 = res.Data.Checksums[0].Value
-		rel.Compiled.URL = res.Data.URL
+		rel.Compiled.Sha1 = resInfo.Data.Tarball.Checksums[0].Value
+		rel.Compiled.URL = resInfo.Data.Tarball.URL
 
 		fmt.Printf("%#+v", rel)
 
