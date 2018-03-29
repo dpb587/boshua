@@ -27,6 +27,11 @@ jobs:
         params:
           storage: ((index_storage))
           context: ((index_context))
+          release_version: ((release_version))
+          s3_bucket: ((s3_bucket))
+          s3_host: ((s3_host))
+          s3_access_key: ((s3_access_key))
+          s3_secret_key: ((s3_secret_key))
       - put: index
     ensure:
       do:

@@ -12,7 +12,7 @@ metalink_path="index-out/$storage/compiled-release.meta4"
 
 meta4 create --metalink="$metalink_path"
 meta4 set-published --metalink="$metalink_path" "$( date -u +%Y-%m-%dT%H:%M:%SZ )"
-meta4 import-file --metalink="$metalink_path" --file="$tarball_name" --version="$version" "$tarball_path"
+meta4 import-file --metalink="$metalink_path" --file="$tarball_name" --version="$release_version" "$tarball_path"
 
 sha256=$( meta4 file-hash --metalink="$metalink_path" sha-256 )
 path1=$( echo "$sha256" | cut -c-2 )

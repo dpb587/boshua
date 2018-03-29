@@ -65,6 +65,7 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 	}
 
 	varsBytes, err := yaml.Marshal(map[string]interface{}{
+		"release_version": release.Version,
 		"release_source":  release.MetalinkSource,
 		"stemcell_source": stemcell.MetalinkSource,
 		"index_storage":   fmt.Sprintf("%s/%s/%s-%s/%s", release.Name, release.Version, stemcell.OS, stemcell.Version, release.Checksums.Preferred()),

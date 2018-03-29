@@ -16,3 +16,8 @@ run:
 params:
   storage: ~
   context: ~
+  release_version: ~
+  s3_bucket: ~
+  s3_host: ~
+  s3_access_key: ~
+  s3_secret_key: ~
