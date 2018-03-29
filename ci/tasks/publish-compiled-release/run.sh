@@ -6,7 +6,7 @@ git clone --quiet "file://$PWD/index" index-out
 
 mkdir -p index-out/$storage
 
-tarball_path=$( echo release/*.tgz )
+tarball_path=$( find "$PWD/release" --name "*.tgz" )
 tarball_name="$( basename "$tarball_path" )"
 metalink_path="index-out/$storage/compiled-release.meta4"
 
