@@ -75,9 +75,9 @@ func (c *PatchManifest) Execute(_ []string) error {
 				fmt.Fprintf(os.Stderr, "[%s %s] requested compiled release\n", rel.Stemcell.Slug(), rel.Slug())
 			}
 
-			for {
-				fmt.Fprintf(os.Stderr, "[%s %s] waiting for compiled release\n", rel.Stemcell.Slug(), rel.Slug())
+			fmt.Fprintf(os.Stderr, "[%s %s] waiting for compiled release\n", rel.Stemcell.Slug(), rel.Slug())
 
+			for {
 				time.Sleep(10 * time.Second)
 
 				resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{

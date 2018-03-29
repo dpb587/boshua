@@ -131,6 +131,8 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 		return StatusAborted, nil
 	} else if fields[2] == "failed" {
 		return StatusFailed, nil
+	} else if fields[2] == "errored" {
+		return StatusFailed, nil
 	} else if fields[3] == "pending" {
 		return StatusPending, nil
 	} else if fields[2] == "n/a" && fields[3] == "n/a" {

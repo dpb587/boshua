@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-git --quiet clone "file://$PWD/index" index-out
+git clone --quiet "file://$PWD/index" index-out
 
 mkdir -p index-out/$storage
 
