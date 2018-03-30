@@ -1,8 +1,6 @@
 package util
 
 import (
-	"fmt"
-
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 )
@@ -25,12 +23,12 @@ func NewReleaseStemcellResolver(
 func (rsr *ReleaseStemcellResolver) Resolve(releaseRef releaseversions.ReleaseVersionRef, stemcellRef stemcellversions.StemcellVersionRef) (releaseversions.ReleaseVersion, stemcellversions.StemcellVersion, error) {
 	release, err := rsr.releaseVersionIndex.Find(releaseRef)
 	if err != nil {
-		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, fmt.Errorf("resolving release: %v", err)
+		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, err
 	}
 
 	stemcell, err := rsr.stemcellVersionIndex.Find(stemcellRef)
 	if err != nil {
-		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, fmt.Errorf("resolving stemcell: %v", err)
+		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, err
 	}
 
 	return release, stemcell, nil

@@ -33,6 +33,8 @@ jobs:
           s3_access_key: ((s3_access_key))
           s3_secret_key: ((s3_secret_key))
       - put: index
+        params:
+          repository: index
     ensure:
       do:
       - task: destroy-bosh-director
@@ -72,6 +74,7 @@ resources:
   check_every: 24h
   type: git
   source:
+    branch: master
     uri: git@github.com:dpb587/bosh-compiled-releases-index.git
     private_key: ((index_private_key))
 resource_types:

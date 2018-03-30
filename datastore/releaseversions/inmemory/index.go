@@ -1,24 +1,39 @@
 package inmemory
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"fmt"
+
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 )
 
 type index struct {
 	inmemory []releaseversions.ReleaseVersion
 
-	loader Loader
+	loader   Loader
+	reloader Reloader
 }
 
-func New(loader Loader) releaseversions.Index {
+func New(loader Loader, reloader Reloader) releaseversions.Index {
 	return &index{
-		loader: loader,
+		loader:   loader,
+		reloader: reloader,
 	}
 }
 
 func (i *index) load() error {
+	var reload bool
+	var err error
+
 	if i.inmemory == nil {
+		reload = true
+	} else {
+		reload, err = i.reloader()
+		if err != nil {
+			return fmt.Errorf("checking reloader: %v", err)
+		}
+	}
+
+	if reload {
 		return i.reload()
 	}
 

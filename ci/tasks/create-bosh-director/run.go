@@ -56,6 +56,7 @@ func main() {
 			"--ops-file", "bosh-deployment/bosh-lite.yml",
 			"--ops-file", "bosh-deployment/external-ip-not-recommended.yml",
 			"--ops-file", "bosh-deployment/jumpbox-user.yml",
+			"--ops-file", "bosh-compiled-releases/ci/tasks/create-bosh-director/without-persistent-disk.yml",
 			"--var", fmt.Sprintf("director_name=bosh-lite-%s", now.Format("20060102T150405")),
 		}
 

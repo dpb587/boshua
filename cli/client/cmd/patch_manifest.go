@@ -62,7 +62,7 @@ func (c *PatchManifest) Execute(_ []string) error {
 			}
 
 			if resInfo == nil {
-				_, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
+				res, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
 						Release:  releaseRef,
 						Stemcell: stemcellRef,
@@ -70,6 +70,10 @@ func (c *PatchManifest) Execute(_ []string) error {
 				})
 				if err != nil {
 					log.Fatalf("requesting compiled release: %v", err)
+				} else if res == nil {
+					fmt.Fprintf(os.Stderr, "[%s %s] unsupported compilation\n", rel.Stemcell.Slug(), rel.Slug())
+
+					continue
 				}
 
 				fmt.Fprintf(os.Stderr, "[%s %s] requested compiled release\n", rel.Stemcell.Slug(), rel.Slug())

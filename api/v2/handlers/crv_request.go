@@ -84,7 +84,12 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Version: req.Data.Stemcell.Version,
 			},
 		)
-		if err != nil { // @todo MissingErr
+		if err == releaseversions.MissingErr || err == stemcellversions.MissingErr {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("not found\n"))
+
+			return
+		} else if err != nil {
 			log.Printf("resolving references: %v", err)
 
 			w.WriteHeader(http.StatusBadRequest)

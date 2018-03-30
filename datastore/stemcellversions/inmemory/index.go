@@ -1,24 +1,39 @@
 package inmemory
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 	"fmt"
+
+	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 )
 
 type index struct {
 	inmemory []stemcellversions.StemcellVersion
 
-	loader Loader
+	loader   Loader
+	reloader Reloader
 }
 
-func New(loader Loader) stemcellversions.Index {
+func New(loader Loader, reloader Reloader) stemcellversions.Index {
 	return &index{
-		loader: loader,
+		loader:   loader,
+		reloader: reloader,
 	}
 }
 
 func (i *index) load() error {
+	var reload bool
+	var err error
+
 	if i.inmemory == nil {
+		reload = true
+	} else {
+		reload, err = i.reloader()
+		if err != nil {
+			return fmt.Errorf("checking reloader: %v", err)
+		}
+	}
+
+	if reload {
 		return i.reload()
 	}
 

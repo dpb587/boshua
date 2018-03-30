@@ -6,9 +6,13 @@ import (
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/handlers"
 	"github.com/dpb587/bosh-compiled-releases/compiler"
+	compiledreleaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/legacybcr"
+	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/presentbcr"
+	releaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshioreleaseindex"
-	stemcellaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshmeta4releaseindex"
+	stemcellversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/boshiostemcellindex"
 	"github.com/dpb587/bosh-compiled-releases/util"
 	gorillahandlers "github.com/gorilla/handlers"
@@ -26,12 +30,19 @@ func main() {
 		PipelinePath: "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/ci/compilation.yml",
 		SecretsPath:  "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/pipeline-vars.yml",
 	}
-	releaseIndex := boshioreleaseindex.New("git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/bosh-io/releases-index")
-	stemcellIndex := stemcellaggregate.New(
+	releaseIndex := releaseversionsaggregate.New(
+		boshmeta4releaseindex.New("git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn"),
+		boshmeta4releaseindex.New("git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca"),
+		boshioreleaseindex.New("git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/bosh-io/releases-index"),
+	)
+	stemcellIndex := stemcellversionsaggregate.New(
 		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-core-index.git//published/", "/Users/dpb587/Projects/bosh-io/stemcells-core-index/published"),
 		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/bosh-io/stemcells-windows-index/published"),
 	)
-	compiledReleaseIndex := legacybcr.New(releaseIndex, "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases")
+	compiledReleaseIndex := compiledreleaseversionsaggregate.New(
+		presentbcr.New(releaseIndex, "git@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
+		legacybcr.New(releaseIndex, "git@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
+	)
 	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseIndex, stemcellIndex)
 
 	r := mux.NewRouter()

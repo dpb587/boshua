@@ -1,10 +1,9 @@
-package boshioreleaseindex
+package boshmeta4releaseindex
 
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -15,7 +14,6 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
 
 	"github.com/dpb587/metalink"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type index struct {
@@ -74,7 +72,7 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/releases/**/*.meta4", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
@@ -102,44 +100,26 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 			return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 		}
 
-		for _, files := range meta4.Files {
-			for _, hash := range files.Hashes {
-				var hashType string
+		for _, hash := range meta4.Files[0].Hashes {
+			var hashType string
 
-				if hash.Type == "sha-1" {
-					hashType = "sha1"
-				} else if hash.Type == "sha-256" {
-					hashType = "sha256"
-				} else {
-					continue
-				}
-
-				releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum{
-					Type:  hashType,
-					Value: hash.Hash,
-				})
+			if hash.Type == "sha-1" {
+				hashType = "sha1"
+			} else if hash.Type == "sha-256" {
+				hashType = "sha256"
+			} else {
+				continue
 			}
+
+			releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum{
+				Type:  hashType,
+				Value: hash.Hash,
+			})
 		}
 
-		var metadataPath = fmt.Sprintf("%s/release.v1.yml", path.Dir(meta4Path))
-
-		if _, err = os.Stat(metadataPath); err == nil {
-			var metadataReleaseV1 MetadataReleaseV1
-
-			metadataBytes, err := ioutil.ReadFile(metadataPath)
-			if err != nil {
-				return nil, fmt.Errorf("reading %s: %v", metadataPath, err)
-			}
-
-			err = yaml.Unmarshal(metadataBytes, &metadataReleaseV1)
-			if err != nil {
-				return nil, fmt.Errorf("unmarshalling %s: %v", metadataPath, err)
-			}
-
-			releaseversion.ReleaseVersionRef.Name = metadataReleaseV1.Name
-			releaseversion.ReleaseVersionRef.Version = metadataReleaseV1.Version
-			releaseversion.MetalinkSource["version"] = releaseversion.ReleaseVersionRef.Version
-		}
+		releaseversion.ReleaseVersionRef.Name = path.Base(path.Dir(meta4Path))
+		releaseversion.ReleaseVersionRef.Version = meta4.Files[0].Version
+		releaseversion.MetalinkSource["version"] = releaseversion.ReleaseVersionRef.Version
 
 		inmemory = append(inmemory, releaseversion)
 	}

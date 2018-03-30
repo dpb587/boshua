@@ -1,12 +1,12 @@
-package legacybcr
+package presentbcr
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -15,6 +15,7 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/inmemory"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/dpb587/metalink"
 )
 
 type index struct {
@@ -73,52 +74,76 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/compiled-release.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
 
 	var inmemory = []compiledreleaseversions.CompiledReleaseVersion{}
 
-	for _, bcrPath := range paths {
-		bcrBytes, err := ioutil.ReadFile(bcrPath)
+	for _, bcrJsonPath := range paths {
+		bcrBytes, err := ioutil.ReadFile(bcrJsonPath)
 		if err != nil {
-			return nil, fmt.Errorf("reading %s: %v", bcrPath, err)
+			return nil, fmt.Errorf("reading %s: %v", bcrJsonPath, err)
 		}
 
-		scanner := bufio.NewScanner(bytes.NewBuffer(bcrBytes))
-		for scanner.Scan() {
-			var record Record
+		var bcrJson Record
 
-			err = json.Unmarshal(scanner.Bytes(), &record)
-			if err != nil {
-				return nil, fmt.Errorf("unmarshalling %s: %v", bcrPath, err)
+		err = json.Unmarshal(bcrBytes, &bcrJson)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshalling %s: %v", bcrJsonPath, err)
+		}
+
+		bcrMeta4Path := path.Join(path.Dir(bcrJsonPath), "compiled-release.meta4")
+		fmt.Printf("%s\n", bcrMeta4Path)
+
+		meta4Bytes, err := ioutil.ReadFile(bcrMeta4Path)
+		if err != nil {
+			return nil, fmt.Errorf("reading %s: %v", bcrMeta4Path, err)
+		}
+
+		var bcrMeta4 metalink.Metalink
+
+		err = metalink.Unmarshal(meta4Bytes, &bcrMeta4)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshalling %s: %v", bcrMeta4Path, err)
+		}
+
+		bcr := compiledreleaseversions.CompiledReleaseVersion{
+			CompiledReleaseVersionRef: compiledreleaseversions.CompiledReleaseVersionRef{
+				Release: releaseversions.ReleaseVersionRef{
+					Name:    bcrJson.Release.Name,
+					Version: bcrJson.Release.Version,
+					Checksum: releaseversions.Checksum{
+						Type:  bcrJson.Release.Checksums[0].Type,
+						Value: bcrJson.Release.Checksums[0].Value,
+					},
+				},
+				Stemcell: stemcellversions.StemcellVersionRef{
+					OS:      bcrJson.Stemcell.OS,
+					Version: bcrJson.Stemcell.Version,
+				},
+			},
+		}
+
+		for _, hash := range bcrMeta4.Files[0].Hashes {
+			var hashType string
+
+			if hash.Type == "sha-1" {
+				hashType = "sha1"
+			} else if hash.Type == "sha-256" {
+				hashType = "sha256"
+			} else {
+				continue
 			}
 
-			inmemory = append(inmemory, compiledreleaseversions.CompiledReleaseVersion{
-				CompiledReleaseVersionRef: compiledreleaseversions.CompiledReleaseVersionRef{
-					Release: releaseversions.ReleaseVersionRef{
-						Name:    record.Name,
-						Version: record.Version,
-						Checksum: releaseversions.Checksum{
-							Type:  "sha1",
-							Value: record.Source.Digest,
-						},
-					},
-					Stemcell: stemcellversions.StemcellVersionRef{
-						OS:      record.Stemcell.OS,
-						Version: record.Stemcell.Version,
-					},
-				},
-				TarballChecksums: releaseversions.Checksums{
-					releaseversions.Checksum{
-						Type:  "sha1",
-						Value: record.Tarball.Digest,
-					},
-				},
-				TarballURL: record.Tarball.URL,
+			bcr.TarballChecksums = append(bcr.TarballChecksums, releaseversions.Checksum{
+				Type:  hashType,
+				Value: hash.Hash,
 			})
 		}
+
+		inmemory = append(inmemory, bcr)
 	}
 
 	return inmemory, nil
