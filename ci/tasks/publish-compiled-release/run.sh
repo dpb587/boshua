@@ -25,6 +25,8 @@ meta4 file-upload --metalink="$metalink_path" --file="$tarball_name" "$tarball_p
 
 echo "$context" > "index-out/$storage/compiled-release.json"
 
+mv compiled-release/compilation.json "index-out/$storage/compilation.json"
+
 cd index-out
 
 if [[ -z "$( git status --porcelain )" ]]; then
