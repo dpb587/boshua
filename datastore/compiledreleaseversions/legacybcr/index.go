@@ -45,8 +45,8 @@ func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (com
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) > time.Minute {
-		return false, nil
+	if time.Now().Sub(i.lastLoaded) > 5*time.Minute {
+		// true
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil
 	}

@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 )
 
@@ -19,16 +18,6 @@ type Lock struct {
 }
 
 func main() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Panicf("getting working directory: %v", err)
-	}
-
-	err = os.Setenv("HOME", filepath.Join(pwd, "bosh-director"))
-	if err != nil {
-		log.Panicf("setting env HOME: %v", err)
-	}
-
 	lockBytes, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
 		log.Panicf("reading lock: %v", err)

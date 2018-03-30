@@ -9,8 +9,6 @@ inputs:
 - name: bosh-director
 - name: bosh-deployment
 - name: bosh-compiled-releases
-caches:
-- path: bosh-director/.bosh
 run:
   path: go
   args:

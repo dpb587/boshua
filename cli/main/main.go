@@ -31,8 +31,8 @@ func main() {
 		SecretsPath:  "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/pipeline-vars.yml",
 	}
 	releaseIndex := releaseversionsaggregate.New(
-		boshmeta4releaseindex.New("git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn"),
-		boshmeta4releaseindex.New("git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca"),
+		boshmeta4releaseindex.New("git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
+		boshmeta4releaseindex.New("git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
 		boshioreleaseindex.New("git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/bosh-io/releases-index"),
 	)
 	stemcellIndex := stemcellversionsaggregate.New(

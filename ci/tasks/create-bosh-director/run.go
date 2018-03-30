@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 )
 
@@ -21,16 +20,6 @@ type Lock struct {
 
 func main() {
 	var varsPath = "bosh-director/vars.yml"
-
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Panicf("getting working directory: %v", err)
-	}
-
-	err = os.Setenv("HOME", filepath.Join(pwd, "bosh-director"))
-	if err != nil {
-		log.Panicf("setting env HOME: %v", err)
-	}
 
 	lockBytes, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
@@ -56,7 +45,7 @@ func main() {
 			"--ops-file", "bosh-deployment/bosh-lite.yml",
 			"--ops-file", "bosh-deployment/external-ip-not-recommended.yml",
 			"--ops-file", "bosh-deployment/jumpbox-user.yml",
-			"--ops-file", "bosh-compiled-releases/ci/tasks/create-bosh-director/without-persistent-disk.yml",
+			// "--ops-file", "bosh-compiled-releases/ci/tasks/create-bosh-director/without-persistent-disk.yml",
 			"--var", fmt.Sprintf("director_name=bosh-lite-%s", now.Format("20060102T150405")),
 		}
 
