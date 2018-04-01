@@ -143,6 +143,10 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 			})
 		}
 
+		for _, url := range bcrMeta4.Files[0].URLs {
+			bcr.TarballURL = url.URL
+		}
+
 		inmemory = append(inmemory, bcr)
 	}
 

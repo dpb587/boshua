@@ -162,6 +162,8 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("%s\n", resBytes)
+
 	w.WriteHeader(http.StatusOK)
 	w.Write(resBytes)
 	w.Write([]byte("\n"))

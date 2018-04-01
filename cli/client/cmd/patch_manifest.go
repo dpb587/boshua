@@ -27,12 +27,12 @@ func (c *PatchManifest) Execute(_ []string) error {
 		log.Fatalf("reading stdin: %v", err)
 	}
 
-	client := client.New(http.DefaultClient, c.Server)
-
 	man, err := manifest.Parse(bytes)
 	if err != nil {
 		log.Fatalf("parsing manifest: %v", err)
 	}
+
+	client := client.New(http.DefaultClient, c.Server)
 
 	for _, rel := range man.Requirements() {
 		releaseRef := models.ReleaseRef{

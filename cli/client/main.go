@@ -11,8 +11,10 @@ import (
 func main() {
 	c := struct {
 		PatchManifest cmd.PatchManifest `command:"patch-manifest" description:"Patch a manifest for compiled releases"`
+		Metalink      cmd.Metalink      `command:"metalink" description:"Get a metalink for a compiled release"`
 	}{
 		PatchManifest: cmd.PatchManifest{},
+		Metalink:      cmd.Metalink{},
 	}
 
 	var parser = flags.NewParser(&c, flags.Default)
