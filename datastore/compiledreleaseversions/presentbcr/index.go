@@ -95,7 +95,6 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 		}
 
 		bcrMeta4Path := path.Join(path.Dir(bcrJsonPath), "compiled-release.meta4")
-		fmt.Printf("%s\n", bcrMeta4Path)
 
 		meta4Bytes, err := ioutil.ReadFile(bcrMeta4Path)
 		if err != nil {
@@ -112,12 +111,9 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 		bcr := compiledreleaseversions.CompiledReleaseVersion{
 			CompiledReleaseVersionRef: compiledreleaseversions.CompiledReleaseVersionRef{
 				Release: releaseversions.ReleaseVersionRef{
-					Name:    bcrJson.Release.Name,
-					Version: bcrJson.Release.Version,
-					Checksum: releaseversions.Checksum{
-						Type:  bcrJson.Release.Checksums[0].Type,
-						Value: bcrJson.Release.Checksums[0].Value,
-					},
+					Name:     bcrJson.Release.Name,
+					Version:  bcrJson.Release.Version,
+					Checksum: releaseversions.Checksum(fmt.Sprintf("%s:%s", bcrJson.Release.Checksums[0].Type, bcrJson.Release.Checksums[0].Value)),
 				},
 				Stemcell: stemcellversions.StemcellVersionRef{
 					OS:      bcrJson.Stemcell.OS,
@@ -126,21 +122,26 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 			},
 		}
 
+		bcr.TarballPublished = bcrMeta4.Published
+		bcr.TarballSize = &bcrMeta4.Files[0].Size
+
 		for _, hash := range bcrMeta4.Files[0].Hashes {
 			var hashType string
 
-			if hash.Type == "sha-1" {
+			switch hash.Type {
+			case "md5":
+				hashType = "md5"
+			case "sha-1":
 				hashType = "sha1"
-			} else if hash.Type == "sha-256" {
+			case "sha-256":
 				hashType = "sha256"
-			} else {
+			case "sha-512":
+				hashType = "sha512"
+			default:
 				continue
 			}
 
-			bcr.TarballChecksums = append(bcr.TarballChecksums, releaseversions.Checksum{
-				Type:  hashType,
-				Value: hash.Hash,
-			})
+			bcr.TarballChecksums = append(bcr.TarballChecksums, releaseversions.Checksum(fmt.Sprintf("%s:%s", hashType, hash.Hash)))
 		}
 
 		for _, url := range bcrMeta4.Files[0].URLs {

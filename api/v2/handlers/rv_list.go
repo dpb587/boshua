@@ -36,14 +36,11 @@ func (h *RVListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var checksums []models.Checksum
 
 		for _, checksum := range result.Checksums {
-			if checksum.Type != "sha1" && checksum.Type != "sha256" {
+			if checksum.Algorithm() != "sha1" && checksum.Algorithm() != "sha256" {
 				continue
 			}
 
-			checksums = append(checksums, models.Checksum{
-				Type:  checksum.Type,
-				Value: checksum.Value,
-			})
+			checksums = append(checksums, models.Checksum(checksum))
 		}
 
 		res.Data = append(res.Data, models.ReleaseRef{

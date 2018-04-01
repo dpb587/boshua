@@ -70,7 +70,7 @@ func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (com
 			continue
 		} else if compiledreleaseversion.Stemcell.Version != ref.Stemcell.Version {
 			continue
-		} else if compiledreleaseversion.Release.Checksum.Equals(ref.Release.Checksum) {
+		} else if compiledreleaseversion.Release.Checksum == ref.Release.Checksum {
 			// shortcut
 			return compiledreleaseversion, nil
 		}

@@ -36,12 +36,9 @@ func (c *PatchManifest) Execute(_ []string) error {
 
 	for _, rel := range man.Requirements() {
 		releaseRef := models.ReleaseRef{
-			Name:    rel.Name,
-			Version: rel.Version,
-			Checksum: models.Checksum{
-				Type:  "sha1",
-				Value: rel.Source.Sha1,
-			},
+			Name:     rel.Name,
+			Version:  rel.Version,
+			Checksum: models.Checksum(fmt.Sprintf("sha1:%s", rel.Source.Sha1)),
 		}
 		stemcellRef := models.StemcellRef{
 			OS:      rel.Stemcell.OS,
@@ -102,10 +99,8 @@ func (c *PatchManifest) Execute(_ []string) error {
 			}
 		}
 
-		rel.Compiled.Sha1 = resInfo.Data.Tarball.Checksums[0].Value
+		rel.Compiled.Sha1 = string(resInfo.Data.Tarball.Checksums[0])
 		rel.Compiled.URL = resInfo.Data.Tarball.URL
-
-		fmt.Printf("%#+v", rel)
 
 		err = man.UpdateRelease(rel)
 		if err != nil {

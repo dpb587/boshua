@@ -1,8 +1,9 @@
 package aggregate
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"fmt"
+
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 )
 
 type index struct {

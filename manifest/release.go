@@ -104,7 +104,5 @@ func (r Release) Op() patch.Op {
 		)
 	}
 
-	fmt.Printf("%#+v\n", ops)
-
 	return ops
 }

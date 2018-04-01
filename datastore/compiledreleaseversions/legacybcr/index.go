@@ -98,12 +98,9 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 			inmemory = append(inmemory, compiledreleaseversions.CompiledReleaseVersion{
 				CompiledReleaseVersionRef: compiledreleaseversions.CompiledReleaseVersionRef{
 					Release: releaseversions.ReleaseVersionRef{
-						Name:    record.Name,
-						Version: record.Version,
-						Checksum: releaseversions.Checksum{
-							Type:  "sha1",
-							Value: record.Source.Digest,
-						},
+						Name:     record.Name,
+						Version:  record.Version,
+						Checksum: releaseversions.Checksum(fmt.Sprintf("sha1:%s", record.Source.Digest)),
 					},
 					Stemcell: stemcellversions.StemcellVersionRef{
 						OS:      record.Stemcell.OS,
@@ -111,10 +108,7 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 					},
 				},
 				TarballChecksums: releaseversions.Checksums{
-					releaseversions.Checksum{
-						Type:  "sha1",
-						Value: record.Tarball.Digest,
-					},
+					releaseversions.Checksum(fmt.Sprintf("sha1:%s", record.Tarball.Digest)),
 				},
 				TarballURL: record.Tarball.URL,
 			})

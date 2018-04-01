@@ -57,12 +57,9 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 		Release: releaseversions.ReleaseVersionRef{
-			Name:    req.Data.Release.Name,
-			Version: req.Data.Release.Version,
-			Checksum: releaseversions.Checksum{
-				Type:  req.Data.Release.Checksum.Type,
-				Value: req.Data.Release.Checksum.Value,
-			},
+			Name:     req.Data.Release.Name,
+			Version:  req.Data.Release.Version,
+			Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
 		},
 		Stemcell: stemcellversions.StemcellVersionRef{
 			OS:      req.Data.Stemcell.OS,
@@ -72,12 +69,9 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err == compiledreleaseversions.MissingErr {
 		release, stemcell, err := h.releaseStemcellResolver.Resolve(
 			releaseversions.ReleaseVersionRef{
-				Name:    req.Data.Release.Name,
-				Version: req.Data.Release.Version,
-				Checksum: releaseversions.Checksum{
-					Type:  req.Data.Release.Checksum.Type,
-					Value: req.Data.Release.Checksum.Value,
-				},
+				Name:     req.Data.Release.Name,
+				Version:  req.Data.Release.Version,
+				Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
 			},
 			stemcellversions.StemcellVersionRef{
 				OS:      req.Data.Stemcell.OS,

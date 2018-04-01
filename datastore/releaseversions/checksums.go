@@ -2,11 +2,11 @@ package releaseversions
 
 type Checksums []Checksum
 
-func (c Checksums) Preferred() string {
-	for _, t := range []string{"sha256", "sha1"} {
+func (c Checksums) Preferred() Checksum {
+	for _, algorithm := range []string{"sha256", "sha1"} {
 		for _, checksum := range c {
-			if checksum.Type == t {
-				return checksum.Value
+			if checksum.Algorithm() == algorithm {
+				return checksum
 			}
 		}
 	}
@@ -14,9 +14,9 @@ func (c Checksums) Preferred() string {
 	panic("missing sha1 or sha256")
 }
 
-func (c Checksums) Contains(checksum Checksum) bool {
-	for _, cs := range c {
-		if cs.Equals(checksum) {
+func (c Checksums) Contains(expected Checksum) bool {
+	for _, actual := range c {
+		if actual == expected {
 			return true
 		}
 	}

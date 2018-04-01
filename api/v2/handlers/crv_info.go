@@ -58,12 +58,9 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 		Release: releaseversions.ReleaseVersionRef{
-			Name:    req.Data.Release.Name,
-			Version: req.Data.Release.Version,
-			Checksum: releaseversions.Checksum{
-				Type:  req.Data.Release.Checksum.Type,
-				Value: req.Data.Release.Checksum.Value,
-			},
+			Name:     req.Data.Release.Name,
+			Version:  req.Data.Release.Version,
+			Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
 		},
 		Stemcell: stemcellversions.StemcellVersionRef{
 			OS:      req.Data.Stemcell.OS,
@@ -73,12 +70,9 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err == compiledreleaseversions.MissingErr {
 		release, stemcell, err := h.releaseStemcellResolver.Resolve(
 			releaseversions.ReleaseVersionRef{
-				Name:    req.Data.Release.Name,
-				Version: req.Data.Release.Version,
-				Checksum: releaseversions.Checksum{
-					Type:  req.Data.Release.Checksum.Type,
-					Value: req.Data.Release.Checksum.Value,
-				},
+				Name:     req.Data.Release.Name,
+				Version:  req.Data.Release.Version,
+				Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
 			},
 			stemcellversions.StemcellVersionRef{
 				OS:      req.Data.Stemcell.OS,
@@ -130,14 +124,11 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var checksums []models.Checksum
 
 	for _, checksum := range result.TarballChecksums {
-		if checksum.Type != "sha1" && checksum.Type != "sha256" {
+		if checksum.Algorithm() != "sha1" && checksum.Algorithm() != "sha256" {
 			continue
 		}
 
-		checksums = append(checksums, models.Checksum{
-			Type:  checksum.Type,
-			Value: checksum.Value,
-		})
+		checksums = append(checksums, models.Checksum(checksum))
 	}
 
 	res := models.CRVInfoResponse{
@@ -147,6 +138,8 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Stemcell: req.Data.Stemcell,
 			Tarball: models.CRVInfoResponseDataCompiled{
 				URL:       result.TarballURL,
+				Size:      result.TarballSize,
+				Published: result.TarballPublished,
 				Checksums: checksums,
 			},
 		},
@@ -161,8 +154,6 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	fmt.Printf("%s\n", resBytes)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(resBytes)

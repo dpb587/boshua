@@ -43,12 +43,9 @@ func (c *Metalink) Execute(_ []string) error {
 	client := client.New(http.DefaultClient, c.Server)
 
 	releaseRef := models.ReleaseRef{
-		Name:    releaseSplit[0],
-		Version: releaseSplit[1],
-		Checksum: models.Checksum{
-			Type:  "sha1",
-			Value: c.Args.ReleaseChecksum,
-		},
+		Name:     releaseSplit[0],
+		Version:  releaseSplit[1],
+		Checksum: models.Checksum(fmt.Sprintf("sha1:%s", c.Args.ReleaseChecksum)),
 	}
 	stemcellRef := models.StemcellRef{
 		OS:      stemcellSplit[0],
@@ -107,33 +104,48 @@ func (c *Metalink) Execute(_ []string) error {
 		}
 	}
 
-	meta4 := metalink.Metalink{}
-	meta4.Files = []metalink.File{
-		{
-			Name:    fmt.Sprintf("%s-%s-on-%s-version-%s.tgz", releaseRef.Name, releaseRef.Version, stemcellRef.OS, stemcellRef.Version),
-			Version: releaseRef.Version,
-			URLs: []metalink.URL{
-				{
-					URL: resInfo.Data.Tarball.URL,
+	meta4 := metalink.Metalink{
+		Files: []metalink.File{
+			{
+				Name:    fmt.Sprintf("%s-%s-on-%s-version-%s.tgz", releaseRef.Name, releaseRef.Version, stemcellRef.OS, stemcellRef.Version),
+				Version: releaseRef.Version,
+				URLs: []metalink.URL{
+					{
+						URL: resInfo.Data.Tarball.URL,
+					},
 				},
 			},
 		},
+		Generator: "bosh-compiled-releases/0.0.0",
+	}
+
+	if resInfo.Data.Tarball.Size != nil {
+		meta4.Files[0].Size = *resInfo.Data.Tarball.Size
+	}
+
+	if resInfo.Data.Tarball.Published != nil {
+		meta4.Published = resInfo.Data.Tarball.Published
 	}
 
 	for _, checksum := range resInfo.Data.Tarball.Checksums {
 		var csType string
 
-		if checksum.Type == "sha1" {
+		switch checksum.Algorithm() {
+		case "md5":
+			csType = "md5"
+		case "sha1":
 			csType = "sha-1"
-		} else if checksum.Type == "sha256" {
+		case "sha256":
 			csType = "sha-256"
-		} else {
+		case "sha512":
+			csType = "sha-512"
+		default:
 			continue
 		}
 
 		meta4.Files[0].Hashes = append(meta4.Files[0].Hashes, metalink.Hash{
 			Type: csType,
-			Hash: checksum.Value,
+			Hash: checksum.Data(),
 		})
 	}
 

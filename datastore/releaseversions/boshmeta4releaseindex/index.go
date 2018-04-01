@@ -103,18 +103,20 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 		for _, hash := range meta4.Files[0].Hashes {
 			var hashType string
 
-			if hash.Type == "sha-1" {
+			switch hash.Type {
+			case "md5":
+				hashType = "md5"
+			case "sha-1":
 				hashType = "sha1"
-			} else if hash.Type == "sha-256" {
+			case "sha-256":
 				hashType = "sha256"
-			} else {
+			case "sha-512":
+				hashType = "sha512"
+			default:
 				continue
 			}
 
-			releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum{
-				Type:  hashType,
-				Value: hash.Hash,
-			})
+			releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum(fmt.Sprintf("%s:%s", hashType, hash.Hash)))
 		}
 
 		releaseversion.ReleaseVersionRef.Name = path.Base(path.Dir(meta4Path))

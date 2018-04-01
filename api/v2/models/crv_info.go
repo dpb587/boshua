@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type CRVInfoStatus string
 
 const (
@@ -30,6 +32,8 @@ type CRVInfoResponseData struct {
 }
 
 type CRVInfoResponseDataCompiled struct {
-	URL       string    `json:"url"`
-	Checksums Checksums `json:"checksums"`
+	URL       string     `json:"url"`
+	Size      *uint64    `json:"size,omitempty"`
+	Published *time.Time `json:"published,omitempty"`
+	Checksums Checksums  `json:"checksums"`
 }

@@ -33,11 +33,11 @@ func main() {
 	releaseIndex := releaseversionsaggregate.New(
 		boshmeta4releaseindex.New("git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
 		boshmeta4releaseindex.New("git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
-		boshioreleaseindex.New("git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/bosh-io/releases-index"),
+		boshioreleaseindex.New("git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/src/github.com/bosh-io/releases-index"),
 	)
 	stemcellIndex := stemcellversionsaggregate.New(
-		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-core-index.git//published/", "/Users/dpb587/Projects/bosh-io/stemcells-core-index/published"),
-		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/bosh-io/stemcells-windows-index/published"),
+		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-core-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-core-index/published"),
+		boshiostemcellindex.New("git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-windows-index/published"),
 	)
 	compiledReleaseIndex := compiledreleaseversionsaggregate.New(
 		presentbcr.New(releaseIndex, "git@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
