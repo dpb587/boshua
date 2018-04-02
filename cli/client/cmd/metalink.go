@@ -60,12 +60,14 @@ func (c *Metalink) Execute(_ []string) error {
 	})
 	if err != nil {
 		log.Fatalf("finding compiled release: %v", err)
-	} else if resInfo == nil || resInfo.Data.Status != "available" {
+	} else if resInfo == nil {
 		if !c.RequestAndWait {
 			log.Fatalf("compiled release is not available")
 		}
 
-		if resInfo == nil {
+		priorStatus := "unknown"
+
+		for {
 			res, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 				Data: models.CRVRequestRequestData{
 					Release:  releaseRef,
@@ -75,32 +77,33 @@ func (c *Metalink) Execute(_ []string) error {
 			if err != nil {
 				log.Fatalf("requesting compiled release: %v", err)
 			} else if res == nil {
-				log.Fatalf("unsupported compilation\n")
+				log.Fatalf("unsupported compilation")
+
+				continue
 			}
 
-			fmt.Fprintf(os.Stderr, "requested compiled release\n")
-		}
-
-		fmt.Fprintf(os.Stderr, "waiting for compiled release\n")
-
-		for {
-			time.Sleep(10 * time.Second)
-
-			resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
-				Data: models.CRVInfoRequestData{
-					Release:  releaseRef,
-					Stemcell: stemcellRef,
-				},
-			})
-			if err != nil {
-				log.Fatalf("finding compiled release: %v", err)
-			} else if resInfo == nil {
-				log.Fatalf("finding compiled release: unable to verify request")
+			if res.Status != priorStatus {
+				fmt.Fprintf(os.Stderr, "compilation status: %s\n", res.Status)
+				priorStatus = res.Status
 			}
 
-			if resInfo.Data.Status == "available" && resInfo.Data.Tarball.URL != "" {
+			if res.Complete {
 				break
 			}
+
+			time.Sleep(10 * time.Second)
+		}
+
+		resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+			Data: models.CRVInfoRequestData{
+				Release:  releaseRef,
+				Stemcell: stemcellRef,
+			},
+		})
+		if err != nil {
+			log.Fatalf("finding compiled release: %v", err)
+		} else if resInfo == nil {
+			log.Fatalf("finding compiled release: unable to verify request")
 		}
 	}
 

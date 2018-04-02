@@ -1,19 +1,18 @@
 package presentbcr
 
+import (
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+)
+
 type Record struct {
 	Release  RecordRelease  `json:"release"`
 	Stemcell RecordStemcell `json:"stemcell"`
 }
 
 type RecordRelease struct {
-	Name      string                  `json:"name"`
-	Version   string                  `json:"version"`
-	Checksums []RecordReleaseChecksum `json:"checksums"`
-}
-
-type RecordReleaseChecksum struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
+	Name      string                     `json:"name"`
+	Version   string                     `json:"version"`
+	Checksums []releaseversions.Checksum `json:"checksums"`
 }
 
 type RecordStemcell struct {

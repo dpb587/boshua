@@ -75,7 +75,7 @@ func (c *Client) CompiledReleaseVersionRequest(req models.CRVRequestRequest) (*m
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
-	} else if response.StatusCode != http.StatusAccepted {
+	} else if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("executing request: status %d", response.StatusCode)
 	}
 

@@ -8,108 +8,48 @@ import (
 	"net/http"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
-	"github.com/dpb587/bosh-compiled-releases/compiler"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
-	"github.com/dpb587/bosh-compiled-releases/util"
 )
 
 type CRVInfoHandler struct {
-	cc                          *compiler.Compiler
 	compiledReleaseVersionIndex compiledreleaseversions.Index
-	releaseStemcellResolver     *util.ReleaseStemcellResolver
 }
 
 func NewCRVInfoHandler(
-	cc *compiler.Compiler,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
-	releaseStemcellResolver *util.ReleaseStemcellResolver,
 ) http.Handler {
 	return &CRVInfoHandler{
-		cc: cc,
-		releaseStemcellResolver:     releaseStemcellResolver,
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
 
 func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var req models.CRVInfoRequest
-
-	reqBytes, err := ioutil.ReadAll(r.Body)
+	reqData, err := h.readData(r)
 	if err != nil {
-		log.Printf("reading request body: %v", err)
+		log.Printf("processing request body: %v", err)
 
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("ERROR: reading request body\n"))
-
-		return
-	}
-
-	err = json.Unmarshal(reqBytes, &req)
-	if err != nil {
-		log.Printf("unmarshaling request body: %v", err)
-
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("ERROR: unmarshaling request body\n"))
+		w.Write([]byte("ERROR: processing request body\n"))
 
 		return
 	}
 
 	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 		Release: releaseversions.ReleaseVersionRef{
-			Name:     req.Data.Release.Name,
-			Version:  req.Data.Release.Version,
-			Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
+			Name:     reqData.Release.Name,
+			Version:  reqData.Release.Version,
+			Checksum: releaseversions.Checksum(reqData.Release.Checksum),
 		},
 		Stemcell: stemcellversions.StemcellVersionRef{
-			OS:      req.Data.Stemcell.OS,
-			Version: req.Data.Stemcell.Version,
+			OS:      reqData.Stemcell.OS,
+			Version: reqData.Stemcell.Version,
 		},
 	})
 	if err == compiledreleaseversions.MissingErr {
-		release, stemcell, err := h.releaseStemcellResolver.Resolve(
-			releaseversions.ReleaseVersionRef{
-				Name:     req.Data.Release.Name,
-				Version:  req.Data.Release.Version,
-				Checksum: releaseversions.Checksum(req.Data.Release.Checksum),
-			},
-			stemcellversions.StemcellVersionRef{
-				OS:      req.Data.Stemcell.OS,
-				Version: req.Data.Stemcell.Version,
-			},
-		)
-		if err == releaseversions.MissingErr || err == stemcellversions.MissingErr {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("not found\n"))
-
-			return
-		} else if err != nil {
-			log.Printf("resolving references: %v", err)
-
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("ERROR: resolving references\n"))
-
-			return
-		}
-
-		status, err := h.cc.Status(release, stemcell)
-		if err != nil {
-			log.Printf("checking compilation status: %v", err)
-
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("ERROR: checking compilation status\n"))
-
-			return
-		} else if status == compiler.StatusUnknown {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("not found\n"))
-
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{"data":{"status":"%s"}}`, status)))
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("ERROR: compiled release version not found\n"))
 
 		return
 	} else if err != nil {
@@ -133,9 +73,8 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	res := models.CRVInfoResponse{
 		Data: models.CRVInfoResponseData{
-			Status:   models.CRVInfoStatusAvailable,
-			Release:  req.Data.Release,
-			Stemcell: req.Data.Stemcell,
+			Release:  reqData.Release,
+			Stemcell: reqData.Stemcell,
 			Tarball: models.CRVInfoResponseDataCompiled{
 				URL:       result.TarballURL,
 				Size:      result.TarballSize,
@@ -158,4 +97,20 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(resBytes)
 	w.Write([]byte("\n"))
+}
+
+func (h *CRVInfoHandler) readData(r *http.Request) (*models.CRVInfoRequestData, error) {
+	var data models.CRVInfoRequest
+
+	dataBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading: %v", err)
+	}
+
+	err = json.Unmarshal(dataBytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshaling: %v", err)
+	}
+
+	return &data.Data, nil
 }

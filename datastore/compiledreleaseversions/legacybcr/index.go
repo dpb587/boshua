@@ -45,11 +45,13 @@ func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (com
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) > 5*time.Minute {
-		// true
+	if time.Now().Sub(i.lastLoaded) < 5*time.Minute {
+		return false, nil
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil
 	}
+
+	i.lastLoaded = time.Now()
 
 	cmd := exec.Command("git", "pull", "--ff-only")
 	cmd.Dir = i.localPath

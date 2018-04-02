@@ -46,11 +46,13 @@ func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (com
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) > 5*time.Minute {
-		// true
+	if time.Now().Sub(i.lastLoaded) < 5*time.Minute {
+		return false, nil
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil
 	}
+
+	i.lastLoaded = time.Now()
 
 	cmd := exec.Command("git", "pull", "--ff-only")
 	cmd.Dir = i.localPath
@@ -113,7 +115,7 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 				Release: releaseversions.ReleaseVersionRef{
 					Name:     bcrJson.Release.Name,
 					Version:  bcrJson.Release.Version,
-					Checksum: releaseversions.Checksum(fmt.Sprintf("%s:%s", bcrJson.Release.Checksums[0].Type, bcrJson.Release.Checksums[0].Value)),
+					Checksum: releaseversions.Checksum(bcrJson.Release.Checksums[0]),
 				},
 				Stemcell: stemcellversions.StemcellVersionRef{
 					OS:      bcrJson.Stemcell.OS,

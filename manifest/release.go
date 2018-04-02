@@ -49,14 +49,14 @@ func (r Release) Op() patch.Op {
 
 		if r.Compiled.URL != "" {
 			value["url"] = r.Compiled.URL
-			value["sha1"] = r.Compiled.Sha1
+			value["sha1"] = strings.TrimPrefix(r.Compiled.Sha1, "sha1:")
 			value["stemcell"] = map[string]interface{}{
 				"os":      r.Stemcell.OS,
 				"version": r.Stemcell.Version,
 			}
 		} else {
 			value["url"] = r.Source.URL
-			value["sha1"] = r.Source.Sha1
+			value["sha1"] = strings.TrimPrefix(r.Source.Sha1, "sha1:")
 		}
 
 		return patch.ReplaceOp{
@@ -76,7 +76,7 @@ func (r Release) Op() patch.Op {
 			},
 			patch.ReplaceOp{
 				Path:  patch.MustNewPointerFromString(fmt.Sprintf("%s/%s", r.pointer.String(), "sha1?")),
-				Value: r.Source.Sha1,
+				Value: strings.TrimPrefix(r.Source.Sha1, "sha1:"),
 			},
 			patch.RemoveOp{
 				Path: patch.MustNewPointerFromString(fmt.Sprintf("%s/%s", r.pointer.String(), "stemcell?")),
@@ -91,7 +91,7 @@ func (r Release) Op() patch.Op {
 			},
 			patch.ReplaceOp{
 				Path:  patch.MustNewPointerFromString(fmt.Sprintf("%s/%s", r.pointer.String(), "sha1?")),
-				Value: r.Compiled.Sha1,
+				Value: strings.TrimPrefix(r.Compiled.Sha1, "sha1:"),
 			},
 			patch.ReplaceOp{
 				Path:  patch.MustNewPointerFromString(fmt.Sprintf("%s/%s", r.pointer.String(), "stemcell?/os")),

@@ -10,5 +10,6 @@ type CRVRequestRequestData struct {
 }
 
 type CRVRequestResponse struct {
-	Status string `json:"status"`
+	Complete bool   `json:"complete"`
+	Status   string `json:"status"`
 }

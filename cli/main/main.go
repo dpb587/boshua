@@ -46,7 +46,7 @@ func main() {
 	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseIndex, stemcellIndex)
 
 	r := mux.NewRouter()
-	r.Handle("/v2/compiled-release-version/info", handlers.NewCRVInfoHandler(&cc, compiledReleaseIndex, releaseStemcellResolver)).Methods("POST")
+	r.Handle("/v2/compiled-release-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
 	// r.Handle("/v2/compiled-release-version/log", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
 	r.Handle("/v2/compiled-release-version/request", handlers.NewCRVRequestHandler(&cc, releaseStemcellResolver, compiledReleaseIndex)).Methods("POST")
 	r.Handle("/v2/release-versions/list", handlers.NewRVListHandler(releaseIndex)).Methods("POST")

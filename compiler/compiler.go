@@ -21,9 +21,9 @@ type Status string
 var (
 	StatusUnknown   Status = "unknown"
 	StatusPending   Status = "pending"
-	StatusAborted   Status = "aborted"
 	StatusFailed    Status = "failed"
-	StatusStarted   Status = "started"
+	StatusCompiling Status = "compiling"
+	StatusFinishing Status = "finishing"
 	StatusSucceeded Status = "succeeded"
 )
 
@@ -129,7 +129,7 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 	if fields[2] == "succeeded" {
 		return StatusSucceeded, nil
 	} else if fields[2] == "aborted" {
-		return StatusAborted, nil
+		return StatusFailed, nil
 	} else if fields[2] == "failed" {
 		return StatusFailed, nil
 	} else if fields[2] == "errored" {
@@ -139,10 +139,10 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 	} else if fields[2] == "n/a" && fields[3] == "n/a" {
 		return StatusPending, nil
 	} else if fields[3] == "started" {
-		return StatusPending, nil
+		return StatusCompiling, nil
 	}
 
-	return StatusUnknown, nil
+	return StatusUnknown, errors.New("unrecognized pipeline state")
 }
 
 func (c Compiler) pipelineName(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) string {

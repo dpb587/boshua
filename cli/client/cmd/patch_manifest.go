@@ -53,12 +53,14 @@ func (c *PatchManifest) Execute(_ []string) error {
 		})
 		if err != nil {
 			log.Fatalf("finding compiled release: %v", err)
-		} else if resInfo == nil || resInfo.Data.Status != "available" {
+		} else if resInfo == nil {
 			if !c.RequestAndWait {
 				continue
 			}
 
-			if resInfo == nil {
+			priorStatus := "unknown"
+
+			for {
 				res, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
 						Release:  releaseRef,
@@ -70,32 +72,35 @@ func (c *PatchManifest) Execute(_ []string) error {
 				} else if res == nil {
 					fmt.Fprintf(os.Stderr, "[%s %s] unsupported compilation\n", rel.Stemcell.Slug(), rel.Slug())
 
-					continue
-				}
-
-				fmt.Fprintf(os.Stderr, "[%s %s] requested compiled release\n", rel.Stemcell.Slug(), rel.Slug())
-			}
-
-			fmt.Fprintf(os.Stderr, "[%s %s] waiting for compiled release\n", rel.Stemcell.Slug(), rel.Slug())
-
-			for {
-				time.Sleep(10 * time.Second)
-
-				resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
-					Data: models.CRVInfoRequestData{
-						Release:  releaseRef,
-						Stemcell: stemcellRef,
-					},
-				})
-				if err != nil {
-					log.Fatalf("finding compiled release: %v", err)
-				} else if resInfo == nil {
-					log.Fatalf("finding compiled release: unable to verify request")
-				}
-
-				if resInfo.Data.Status == "available" && resInfo.Data.Tarball.URL != "" {
 					break
 				}
+
+				if res.Status != priorStatus {
+					fmt.Fprintf(os.Stderr, "[%s %s] compilation status: %s\n", rel.Stemcell.Slug(), rel.Slug(), res.Status)
+					priorStatus = res.Status
+				}
+
+				if res.Complete {
+					break
+				}
+
+				time.Sleep(10 * time.Second)
+			}
+
+			if priorStatus == "unknown" {
+				continue
+			}
+
+			resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+				Data: models.CRVInfoRequestData{
+					Release:  releaseRef,
+					Stemcell: stemcellRef,
+				},
+			})
+			if err != nil {
+				log.Fatalf("finding compiled release: %v", err)
+			} else if resInfo == nil {
+				log.Fatalf("finding compiled release: unable to verify request")
 			}
 		}
 

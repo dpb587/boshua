@@ -43,6 +43,9 @@ func Parse(manifestBytes []byte) (*Manifest, error) {
 		release, err := parseRelease(releaseIdx, releaseStruct)
 		if err != nil {
 			return nil, fmt.Errorf("parsing release %d: %v", releaseIdx, err)
+		} else if release == nil {
+			// unsupported or missing fields
+			continue
 		} else if release.Version == "latest" || strings.HasSuffix(release.Version, ".latest") {
 			continue
 		} else if release.IsCompiled() {
@@ -85,7 +88,7 @@ func parseRelease(idx int, parsed map[interface{}]interface{}) (*Release, error)
 
 	sha1, ok := parsed["sha1"]
 	if !ok {
-		return nil, fmt.Errorf("expected field: sha1")
+		return nil, nil
 	}
 
 	release.Source.Sha1, ok = sha1.(string)
@@ -128,14 +131,19 @@ func parseStemcell(parsed map[interface{}]interface{}) (*Stemcell, error) {
 
 		stemcellRaw = stemcellStruct
 	} else if hasResourcePools {
-		resourcePoolsSlice, ok := parsed["resource_pools"].([]map[interface{}]interface{})
+		resourcePoolsSlice, ok := parsed["resource_pools"].([]interface{})
 		if !ok {
-			return nil, fmt.Errorf("resource_pools is expected to be an array of hashes")
+			return nil, fmt.Errorf("resource_pools is expected to be an array")
 		} else if len(resourcePoolsSlice) != 1 {
 			return nil, fmt.Errorf("resource_pools is expected to have a single entry but found %d", len(resourcePoolsSlice))
 		}
 
-		stemcellStruct, ok := resourcePoolsSlice[0]["stemcell"].(map[interface{}]interface{})
+		resourcePoolStruct, ok := resourcePoolsSlice[0].(map[interface{}]interface{})
+		if !ok {
+			return nil, fmt.Errorf("resource_pools is expected to be a hash: %#+v", resourcePoolsSlice)
+		}
+
+		stemcellStruct, ok := resourcePoolStruct["stemcell"].(map[interface{}]interface{})
 		if !ok {
 			return nil, fmt.Errorf("resource_pools is expected to have a stemcell hash")
 		}

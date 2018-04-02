@@ -2,15 +2,6 @@ package models
 
 import "time"
 
-type CRVInfoStatus string
-
-const (
-	CRVInfoStatusUnknown     CRVInfoStatus = "unknown"
-	CRVInfoStatusPending     CRVInfoStatus = "pending"
-	CRVInfoStatusAvailable   CRVInfoStatus = "available"
-	CRVInfoStatusUnavailable CRVInfoStatus = "unavailable"
-)
-
 type CRVInfoRequest struct {
 	Data CRVInfoRequestData `json:"data"`
 }
@@ -25,7 +16,6 @@ type CRVInfoResponse struct {
 }
 
 type CRVInfoResponseData struct {
-	Status   CRVInfoStatus               `json:"status"`
 	Release  ReleaseRef                  `json:"release,omitempty"`
 	Stemcell StemcellRef                 `json:"stemcell,omitempty"`
 	Tarball  CRVInfoResponseDataCompiled `json:"tarball,omitempty"`
