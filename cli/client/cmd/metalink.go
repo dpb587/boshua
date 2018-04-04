@@ -14,11 +14,14 @@ import (
 )
 
 type Metalink struct {
-	Server string `long:"server" description:"Server address" default:"http://localhost:8080/"`
+	Server      string `long:"server" description:"Server address" default:"http://localhost:8080/" env:"CFBS_SERVER"`
+	ServerToken string `long:"server-token" description:"Server authentication token" env:"CFBS_SERVER_TOKEN"`
 	// CACert []string `long:"ca-cert" description:"Specific CA Certificate to trust"`
 
-	RequestAndWait bool `long:"request-and-wait" description:"Request and wait for compilations to finish"`
-	Quiet          bool `long:"quiet" description:"Suppress informational output"`
+	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
+	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
+
+	Quiet bool `long:"quiet" description:"Suppress informational output"`
 
 	Args MetalinkArgs `positional-args:"true" optional:"true"`
 }

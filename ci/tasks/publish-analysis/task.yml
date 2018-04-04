@@ -1,0 +1,22 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: dpb587/bosh-compiled-releases-v2
+    tag: latest
+inputs:
+- name: bosh-compiled-releases
+- name: analysis
+- name: index
+outputs:
+- name: index
+  path: index-out
+run:
+  path: bosh-compiled-releases/ci/tasks/publish-analysis/run.sh
+params:
+  storage: ~
+  analysis: ~
+  s3_bucket: ~
+  s3_host: ~
+  s3_access_key: ~
+  s3_secret_key: ~

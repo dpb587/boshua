@@ -35,7 +35,42 @@ jobs:
       - put: index
         params:
           repository: index
-    ensure:
+          rebase: true
+    - parallel:
+      - &teardown
+      - do:
+        - task: analyze-artifact-checksum
+          file: bosh-compiled-releases/ci/tasks/analyze-artifact-checksum/task.yml
+        - task: publish-analysis
+          file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
+          params:
+            storage: ((index_storage))
+            analysis: artifact-checksum
+            s3_bucket: ((s3_bucket))
+            s3_host: ((s3_host))
+            s3_access_key: ((s3_access_key))
+            s3_secret_key: ((s3_secret_key))
+        - put: index
+          params:
+            repository: index
+            rebase: true
+      - do:
+        - task: analyze-artifact-filesystem
+          file: bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/task.yml
+        - task: publish-analysis
+          file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
+          params:
+            storage: ((index_storage))
+            analysis: artifact-filesystem
+            s3_bucket: ((s3_bucket))
+            s3_host: ((s3_host))
+            s3_access_key: ((s3_access_key))
+            s3_secret_key: ((s3_secret_key))
+        - put: index
+          params:
+            repository: index
+            rebase: true
+    on_failure: *teardown
       do:
       - task: destroy-bosh-director
         file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml

@@ -14,11 +14,21 @@ import (
 )
 
 type PatchManifest struct {
-	Server string `long:"server" description:"Server address" default:"http://localhost:8080/"`
+	Server      string `long:"server" description:"Server address" default:"http://localhost:8080/" env:"CFBS_SERVER"`
+	ServerToken string `long:"server-token" description:"Server authentication token" env:"CFBS_SERVER_TOKEN"`
 	// CACert []string `long:"ca-cert" description:"Specific CA Certificate to trust"`
 
-	RequestAndWait bool `long:"request-and-wait" description:"Request and wait for compilations to finish"`
-	Quiet          bool `long:"quiet" description:"Suppress informational output"`
+	Release     []string `long:"release" description:"Only check releases matching this name"`
+	SkipRelease []string `long:"skip-release" description:"Skip releases matching this name"`
+
+	LocalStemcellOS      string `long:"local-stemcell-os" description:"Explicit local stemcell operating system (for init manifests)"`
+	LocalStemcellVersion string `long:"local-stemcell-version" description:"Explicit local stemcell version (for init manifests)"`
+
+	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
+	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
+	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
+
+	Quiet bool `long:"quiet" description:"Suppress informational output"`
 }
 
 func (c *PatchManifest) Execute(_ []string) error {
