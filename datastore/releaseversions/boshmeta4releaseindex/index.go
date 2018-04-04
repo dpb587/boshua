@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -14,9 +15,11 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
 
 	"github.com/dpb587/metalink"
+	"github.com/sirupsen/logrus"
 )
 
 type index struct {
+	logger             logrus.FieldLogger
 	metalinkRepository string
 	localPath          string
 
@@ -24,8 +27,9 @@ type index struct {
 	lastLoaded time.Time
 }
 
-func New(metalinkRepository, localPath string) releaseversions.Index {
+func New(logger logrus.FieldLogger, metalinkRepository, localPath string) releaseversions.Index {
 	idx := &index{
+		logger:             logger.WithField("package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: metalinkRepository,
 		localPath:          localPath,
 	}
@@ -63,12 +67,18 @@ func (i *index) reloader() (bool, error) {
 
 	err := cmd.Run()
 	if err != nil {
+		i.logger.WithField("go.error", err).Errorf("pulling repository")
+
 		return false, fmt.Errorf("pulling repository: %v", err)
 	}
 
 	if strings.Contains(outbuf.String(), "Already up to date.") {
+		i.logger.Debugf("repository already up to date")
+
 		return false, nil
 	}
+
+	i.logger.Debugf("repository updated")
 
 	return true, nil
 }
@@ -78,6 +88,8 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
+
+	i.logger.Infof("found %d entries", len(paths))
 
 	var inmemory = []releaseversions.ReleaseVersion{}
 

@@ -4,17 +4,21 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"reflect"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/sirupsen/logrus"
 )
 
 type RVListHandler struct {
+	logger              logrus.FieldLogger
 	releaseVersionIndex releaseversions.Index
 }
 
-func NewRVListHandler(releaseVersionIndex releaseversions.Index) http.Handler {
+func NewRVListHandler(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index) http.Handler {
 	return &RVListHandler{
+		logger:              logger.WithField("package", reflect.TypeOf(RVListHandler{}).PkgPath()),
 		releaseVersionIndex: releaseVersionIndex,
 	}
 }

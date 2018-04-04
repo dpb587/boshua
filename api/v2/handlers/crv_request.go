@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/compiler"
@@ -13,21 +14,25 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 	"github.com/dpb587/bosh-compiled-releases/util"
+	"github.com/sirupsen/logrus"
 )
 
 type CRVRequestHandler struct {
+	logger                      logrus.FieldLogger
 	cc                          *compiler.Compiler
 	releaseStemcellResolver     *util.ReleaseStemcellResolver
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
 func NewCRVRequestHandler(
+	logger logrus.FieldLogger,
 	cc *compiler.Compiler,
 	releaseStemcellResolver *util.ReleaseStemcellResolver,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
 	return &CRVRequestHandler{
-		cc: cc,
+		logger: logger.WithField("package", reflect.TypeOf(CRVRequestHandler{}).PkgPath()),
+		cc:     cc,
 		releaseStemcellResolver:     releaseStemcellResolver,
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}

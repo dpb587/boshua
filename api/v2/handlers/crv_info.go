@@ -6,21 +6,26 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/sirupsen/logrus"
 )
 
 type CRVInfoHandler struct {
+	logger                      logrus.FieldLogger
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
 func NewCRVInfoHandler(
+	logger logrus.FieldLogger,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
 	return &CRVInfoHandler{
+		logger: logger.WithField("package", reflect.TypeOf(CRVInfoHandler{}).PkgPath()),
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
@@ -36,6 +41,14 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger := h.logger.WithFields(logrus.Fields{
+		"release.name":     reqData.Release.Name,
+		"release.version":  reqData.Release.Version,
+		"release.checksum": reqData.Release.Checksum,
+		"stemcell.os":      reqData.Stemcell.OS,
+		"stemcell.version": reqData.Stemcell.Version,
+	})
+
 	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 		Release: releaseversions.ReleaseVersionRef{
 			Name:     reqData.Release.Name,
@@ -48,11 +61,15 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err == compiledreleaseversions.MissingErr {
+		logger.Infof("compiled release not found")
+
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("ERROR: compiled release version not found\n"))
 
 		return
 	} else if err != nil {
+		logger.WithField("error", err).Errorf("finding compiled release version")
+
 		log.Printf("finding compiled release version: %v", err)
 
 		w.WriteHeader(http.StatusInternalServerError)
@@ -70,6 +87,8 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		checksums = append(checksums, models.Checksum(checksum))
 	}
+
+	logger.Infof("compiled release found")
 
 	res := models.CRVInfoResponse{
 		Data: models.CRVInfoResponseData{

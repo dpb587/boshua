@@ -4,17 +4,21 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"reflect"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/sirupsen/logrus"
 )
 
 type SVListHandler struct {
+	logger               logrus.FieldLogger
 	stemcellVersionIndex stemcellversions.Index
 }
 
-func NewSVListHandler(stemcellVersionIndex stemcellversions.Index) http.Handler {
+func NewSVListHandler(logger logrus.FieldLogger, stemcellVersionIndex stemcellversions.Index) http.Handler {
 	return &SVListHandler{
+		logger:               logger.WithField("package", reflect.TypeOf(SVListHandler{}).PkgPath()),
 		stemcellVersionIndex: stemcellVersionIndex,
 	}
 }
