@@ -36,8 +36,8 @@ jobs:
         params:
           repository: index
           rebase: true
-    - parallel:
-      - &teardown
+    - aggregate:
+      - *teardown
       - do:
         - task: analyze-artifact-checksum
           file: bosh-compiled-releases/ci/tasks/analyze-artifact-checksum/task.yml
@@ -70,7 +70,7 @@ jobs:
           params:
             repository: index
             rebase: true
-    on_failure: *teardown
+    on_failure: &teardown
       do:
       - task: destroy-bosh-director
         file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
