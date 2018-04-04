@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 
+	"github.com/dpb587/bosh-compiled-releases/api/v2/middleware"
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
@@ -25,15 +25,21 @@ func NewCRVInfoHandler(
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
 	return &CRVInfoHandler{
-		logger: logger.WithField("package", reflect.TypeOf(CRVInfoHandler{}).PkgPath()),
+		logger: logger.WithFields(logrus.Fields{
+			"package":          reflect.TypeOf(CRVInfoHandler{}).PkgPath(),
+			"http.api.version": "v2",
+			"http.api.handler": "crv_info",
+		}),
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
 
 func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	logger := h.applyLoggerContext(r)
+
 	reqData, err := h.readData(r)
 	if err != nil {
-		log.Printf("processing request body: %v", err)
+		logger.WithField("error", err).Errorf("processing request body")
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("ERROR: processing request body\n"))
@@ -41,7 +47,7 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger := h.logger.WithFields(logrus.Fields{
+	logger = logger.WithFields(logrus.Fields{
 		"release.name":     reqData.Release.Name,
 		"release.version":  reqData.Release.Version,
 		"release.checksum": reqData.Release.Checksum,
@@ -69,8 +75,6 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		logger.WithField("error", err).Errorf("finding compiled release version")
-
-		log.Printf("finding compiled release version: %v", err)
 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("ERROR: finding compiled release version\n"))
@@ -105,7 +109,7 @@ func (h *CRVInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	resBytes, err := json.MarshalIndent(res, "", "  ")
 	if err != nil {
-		log.Printf("marshalling response: %v", err)
+		logger.WithField("error", err).Errorf("marshalling response")
 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("ERROR: marshalling response\n"))
@@ -132,4 +136,14 @@ func (h *CRVInfoHandler) readData(r *http.Request) (*models.CRVInfoRequestData, 
 	}
 
 	return &data.Data, nil
+}
+
+func (h *CRVInfoHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
+	logger := h.logger
+
+	if context := r.Context().Value(middleware.LoggerContext); context != nil {
+		logger = logger.WithFields(context.(logrus.Fields))
+	}
+
+	return logger
 }

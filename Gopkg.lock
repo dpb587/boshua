@@ -44,6 +44,12 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/nu7hatch/gouuid"
+  packages = ["."]
+  revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -73,6 +79,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ebe8bc210d8a290d53d4f4c268c7ba2e302c91da7f3b58e85d03484a11a36af1"
+  inputs-digest = "fcd450af5ec54484022a4e45d7cf44c31503de8c6058a77eba4beece4ef00329"
   solver-name = "gps-cdcl"
   solver-version = 1

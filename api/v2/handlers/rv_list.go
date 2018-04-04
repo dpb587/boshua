@@ -18,7 +18,11 @@ type RVListHandler struct {
 
 func NewRVListHandler(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index) http.Handler {
 	return &RVListHandler{
-		logger:              logger.WithField("package", reflect.TypeOf(RVListHandler{}).PkgPath()),
+		logger: logger.WithFields(logrus.Fields{
+			"package":          reflect.TypeOf(RVListHandler{}).PkgPath(),
+			"http.api.version": "v2",
+			"http.api.handler": "rv_list",
+		}),
 		releaseVersionIndex: releaseVersionIndex,
 	}
 }

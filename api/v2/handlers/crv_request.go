@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 
+	"github.com/dpb587/bosh-compiled-releases/api/v2/middleware"
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
 	"github.com/dpb587/bosh-compiled-releases/compiler"
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
@@ -31,23 +31,37 @@ func NewCRVRequestHandler(
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
 	return &CRVRequestHandler{
-		logger: logger.WithField("package", reflect.TypeOf(CRVRequestHandler{}).PkgPath()),
-		cc:     cc,
+		logger: logger.WithFields(logrus.Fields{
+			"package":          reflect.TypeOf(CRVRequestHandler{}).PkgPath(),
+			"http.api.version": "v2",
+			"http.api.handler": "crv_request",
+		}),
+		cc: cc,
 		releaseStemcellResolver:     releaseStemcellResolver,
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
 
 func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	logger := h.applyLoggerContext(r)
+
 	reqData, err := h.readData(r)
 	if err != nil {
-		log.Printf("processing request body: %v", err)
+		logger.WithField("error", err).Errorf("processing request body")
 
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("ERROR: processing request body\n"))
 
 		return
 	}
+
+	logger = logger.WithFields(logrus.Fields{
+		"release.name":     reqData.Release.Name,
+		"release.version":  reqData.Release.Version,
+		"release.checksum": reqData.Release.Checksum,
+		"stemcell.os":      reqData.Stemcell.OS,
+		"stemcell.version": reqData.Stemcell.Version,
+	})
 
 	var status compiler.Status
 
@@ -75,12 +89,14 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			},
 		)
 		if err == releaseversions.MissingErr || err == stemcellversions.MissingErr {
+			logger.WithField("error", err).Infof("resolving reference")
+
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(fmt.Sprintf("not found: %s\n", err)))
 
 			return
 		} else if err != nil {
-			log.Printf("resolving references: %v", err)
+			logger.WithField("error", err).Errorf("resolving reference")
 
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("ERROR: resolving reference\n"))
@@ -91,7 +107,7 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// check existing status
 		status, err = h.cc.Status(release, stemcell)
 		if err != nil {
-			log.Printf("checking compilation status: %v", err)
+			logger.WithField("error", err).Errorf("checking compilation status")
 
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("ERROR: checking compilation status\n"))
@@ -100,7 +116,7 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else if status == compiler.StatusUnknown {
 			err = h.cc.Schedule(release, stemcell)
 			if err != nil {
-				log.Printf("scheduling compiled release: %v", err)
+				logger.WithField("error", err).Errorf("scheduling compiled release")
 
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte("ERROR: scheduling compiled release"))
@@ -111,7 +127,7 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			status = compiler.StatusPending
 		}
 	} else if err != nil {
-		log.Printf("checking compiled release version: %v", err)
+		logger.WithField("error", err).Errorf("checking compiled release version")
 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("ERROR: checking compiled release version\n"))
@@ -145,7 +161,7 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		complete = true
 	}
 
-	h.writeData(w, r, models.CRVRequestResponse{
+	h.writeData(logger, w, r, models.CRVRequestResponse{
 		Status:   string(status),
 		Complete: complete,
 	})
@@ -167,10 +183,10 @@ func (h *CRVRequestHandler) readData(r *http.Request) (*models.CRVRequestRequest
 	return &data.Data, nil
 }
 
-func (h *CRVRequestHandler) writeData(w http.ResponseWriter, r *http.Request, data interface{}) {
+func (h *CRVRequestHandler) writeData(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		log.Printf("processing response body: %v", err)
+		logger.WithField("error", err).Errorf("processing response body")
 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("ERROR: processing response body\n"))
@@ -181,4 +197,14 @@ func (h *CRVRequestHandler) writeData(w http.ResponseWriter, r *http.Request, da
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataBytes)
 	w.Write([]byte("\n"))
+}
+
+func (h *CRVRequestHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
+	logger := h.logger
+
+	if context := r.Context().Value(middleware.LoggerContext); context != nil {
+		logger = logger.WithFields(context.(logrus.Fields))
+	}
+
+	return logger
 }
