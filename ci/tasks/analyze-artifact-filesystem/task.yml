@@ -14,4 +14,4 @@ run:
   path: sh
   args:
   - -c
-  - go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz > analysis/results.jsonl
+  - exec go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz > analysis/results.jsonl
