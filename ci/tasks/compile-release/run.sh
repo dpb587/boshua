@@ -34,7 +34,7 @@ bosh-director/bosh -n deploy deployment.yml
 
 bosh-director/bosh export-release "$release_name/$release_version" "$stemcell_os/$stemcell_version"
 
-bosh-director/bosh tasks --all
+bosh-director/bosh tasks --all --recent=100
 
 bosh-director/bosh task --event $( bosh-director/bosh tasks --all -r=1 --column=id ) > compiled-release/compilation.json
 

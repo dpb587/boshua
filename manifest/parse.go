@@ -29,6 +29,11 @@ func Parse(manifestBytes []byte) (*Manifest, error) {
 		}, nil
 	}
 
+	cloudProviderReleaseName, err := parseCloudProviderReleaseName(parsed)
+	if err != nil {
+		return nil, fmt.Errorf("parsing cloud provider", err)
+	}
+
 	releasesArray, ok := parsed["releases"].([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("releases is expected to be an array of hashes")
@@ -62,6 +67,40 @@ func Parse(manifestBytes []byte) (*Manifest, error) {
 		parsed:       parsed,
 		requirements: requirements,
 	}, nil
+}
+
+func parseCloudProviderReleaseName(parsed map[interface{}]interface{}) (*string, error) {
+	cloudProviderRaw, ok := parsed["cloud_provider"]
+	if !ok {
+		return nil, nil
+	}
+
+	cloudProvider, ok := cloudProviderRaw.(map[interface{}]interface{})
+	if !ok {
+		return nil, fmt.Errorf("cloud_provider is expected to be a hash: %#+v", cloudProviderRaw)
+	}
+
+	templateRaw, ok := cloudProvider["template"]
+	if !ok {
+		return nil, nil
+	}
+
+	template, ok := templateRaw.(map[interface{}]interface{})
+	if !ok {
+		return nil, fmt.Errorf("cloud_provider/template is expected to be a hash: %#+v", templateRaw)
+	}
+
+	releaseRaw, ok := template["release"]
+	if !ok {
+		return nil, nil
+	}
+
+	release, ok := releaseRaw.(string)
+	if !ok {
+		return nil, fmt.Errorf("cloud_provider/template/release is expected to be a string: %#+v", releaseRaw)
+	}
+
+	return &release, nil
 }
 
 func parseRelease(idx int, parsed map[interface{}]interface{}) (*Release, error) {
@@ -126,7 +165,7 @@ func parseStemcell(parsed map[interface{}]interface{}) (*Stemcell, error) {
 
 		stemcellStruct, ok := stemcellsSlice[0].(map[interface{}]interface{})
 		if !ok {
-			return nil, fmt.Errorf("stemcell is expected to be a hash: %#+v", stemcellStruct)
+			return nil, fmt.Errorf("stemcell is expected to be a hash: %#+v", stemcellsSlice[0])
 		}
 
 		stemcellRaw = stemcellStruct
@@ -140,7 +179,7 @@ func parseStemcell(parsed map[interface{}]interface{}) (*Stemcell, error) {
 
 		resourcePoolStruct, ok := resourcePoolsSlice[0].(map[interface{}]interface{})
 		if !ok {
-			return nil, fmt.Errorf("resource_pools is expected to be a hash: %#+v", resourcePoolsSlice)
+			return nil, fmt.Errorf("resource_pools is expected to be a hash: %#+v", resourcePoolsSlice[0])
 		}
 
 		stemcellStruct, ok := resourcePoolStruct["stemcell"].(map[interface{}]interface{})

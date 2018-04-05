@@ -24,16 +24,12 @@ func (i *index) load() error {
 	var reload bool
 	var err error
 
-	if i.inmemory == nil {
-		reload = true
-	} else {
-		reload, err = i.reloader()
-		if err != nil {
-			return fmt.Errorf("checking reloader: %v", err)
-		}
+	reload, err = i.reloader()
+	if err != nil {
+		return fmt.Errorf("checking reloader: %v", err)
 	}
 
-	if reload {
+	if reload || i.inmemory == nil {
 		return i.reload()
 	}
 
