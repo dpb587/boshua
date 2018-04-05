@@ -7,26 +7,26 @@ import (
 	"github.com/cppforlife/go-patch/patch"
 )
 
-type Release struct {
+type ReleasePatch struct {
 	Name    string `yaml:"name"`
 	Version string `yaml:"version"`
 
-	Source   ReleaseRef
-	Compiled ReleaseRef
+	Source   ReleasePatchRef
+	Compiled ReleasePatchRef
 	Stemcell Stemcell
 
 	pointer patch.Pointer
 }
 
-func (r Release) Slug() string {
+func (r ReleasePatch) Slug() string {
 	return fmt.Sprintf("%s/%s", r.Name, r.Version)
 }
 
-func (r Release) IsCompiled() bool {
+func (r ReleasePatch) IsCompiled() bool {
 	return r.Compiled.URL != ""
 }
 
-type ReleaseRef struct {
+type ReleasePatchRef struct {
 	Sha1 string `yaml:"sha1"`
 	URL  string `yaml:"url"`
 }
@@ -40,7 +40,7 @@ func (s Stemcell) Slug() string {
 	return fmt.Sprintf("%s/%s", s.OS, s.Version)
 }
 
-func (r Release) Op() patch.Op {
+func (r ReleasePatch) Op() patch.Op {
 	if strings.HasSuffix(r.pointer.String(), "/-") {
 		value := map[string]interface{}{
 			"name":    r.Name,

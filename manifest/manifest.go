@@ -8,14 +8,14 @@ import (
 
 type Manifest struct {
 	parsed       interface{}
-	requirements []Release
+	requirements []ReleasePatch
 }
 
-func (m *Manifest) Requirements() []Release {
+func (m *Manifest) Requirements() []ReleasePatch {
 	return m.requirements
 }
 
-func (m *Manifest) UpdateRelease(release Release) error {
+func (m *Manifest) UpdateRelease(release ReleasePatch) error {
 	op := release.Op()
 
 	updated, err := op.Apply(m.parsed)

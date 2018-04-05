@@ -11,7 +11,9 @@ inputs:
 outputs:
 - name: analysis
 run:
-  path: sh
+  path: bash
   args:
-  - -ce
-  - go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz > analysis/results.jsonl
+  - -c
+  - |
+    exec > analysis/results.jsonl
+    exec go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz
