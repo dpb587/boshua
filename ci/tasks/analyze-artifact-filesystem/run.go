@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -136,5 +137,5 @@ func writeResult(artifact, path string, analysis interface{}) {
 		log.Fatalf("marshaling result: %v", err)
 	}
 
-	log.Printf("%s\n", bytes)
+	fmt.Printf("%s\n", bytes)
 }

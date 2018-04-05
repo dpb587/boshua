@@ -5,7 +5,6 @@ image_resource:
     repository: dpb587/bosh-compiled-releases-v2
     tag: latest
 inputs:
-- name: env
 - name: compiled-release
 - name: bosh-compiled-releases
 outputs:
@@ -16,4 +15,4 @@ run:
   - -c
   - |
     exec > analysis/results.jsonl
-    exec go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz
+    go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz

@@ -19,9 +19,9 @@ type SVListHandler struct {
 func NewSVListHandler(logger logrus.FieldLogger, stemcellVersionIndex stemcellversions.Index) http.Handler {
 	return &SVListHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":          reflect.TypeOf(SVListHandler{}).PkgPath(),
-			"http.api.version": "v2",
-			"http.api.handler": "sv_list",
+			"package":     reflect.TypeOf(SVListHandler{}).PkgPath(),
+			"api.version": "v2",
+			"api.handler": "sv_list",
 		}),
 		stemcellVersionIndex: stemcellVersionIndex,
 	}

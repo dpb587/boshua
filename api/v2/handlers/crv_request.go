@@ -32,9 +32,9 @@ func NewCRVRequestHandler(
 ) http.Handler {
 	return &CRVRequestHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":          reflect.TypeOf(CRVRequestHandler{}).PkgPath(),
-			"http.api.version": "v2",
-			"http.api.handler": "crv_request",
+			"package":     reflect.TypeOf(CRVRequestHandler{}).PkgPath(),
+			"api.version": "v2",
+			"api.handler": "crv_request",
 		}),
 		cc: cc,
 		releaseStemcellResolver:     releaseStemcellResolver,

@@ -37,9 +37,11 @@ type Compiler struct {
 
 	PipelinePath string
 	SecretsPath  string
+
+	needsLogin bool
 }
 
-func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) error {
+func (c *Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) error {
 	pipelineName := c.pipelineName(release, stemcell)
 
 	file, err := ioutil.TempFile("", "bcr-")
@@ -80,6 +82,11 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 		return fmt.Errorf("writing temp file: %v", err)
 	}
 
+	err = c.login()
+	if err != nil {
+		return fmt.Errorf("logging in: %v", err)
+	}
+
 	_, _, err = c.runStdin(
 		bytes.NewBufferString("y\n"),
 		"set-pipeline",
@@ -103,7 +110,12 @@ func (c Compiler) Schedule(release releaseversions.ReleaseVersion, stemcell stem
 	return nil
 }
 
-func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) (Status, error) {
+func (c *Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) (Status, error) {
+	err := c.login()
+	if err != nil {
+		return StatusUnknown, fmt.Errorf("logging in: %v", err)
+	}
+
 	stdout, stderr, err := c.run(
 		"jobs",
 		"--pipeline", c.pipelineName(release, stemcell),
@@ -145,7 +157,7 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 	return StatusUnknown, errors.New("unrecognized pipeline state")
 }
 
-func (c Compiler) pipelineName(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) string {
+func (c *Compiler) pipelineName(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) string {
 	return fmt.Sprintf(
 		"bcr:%s:%s-%s-on-%s-stemcell-%s",
 		release.Checksums.Preferred(),
@@ -156,7 +168,11 @@ func (c Compiler) pipelineName(release releaseversions.ReleaseVersion, stemcell 
 	)
 }
 
-func (c Compiler) login() error {
+func (c *Compiler) login() error {
+	if !c.needsLogin {
+		return nil
+	}
+
 	args := []string{
 		"login",
 		"-c", c.URL,
@@ -174,10 +190,12 @@ func (c Compiler) login() error {
 		return fmt.Errorf("logging in: %v", err)
 	}
 
+	c.needsLogin = false
+
 	return nil
 }
 
-func (c Compiler) runStdin(stdin io.Reader, args ...string) ([]byte, []byte, error) {
+func (c *Compiler) runStdin(stdin io.Reader, args ...string) ([]byte, []byte, error) {
 	allArgs := append([]string{"-t", c.Target}, args...)
 	cmd := exec.Command("/usr/local/bin/fly", allArgs...)
 
@@ -198,12 +216,17 @@ func (c Compiler) runStdin(stdin io.Reader, args ...string) ([]byte, []byte, err
 		if len(errbuf.Bytes()) > 0 {
 			err = fmt.Errorf("%v - %s", err, string(errbuf.Bytes()))
 		}
+
+		if strings.Contains(string(errbuf.Bytes()), "not authorized.") {
+			c.needsLogin = true
+		}
+
 		return outbuf.Bytes(), errbuf.Bytes(), fmt.Errorf("cli: running %#+v: %v", allArgs, err)
 	}
 
 	return outbuf.Bytes(), errbuf.Bytes(), nil
 }
 
-func (c Compiler) run(args ...string) ([]byte, []byte, error) {
+func (c *Compiler) run(args ...string) ([]byte, []byte, error) {
 	return c.runStdin(bytes.NewBuffer(nil), args...)
 }

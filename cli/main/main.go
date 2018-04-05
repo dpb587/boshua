@@ -16,7 +16,6 @@ import (
 	stemcellversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/boshiostemcellindex"
 	"github.com/dpb587/bosh-compiled-releases/util"
-	gorillahandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -63,9 +62,9 @@ func main() {
 	// r.Handle("/v2/stemcell-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
 	// r.Handle("/v2/stemcell-version/list-compiled-releases", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
 
-	loggerContextRouter := middleware.NewLoggerContext(r)
-	loggedRouter := gorillahandlers.LoggingHandler(os.Stdout, loggerContextRouter)
+	loggingRouter := middleware.NewLogging(logger, r)
+	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)
 
-	http.Handle("/", loggedRouter)
+	http.Handle("/", loggerContextRouter)
 	http.ListenAndServe(":8080", nil)
 }

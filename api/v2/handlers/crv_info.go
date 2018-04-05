@@ -26,9 +26,9 @@ func NewCRVInfoHandler(
 ) http.Handler {
 	return &CRVInfoHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":          reflect.TypeOf(CRVInfoHandler{}).PkgPath(),
-			"http.api.version": "v2",
-			"http.api.handler": "crv_info",
+			"package":     reflect.TypeOf(CRVInfoHandler{}).PkgPath(),
+			"api.version": "v2",
+			"api.handler": "crv_info",
 		}),
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
