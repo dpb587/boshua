@@ -128,6 +128,8 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 
 	if fields[2] == "succeeded" {
 		return StatusSucceeded, nil
+	} else if fields[3] == "started" {
+		return StatusCompiling, nil
 	} else if fields[2] == "aborted" {
 		return StatusFailed, nil
 	} else if fields[2] == "failed" {
@@ -138,8 +140,6 @@ func (c Compiler) Status(release releaseversions.ReleaseVersion, stemcell stemce
 		return StatusPending, nil
 	} else if fields[2] == "n/a" && fields[3] == "n/a" {
 		return StatusPending, nil
-	} else if fields[3] == "started" {
-		return StatusCompiling, nil
 	}
 
 	return StatusUnknown, errors.New("unrecognized pipeline state")
