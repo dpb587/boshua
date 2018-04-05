@@ -13,6 +13,7 @@ import (
 
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
+	"github.com/dpb587/bosh-compiled-releases/util"
 
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
@@ -115,18 +116,8 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 		}
 
 		for _, hash := range meta4.Files[0].Hashes {
-			var hashType string
-
-			switch hash.Type {
-			case "md5":
-				hashType = "md5"
-			case "sha-1":
-				hashType = "sha1"
-			case "sha-256":
-				hashType = "sha256"
-			case "sha-512":
-				hashType = "sha512"
-			default:
+			hashType, err := util.FromMetalinkHashType(hash.Type)
+			if err != nil {
 				continue
 			}
 
