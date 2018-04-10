@@ -5,6 +5,10 @@ import (
 	"io"
 )
 
+type Analyzer interface {
+	Analyze(Writer) error
+}
+
 type Writer interface {
 	Write(result interface{}) error
 }

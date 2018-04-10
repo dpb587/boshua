@@ -13,10 +13,8 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/manifest"
 )
 
-type PatchManifest struct {
-	Server      string `long:"server" description:"Server address" default:"http://localhost:8080/" env:"CFBS_SERVER"`
-	ServerToken string `long:"server-token" description:"Server authentication token" env:"CFBS_SERVER_TOKEN"`
-	// CACert []string `long:"ca-cert" description:"Specific CA Certificate to trust"`
+type PatchManifestCmd struct {
+	cmd *Cmd
 
 	Release     []string `long:"release" description:"Only check releases matching this name"`
 	SkipRelease []string `long:"skip-release" description:"Skip releases matching this name"`
@@ -31,7 +29,7 @@ type PatchManifest struct {
 	Quiet bool `long:"quiet" description:"Suppress informational output"`
 }
 
-func (c *PatchManifest) Execute(_ []string) error {
+func (c *PatchManifestCmd) Execute(_ []string) error {
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatalf("reading stdin: %v", err)
@@ -42,7 +40,7 @@ func (c *PatchManifest) Execute(_ []string) error {
 		log.Fatalf("parsing manifest: %v", err)
 	}
 
-	client := client.New(http.DefaultClient, c.Server)
+	client := client.New(http.DefaultClient, c.cmd.Server)
 
 	for _, rel := range man.Requirements() {
 		releaseRef := models.ReleaseRef{

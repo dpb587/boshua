@@ -5,7 +5,7 @@ import (
 )
 
 type Record struct {
-	Artifact string                       `json:"artifact"`
-	Path     string                       `json:"path"`
-	Result   []checksum.ImmutableChecksum `json:"result"`
+	Artifact string                       `json:"artifact" yaml:"artifact"`
+	Path     string                       `json:"path" yaml:"path"`
+	Result   []checksum.ImmutableChecksum `json:"result" yaml:"result"`
 }

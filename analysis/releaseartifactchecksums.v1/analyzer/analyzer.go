@@ -18,6 +18,8 @@ type Analyzer struct {
 	tarball string
 }
 
+var _ analysis.Analyzer = &Analyzer{}
+
 func New(tarball string) Analyzer {
 	return Analyzer{
 		tarball: tarball,
