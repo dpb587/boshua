@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ type logging struct {
 
 func NewLogging(logger logrus.FieldLogger, handler http.Handler) http.Handler {
 	return logging{
-		logger:  logger,
+		logger:  logger.WithField("build.package", reflect.TypeOf(logging{}).PkgPath()),
 		handler: handler,
 	}
 }

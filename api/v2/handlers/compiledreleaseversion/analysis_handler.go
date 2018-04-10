@@ -1,4 +1,4 @@
-package handlers
+package compiledreleaseversion
 
 import (
 	"encoding/json"
@@ -15,26 +15,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type CRVAnalysisHandler struct {
+type AnalysisHandler struct {
 	logger                      logrus.FieldLogger
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
-func NewCRVAnalysisHandler(
+func NewAnalysisHandler(
 	logger logrus.FieldLogger,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
-	return &CRVAnalysisHandler{
+	return &AnalysisHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":     reflect.TypeOf(CRVAnalysisHandler{}).PkgPath(),
-			"api.version": "v2",
-			"api.handler": "crv_info",
+			"build.package": reflect.TypeOf(AnalysisHandler{}).PkgPath(),
+			"api.version":   "v2",
+			"api.handler":   "compiledreleaseversion/analysis",
 		}),
 		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
 	}
 }
 
-func (h *CRVAnalysisHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AnalysisHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logger := h.applyLoggerContext(r)
 
 	reqData, err := h.readData(r)
@@ -122,7 +122,7 @@ func (h *CRVAnalysisHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("\n"))
 }
 
-func (h *CRVAnalysisHandler) readData(r *http.Request) (*models.CRVInfoRequestData, error) {
+func (h *AnalysisHandler) readData(r *http.Request) (*models.CRVInfoRequestData, error) {
 	var data models.CRVInfoRequest
 
 	dataBytes, err := ioutil.ReadAll(r.Body)
@@ -138,7 +138,7 @@ func (h *CRVAnalysisHandler) readData(r *http.Request) (*models.CRVInfoRequestDa
 	return &data.Data, nil
 }
 
-func (h *CRVAnalysisHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
+func (h *AnalysisHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
 	logger := h.logger
 
 	if context := r.Context().Value(middleware.LoggerContext); context != nil {

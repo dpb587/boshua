@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/handlers"
+	handlersv2 "github.com/dpb587/bosh-compiled-releases/api/v2/handlers"
 	"github.com/dpb587/bosh-compiled-releases/api/v2/middleware"
 	"github.com/dpb587/bosh-compiled-releases/compiler"
 	compiledreleaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/aggregate"
@@ -26,7 +26,7 @@ func main() {
 	logger.Formatter = &logrus.JSONFormatter{}
 	logger.Level = logrus.DebugLevel
 
-	cc := compiler.Compiler{
+	cc := &compiler.Compiler{
 		Target:       "dpb587-nightwatch-aws-use1",
 		Insecure:     true,
 		URL:          "https://concourse.nightwatch-aws-use1.dpb.io:4443",
@@ -36,31 +36,31 @@ func main() {
 		PipelinePath: "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/ci/compilation.yml",
 		SecretsPath:  "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/pipeline-vars.yml",
 	}
-	releaseIndex := releaseversionsaggregate.New(
+	releaseVersionIndex := releaseversionsaggregate.New(
 		boshmeta4releaseindex.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release"), "git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
 		boshmeta4releaseindex.New(logger.WithField("datastore", "dpb587/ssoca-bosh-release"), "git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
 		boshioreleaseindex.New(logger.WithField("datastore", "bosh-io/releases-index"), "git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/src/github.com/bosh-io/releases-index"),
 	)
-	stemcellIndex := stemcellversionsaggregate.New(
+	stemcellVersionIndex := stemcellversionsaggregate.New(
 		boshiostemcellindex.New(logger.WithField("datastore", "bosh-io/stemcells-core-index"), "git+https://github.com/bosh-io/stemcells-core-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-core-index/published"),
 		boshiostemcellindex.New(logger.WithField("datastore", "bosh-io/stemcells-windows-index"), "git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-windows-index/published"),
 	)
-	compiledReleaseIndex := compiledreleaseversionsaggregate.New(
-		presentbcr.New(logger.WithField("datastore", "present"), releaseIndex, "git@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
-		legacybcr.New(logger.WithField("datastore", "legacy"), releaseIndex, "git@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
+	compiledReleaseVersionIndex := compiledreleaseversionsaggregate.New(
+		presentbcr.New(logger.WithField("datastore", "present"), releaseVersionIndex, "git@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
+		legacybcr.New(logger.WithField("datastore", "legacy"), releaseVersionIndex, "git@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
 	)
-	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseIndex, stemcellIndex)
+	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseVersionIndex, stemcellVersionIndex)
 
 	r := mux.NewRouter()
-	r.Handle("/v2/compiled-release-version/info", handlers.NewCRVInfoHandler(logger, compiledReleaseIndex)).Methods("POST")
-	// r.Handle("/v2/compiled-release-version/log", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
-	r.Handle("/v2/compiled-release-version/request", handlers.NewCRVRequestHandler(logger, &cc, releaseStemcellResolver, compiledReleaseIndex)).Methods("POST")
-	r.Handle("/v2/release-versions/list", handlers.NewRVListHandler(logger, releaseIndex)).Methods("POST")
-	// r.Handle("/v2/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
-	// r.Handle("/v2/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
-	r.Handle("/v2/stemcell-versions/list", handlers.NewSVListHandler(logger, stemcellIndex)).Methods("POST")
-	// r.Handle("/v2/stemcell-version/info", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
-	// r.Handle("/v2/stemcell-version/list-compiled-releases", handlers.NewCRVInfoHandler(compiledReleaseIndex)).Methods("POST")
+	handlersv2.Mount(
+		r.PathPrefix("/v2").Subrouter(),
+		logger,
+		cc,
+		releaseStemcellResolver,
+		compiledReleaseVersionIndex,
+		releaseVersionIndex,
+		stemcellVersionIndex,
+	)
 
 	loggingRouter := middleware.NewLogging(logger, r)
 	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)

@@ -1,4 +1,4 @@
-package handlers
+package stemcellversions
 
 import (
 	"encoding/json"
@@ -11,23 +11,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type SVListHandler struct {
+type ListHandler struct {
 	logger               logrus.FieldLogger
 	stemcellVersionIndex stemcellversions.Index
 }
 
-func NewSVListHandler(logger logrus.FieldLogger, stemcellVersionIndex stemcellversions.Index) http.Handler {
-	return &SVListHandler{
+func NewListHandler(logger logrus.FieldLogger, stemcellVersionIndex stemcellversions.Index) http.Handler {
+	return &ListHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":     reflect.TypeOf(SVListHandler{}).PkgPath(),
-			"api.version": "v2",
-			"api.handler": "sv_list",
+			"build.package": reflect.TypeOf(ListHandler{}).PkgPath(),
+			"api.version":   "v2",
+			"api.handler":   "stemcellversions/list",
 		}),
 		stemcellVersionIndex: stemcellVersionIndex,
 	}
 }
 
-func (h *SVListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	results, err := h.stemcellVersionIndex.List()
 	if err != nil {
 		log.Printf("listing stemcell versions: %v", err)

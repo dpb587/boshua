@@ -27,7 +27,7 @@ type index struct {
 
 func New(logger logrus.FieldLogger, metalinkRepository, localPath string) stemcellversions.Index {
 	idx := &index{
-		logger:             logger.WithField("package", reflect.TypeOf(index{}).PkgPath()),
+		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: metalinkRepository,
 		localPath:          localPath,
 	}

@@ -1,4 +1,4 @@
-package handlers
+package compiledreleaseversion
 
 import (
 	"encoding/json"
@@ -17,24 +17,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type CRVRequestHandler struct {
+type RequestHandler struct {
 	logger                      logrus.FieldLogger
 	cc                          *compiler.Compiler
 	releaseStemcellResolver     *util.ReleaseStemcellResolver
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
-func NewCRVRequestHandler(
+func NewRequestHandler(
 	logger logrus.FieldLogger,
 	cc *compiler.Compiler,
 	releaseStemcellResolver *util.ReleaseStemcellResolver,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
-	return &CRVRequestHandler{
+	return &RequestHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":     reflect.TypeOf(CRVRequestHandler{}).PkgPath(),
-			"api.version": "v2",
-			"api.handler": "crv_request",
+			"build.package": reflect.TypeOf(RequestHandler{}).PkgPath(),
+			"api.version":   "v2",
+			"api.handler":   "compiledreleaseversion/request",
 		}),
 		cc: cc,
 		releaseStemcellResolver:     releaseStemcellResolver,
@@ -42,7 +42,7 @@ func NewCRVRequestHandler(
 	}
 }
 
-func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logger := h.applyLoggerContext(r)
 
 	reqData, err := h.readData(r)
@@ -167,7 +167,7 @@ func (h *CRVRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CRVRequestHandler) readData(r *http.Request) (*models.CRVRequestRequestData, error) {
+func (h *RequestHandler) readData(r *http.Request) (*models.CRVRequestRequestData, error) {
 	var data models.CRVRequestRequest
 
 	dataBytes, err := ioutil.ReadAll(r.Body)
@@ -183,7 +183,7 @@ func (h *CRVRequestHandler) readData(r *http.Request) (*models.CRVRequestRequest
 	return &data.Data, nil
 }
 
-func (h *CRVRequestHandler) writeData(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
+func (h *RequestHandler) writeData(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		logger.WithField("error", err).Errorf("processing response body")
@@ -199,7 +199,7 @@ func (h *CRVRequestHandler) writeData(logger logrus.FieldLogger, w http.Response
 	w.Write([]byte("\n"))
 }
 
-func (h *CRVRequestHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
+func (h *RequestHandler) applyLoggerContext(r *http.Request) logrus.FieldLogger {
 	logger := h.logger
 
 	if context := r.Context().Value(middleware.LoggerContext); context != nil {

@@ -1,4 +1,4 @@
-package handlers
+package releaseversions
 
 import (
 	"encoding/json"
@@ -11,23 +11,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type RVListHandler struct {
+type ListHandler struct {
 	logger              logrus.FieldLogger
 	releaseVersionIndex releaseversions.Index
 }
 
-func NewRVListHandler(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index) http.Handler {
-	return &RVListHandler{
+func NewListHandler(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index) http.Handler {
+	return &ListHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"package":     reflect.TypeOf(RVListHandler{}).PkgPath(),
-			"api.version": "v2",
-			"api.handler": "rv_list",
+			"build.package": reflect.TypeOf(ListHandler{}).PkgPath(),
+			"api.version":   "v2",
+			"api.handler":   "releaseversions/list",
 		}),
 		releaseVersionIndex: releaseVersionIndex,
 	}
 }
 
-func (h *RVListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	results, err := h.releaseVersionIndex.List()
 	if err != nil {
 		log.Printf("listing release versions: %v", err)
