@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/dpb587/bosh-compiled-releases/analysis"
-	"github.com/dpb587/bosh-compiled-releases/analysis/artifactchecksums.v1/analyzer"
+	"github.com/dpb587/bosh-compiled-releases/analysis/releaseartifactchecksums.v1/analyzer"
 )
 
 func main() {

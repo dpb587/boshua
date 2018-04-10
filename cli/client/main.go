@@ -4,17 +4,20 @@ import (
 	"os"
 
 	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd"
+	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd/compiledrelease"
 
 	flags "github.com/jessevdk/go-flags"
 )
 
 func main() {
 	c := struct {
-		PatchManifest cmd.PatchManifest `command:"patch-manifest" description:"Patch a manifest for compiled releases"`
-		Metalink      cmd.Metalink      `command:"metalink" description:"Get a metalink for a compiled release"`
+		PatchManifest cmd.PatchManifest        `command:"patch-manifest" description:"Patch a manifest for compiled releases"`
+		Metalink      compiledrelease.Metalink `command:"metalink" description:"Get a metalink for a compiled release"`
+		Download      compiledrelease.Download `command:"download" description:"Download a compiled release"`
 	}{
 		PatchManifest: cmd.PatchManifest{},
-		Metalink:      cmd.Metalink{},
+		Metalink:      compiledrelease.Metalink{},
+		Download:      compiledrelease.Download{},
 	}
 
 	var parser = flags.NewParser(&c, flags.Default)

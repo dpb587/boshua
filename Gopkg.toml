@@ -1,7 +1,8 @@
 [prune]
-  unused-packages = true
+  go-tests = true
   non-go = true
+  unused-packages = true
 
 [[constraint]]
+  branch = "master"
   name = "github.com/dpb587/metalink"
-  version = "0.2.0"

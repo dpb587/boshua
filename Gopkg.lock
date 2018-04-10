@@ -2,9 +2,31 @@
 
 
 [[projects]]
+  name = "github.com/bmatcuk/doublestar"
+  packages = ["."]
+  revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
+  version = "v1.0.9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/charlievieth/fs"
+  packages = ["."]
+  revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
+
+[[projects]]
+  name = "github.com/cheggaaa/pb"
+  packages = ["."]
+  revision = "c112833d014c77e8bde723fd0158e3156951639f"
+  version = "v2.0.6"
+
+[[projects]]
   branch = "master"
   name = "github.com/cloudfoundry/bosh-utils"
-  packages = ["errors"]
+  packages = [
+    "errors",
+    "logger",
+    "system"
+  ]
   revision = "c6a922e299b8eb5eaadad8a2842e3ab7e043dc5d"
 
 [[projects]]
@@ -14,22 +36,41 @@
   revision = "250da0e0e68ce3367b4302f34218f6c064eb9559"
 
 [[projects]]
+  branch = "master"
   name = "github.com/dpb587/metalink"
+  packages = [
+    ".",
+    "file",
+    "file/metaurl",
+    "file/url",
+    "file/url/defaultloader",
+    "file/url/file",
+    "file/url/ftp",
+    "file/url/http",
+    "file/url/s3",
+    "transfer",
+    "verification",
+    "verification/hash"
+  ]
+  revision = "4ceb93bfa6ddb7ed4fc2c1cdea25ed2961170e34"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
   packages = ["."]
-  revision = "482927015674c714e3759d7cd91566dd099a0ac3"
-  version = "v0.2.0"
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "5e9692864e22d02ac79e2fa499cffb00520b4fea"
+  version = "v1.34.0"
 
 [[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
   revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
   version = "v1.1"
-
-[[projects]]
-  name = "github.com/gorilla/handlers"
-  packages = ["."]
-  revision = "90663712d74cb411cbef281bc1e08c19d1a76145"
-  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/gorilla/mux"
@@ -45,9 +86,53 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/jlaffaye/ftp"
+  packages = ["."]
+  revision = "2403248fa8cc9f7909862627aa7337f13f8e0bf1"
+
+[[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
+  name = "github.com/minio/minio-go"
+  packages = [
+    ".",
+    "pkg/credentials",
+    "pkg/encrypt",
+    "pkg/policy",
+    "pkg/s3signer",
+    "pkg/s3utils",
+    "pkg/set"
+  ]
+  revision = "e163d8055f79cf2a9b8af9d358b2814f21fd0472"
+  version = "4.0.5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
+  branch = "master"
   name = "github.com/nu7hatch/gouuid"
   packages = ["."]
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -71,6 +156,42 @@
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
+  name = "gopkg.in/VividCortex/ewma.v1"
+  packages = ["."]
+  revision = "b24eb346a94c3ba12c1da1e564dbac1b498a77ce"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "gopkg.in/cheggaaa/pb.v2"
+  packages = ["termutil"]
+  revision = "c112833d014c77e8bde723fd0158e3156951639f"
+  version = "v2.0.6"
+
+[[projects]]
+  name = "gopkg.in/fatih/color.v1"
+  packages = ["."]
+  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
+  version = "v1.6.0"
+
+[[projects]]
+  name = "gopkg.in/mattn/go-colorable.v0"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "gopkg.in/mattn/go-isatty.v0"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
+  name = "gopkg.in/mattn/go-runewidth.v0"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
@@ -79,6 +200,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fcd450af5ec54484022a4e45d7cf44c31503de8c6058a77eba4beece4ef00329"
+  inputs-digest = "05850d360290f91ba3b67be67409227141b405adc25eeaeed21de748c8059401"
   solver-name = "gps-cdcl"
   solver-version = 1
