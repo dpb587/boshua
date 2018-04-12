@@ -6,10 +6,12 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+
 	"github.com/cppforlife/go-patch/patch"
 )
 
-func Parse(manifestBytes []byte) (*Manifest, error) {
+func Parse(manifestBytes []byte, localStemcell stemcellversions.StemcellVersionRef) (*Manifest, error) {
 	var parsed parseManifest
 
 	err := yaml.Unmarshal(manifestBytes, &parsed)
@@ -73,9 +75,10 @@ func Parse(manifestBytes []byte) (*Manifest, error) {
 			// already compiled; ignore
 			continue
 		} else if cloudProviderReleaseInstalled && release.Name == cloudProviderRelease.Release {
-			// TODO if remote and local match, we should use it
-			// used by both remote and local; ignore
-			continue
+			if localStemcell.OS != stemcell.OS || localStemcell.Version != stemcell.Version {
+				// used by both remote and local; ignore for now
+				continue
+			}
 		}
 
 		releasePatch := ReleasePatch{

@@ -4,43 +4,56 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/client"
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
+	"github.com/dpb587/bosh-compiled-releases/cli/client/args"
+	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 	"github.com/dpb587/bosh-compiled-releases/manifest"
 )
 
 type PatchManifestCmd struct {
-	cmd *Cmd
+	*CmdOpts `no-flag:"true"`
 
-	Release     []string `long:"release" description:"Only check releases matching this name"`
-	SkipRelease []string `long:"skip-release" description:"Skip releases matching this name"`
+	Release     []string `long:"release" description:"Only check the release(s) matching this name (glob-friendly)"`
+	SkipRelease []string `long:"skip-release" description:"Skip the release(s) matching this name (glob-friendly)"`
 
-	LocalStemcellOS      string `long:"local-stemcell-os" description:"Explicit local stemcell operating system (for init manifests)"`
-	LocalStemcellVersion string `long:"local-stemcell-version" description:"Explicit local stemcell version (for init manifests)"`
+	LocalStemcell args.Stemcell `long:"local-stemcell" description:"Explicit local stemcell OS and version (used for bootstrap manifests)"`
 
+	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
 	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
 	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
-	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
-
-	Quiet bool `long:"quiet" description:"Suppress informational output"`
 }
 
 func (c *PatchManifestCmd) Execute(_ []string) error {
+	localStemcell := stemcellversions.StemcellVersionRef{
+		OS:      c.LocalStemcell.OS,
+		Version: c.LocalStemcell.Version,
+	}
+
+	if localStemcell.Version == "" {
+		bytes, err := ioutil.ReadFile("/var/vcap/bosh/etc/stemcell_version")
+		if err != nil {
+			if _, ok := err.(*os.PathError); !ok {
+				log.Fatalf("reading stemcell_version")
+			}
+		}
+
+		localStemcell.Version = string(bytes)
+	}
+
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatalf("reading stdin: %v", err)
 	}
 
-	man, err := manifest.Parse(bytes)
+	man, err := manifest.Parse(bytes, localStemcell)
 	if err != nil {
 		log.Fatalf("parsing manifest: %v", err)
 	}
 
-	client := client.New(http.DefaultClient, c.cmd.Server)
+	apiclient := c.AppOpts.GetClient()
 
 	for _, rel := range man.Requirements() {
 		releaseRef := models.ReleaseRef{
@@ -53,7 +66,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			Version: rel.Stemcell.Version,
 		}
 
-		resInfo, err := client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+		resInfo, err := apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
 				Release:  releaseRef,
 				Stemcell: stemcellRef,
@@ -69,7 +82,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			priorStatus := "unknown"
 
 			for {
-				res, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
+				res, err := apiclient.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
 						Release:  releaseRef,
 						Stemcell: stemcellRef,
@@ -99,7 +112,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 				continue
 			}
 
-			resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
+			resInfo, err = apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 				Data: models.CRVInfoRequestData{
 					Release:  releaseRef,
 					Stemcell: stemcellRef,

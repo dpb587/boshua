@@ -6,6 +6,10 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd/opts"
 )
 
+type CmdOpts struct {
+	AppOpts *opts.Opts
+}
+
 type Cmd struct {
 	*opts.Opts
 
@@ -21,6 +25,12 @@ func New() *Cmd {
 
 	cmd.AnalysisCmd = analysis.New(cmd.Opts)
 	cmd.CompiledReleaseCmd = compiledrelease.New(cmd.Opts)
+
+	cmdOpts := &CmdOpts{
+		AppOpts: cmd.Opts,
+	}
+
+	cmd.PatchManifestCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

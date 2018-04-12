@@ -8,17 +8,20 @@ import (
 	"strings"
 
 	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
+	"github.com/sirupsen/logrus"
 )
 
 type Client struct {
 	client   *http.Client
 	endpoint string
+	logger   logrus.FieldLogger
 }
 
-func New(client *http.Client, endpoint string) *Client {
+func New(client *http.Client, endpoint string, logger logrus.FieldLogger) *Client {
 	return &Client{
 		client:   client,
 		endpoint: endpoint,
+		logger:   logger,
 	}
 }
 
