@@ -50,55 +50,61 @@ jobs:
         file: bosh-compiled-releases/ci/tasks/generate-analysis/task.yml
         params:
           analyzer: releaseartifactchecksums.v1
-      - task: publish-analysis
-        file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
-        params:
-          storage: ((index_storage))
-          analyzer: releaseartifactchecksums.v1
-          s3_bucket: ((s3_bucket))
-          s3_host: ((s3_host))
-          s3_access_key: ((s3_access_key))
-          s3_secret_key: ((s3_secret_key))
-      - put: index
-        params:
-          repository: index
-          rebase: true
+      - do:
+        - task: publish-analysis
+          file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
+          params:
+            storage: ((index_storage))
+            analyzer: releaseartifactchecksums.v1
+            s3_bucket: ((s3_bucket))
+            s3_host: ((s3_host))
+            s3_access_key: ((s3_access_key))
+            s3_secret_key: ((s3_secret_key))
+        - put: index
+          params:
+            repository: index
+            rebase: true
+        attempts: 9
     - do:
       - task: analyze-releaseartifactfilestat.v1
         file: bosh-compiled-releases/ci/tasks/generate-analysis/task.yml
         params:
           analyzer: releaseartifactfilestat.v1
-      - task: publish-analysis
-        file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
-        params:
-          storage: ((index_storage))
-          analyzer: releaseartifactfilestat.v1
-          s3_bucket: ((s3_bucket))
-          s3_host: ((s3_host))
-          s3_access_key: ((s3_access_key))
-          s3_secret_key: ((s3_secret_key))
-      - put: index
-        params:
-          repository: index
-          rebase: true
+      - do:
+        - task: publish-analysis
+          file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
+          params:
+            storage: ((index_storage))
+            analyzer: releaseartifactfilestat.v1
+            s3_bucket: ((s3_bucket))
+            s3_host: ((s3_host))
+            s3_access_key: ((s3_access_key))
+            s3_secret_key: ((s3_secret_key))
+        - put: index
+          params:
+            repository: index
+            rebase: true
+        attempts: 9
     - do:
       - task: analyze-releasemanifests.v1
         file: bosh-compiled-releases/ci/tasks/generate-analysis/task.yml
         params:
           analyzer: releasemanifests.v1
-      - task: publish-analysis
-        file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
-        params:
-          storage: ((index_storage))
-          analyzer: releasemanifests.v1
-          s3_bucket: ((s3_bucket))
-          s3_host: ((s3_host))
-          s3_access_key: ((s3_access_key))
-          s3_secret_key: ((s3_secret_key))
-      - put: index
-        params:
-          repository: index
-          rebase: true
+      - do:
+        - task: publish-analysis
+          file: bosh-compiled-releases/ci/tasks/publish-analysis/task.yml
+          params:
+            storage: ((index_storage))
+            analyzer: releasemanifests.v1
+            s3_bucket: ((s3_bucket))
+            s3_host: ((s3_host))
+            s3_access_key: ((s3_access_key))
+            s3_secret_key: ((s3_secret_key))
+        - put: index
+          params:
+            repository: index
+            rebase: true
+        attempts: 9
 resources:
 - name: bosh-deployment
   check_every: 24h
