@@ -22,3 +22,4 @@ RUN true \
   && curl -fLo $HOME/.bosh/downloads/9f38ce54a268f99e2d6e37723d813fce3457b970-cbbf73c102b1f27d3db15d95bc971b2b4995c78e https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-google-cpi-release?v=27.0.0 \
     && echo "cbbf73c102b1f27d3db15d95bc971b2b4995c78e  $HOME/.bosh/downloads/9f38ce54a268f99e2d6e37723d813fce3457b970-cbbf73c102b1f27d3db15d95bc971b2b4995c78e" | sha1sum -c - \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ADD boshua /bin/boshua

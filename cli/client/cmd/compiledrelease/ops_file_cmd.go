@@ -13,6 +13,8 @@ type OpsFileCmd struct {
 }
 
 func (c *OpsFileCmd) Execute(_ []string) error {
+	c.AppOpts.ConfigureLogger("compiled-release/ops-file")
+
 	resInfo, err := c.CompiledReleaseOpts.GetCompiledReleaseVersion(c.AppOpts.GetClient())
 	if err != nil {
 		log.Fatalf("requesting compiled version info: %v", err)
@@ -28,7 +30,7 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 				"name":    resInfo.Data.Release.Name,
 				"version": resInfo.Data.Release.Version,
 				"sha1":    strings.TrimPrefix(string(resInfo.Data.Tarball.Checksums[0]), "sha1:"), // TODO .Preferred()
-				"url":     resInfo.Data.Tarball.URL,
+				"url":     resInfo.Data.Tarball.URLs[0],
 				"stemcell": map[string]string{
 					"os":      resInfo.Data.Stemcell.OS,
 					"version": resInfo.Data.Stemcell.Version,

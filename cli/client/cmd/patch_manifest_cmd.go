@@ -27,6 +27,8 @@ type PatchManifestCmd struct {
 }
 
 func (c *PatchManifestCmd) Execute(_ []string) error {
+	c.AppOpts.ConfigureLogger("patch-manifest")
+
 	localStemcell := stemcellversions.StemcellVersionRef{
 		OS:      c.LocalStemcell.OS,
 		Version: c.LocalStemcell.Version,
@@ -126,7 +128,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 		}
 
 		rel.Compiled.Sha1 = string(resInfo.Data.Tarball.Checksums[0])
-		rel.Compiled.URL = resInfo.Data.Tarball.URL
+		rel.Compiled.URL = resInfo.Data.Tarball.URLs[0]
 
 		err = man.UpdateRelease(rel)
 		if err != nil {

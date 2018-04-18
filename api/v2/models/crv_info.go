@@ -22,7 +22,7 @@ type CRVInfoResponseData struct {
 }
 
 type CRVInfoResponseDataCompiled struct {
-	URL       string     `json:"url"`
+	URLs      []string   `json:"urls"`
 	Size      *uint64    `json:"size,omitempty"`
 	Published *time.Time `json:"published,omitempty"`
 	Checksums Checksums  `json:"checksums"`

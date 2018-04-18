@@ -16,7 +16,7 @@ func createMetalink(resInfo *models.CRVInfoResponse) metalink.Metalink {
 				Version: resInfo.Data.Release.Version,
 				URLs: []metalink.URL{
 					{
-						URL: resInfo.Data.Tarball.URL,
+						URL: resInfo.Data.Tarball.URLs[0],
 					},
 				},
 			},

@@ -1,4 +1,4 @@
-package boshmeta4releaseindex
+package meta4index
 
 import (
 	"bytes"
@@ -85,7 +85,7 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/releases/**/*.meta4", i.localPath))
+	paths, err := filepath.Glob(filepath.Join(i.localPath, "*.meta4"))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}

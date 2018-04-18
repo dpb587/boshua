@@ -20,6 +20,8 @@ type DownloadCmd struct {
 }
 
 func (c *DownloadCmd) Execute(_ []string) error {
+	c.AppOpts.ConfigureLogger("compiled-release/download")
+
 	resInfo, err := c.CompiledReleaseOpts.GetCompiledReleaseVersion(c.AppOpts.GetClient())
 	if err != nil {
 		log.Fatalf("requesting compiled version info: %v", err)

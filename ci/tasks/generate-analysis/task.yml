@@ -15,4 +15,6 @@ run:
   - -c
   - |
     exec > analysis/results.jsonl
-    go run bosh-compiled-releases/ci/tasks/analyze-artifact-filesystem/run.go compiled-release/*.tgz
+    boshua analysis --analyzer=$analyzer generate compiled-release/*.tgz
+params:
+  analyzer: ~

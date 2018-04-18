@@ -26,17 +26,25 @@ func (o *Opts) GetClient() *client.Client {
 
 func (o *Opts) GetLogger() logrus.FieldLogger {
 	if o.logger == nil {
-		o.createLogger()
+		panic("logger is not configured")
 	}
 
 	return o.logger
 }
 
-func (o *Opts) createLogger() {
+func (o *Opts) ConfigureLogger(command string) {
+	if o.logger != nil {
+		panic("logger is already configured")
+	}
+
 	var logger = logrus.New()
 	logger.Out = os.Stderr
 	logger.Formatter = &logrus.JSONFormatter{}
 	logger.Level = logrus.Level(o.LogLevel)
 
-	o.logger = logger
+	o.logger = logger.WithField("cli.command", command)
+}
+
+func (o *Opts) createLogger() {
+
 }

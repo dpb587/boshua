@@ -12,7 +12,7 @@ import (
 	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/presentbcr"
 	releaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshioreleaseindex"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshmeta4releaseindex"
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/meta4index"
 	stemcellversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
 	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/boshiostemcellindex"
 	"github.com/dpb587/bosh-compiled-releases/util"
@@ -37,8 +37,9 @@ func main() {
 		SecretsPath:  "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/pipeline-vars.yml",
 	}
 	releaseVersionIndex := releaseversionsaggregate.New(
-		boshmeta4releaseindex.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release"), "git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
-		boshmeta4releaseindex.New(logger.WithField("datastore", "dpb587/ssoca-bosh-release"), "git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
+		meta4index.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release"), "git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
+		meta4index.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release#artifacts"), "git+https://github.com/dpb587/openvpn-bosh-release.git//release/stable#artifacts", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release-artifacts/release/stable"),
+		meta4index.New(logger.WithField("datastore", "dpb587/ssoca-bosh-release"), "git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
 		boshioreleaseindex.New(logger.WithField("datastore", "bosh-io/releases-index"), "git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/src/github.com/bosh-io/releases-index"),
 	)
 	stemcellVersionIndex := stemcellversionsaggregate.New(
@@ -46,8 +47,8 @@ func main() {
 		boshiostemcellindex.New(logger.WithField("datastore", "bosh-io/stemcells-windows-index"), "git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-windows-index/published"),
 	)
 	compiledReleaseVersionIndex := compiledreleaseversionsaggregate.New(
-		presentbcr.New(logger.WithField("datastore", "present"), releaseVersionIndex, "git@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
-		legacybcr.New(logger.WithField("datastore", "legacy"), releaseVersionIndex, "git@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
+		presentbcr.New(logger.WithField("datastore", "present"), releaseVersionIndex, "git+ssh@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
+		legacybcr.New(logger.WithField("datastore", "legacy"), releaseVersionIndex, "git+ssh@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
 	)
 	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseVersionIndex, stemcellVersionIndex)
 

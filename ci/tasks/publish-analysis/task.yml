@@ -15,7 +15,7 @@ run:
   path: bosh-compiled-releases/ci/tasks/publish-analysis/run.sh
 params:
   storage: ~
-  analysis: ~
+  analyzer: ~
   s3_bucket: ~
   s3_host: ~
   s3_access_key: ~

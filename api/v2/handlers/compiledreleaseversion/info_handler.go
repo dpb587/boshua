@@ -99,7 +99,9 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Release:  reqData.Release,
 			Stemcell: reqData.Stemcell,
 			Tarball: models.CRVInfoResponseDataCompiled{
-				URL:       result.TarballURL,
+				URLs: []string{
+					result.TarballURL,
+				},
 				Size:      result.TarballSize,
 				Published: result.TarballPublished,
 				Checksums: checksums,
