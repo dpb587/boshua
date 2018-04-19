@@ -1,6 +1,6 @@
 package inmemory
 
-import "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+import "github.com/dpb587/boshua/datastore/releaseversions"
 
 type Loader func() ([]releaseversions.ReleaseVersion, error)
 type Reloader func() (bool, error)

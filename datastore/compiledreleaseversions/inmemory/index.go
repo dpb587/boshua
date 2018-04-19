@@ -3,8 +3,8 @@ package inmemory
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
+	"github.com/dpb587/boshua/datastore/releaseversions"
 )
 
 type index struct {

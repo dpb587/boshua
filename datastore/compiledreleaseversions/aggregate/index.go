@@ -3,7 +3,7 @@ package aggregate
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
 )
 
 type index struct {

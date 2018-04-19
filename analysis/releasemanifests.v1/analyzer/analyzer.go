@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dpb587/bosh-compiled-releases/analysis"
-	releasemanifests "github.com/dpb587/bosh-compiled-releases/analysis/releasemanifests.v1"
+	"github.com/dpb587/boshua/analysis"
+	releasemanifests "github.com/dpb587/boshua/analysis/releasemanifests.v1"
 	yaml "gopkg.in/yaml.v2"
 )
 

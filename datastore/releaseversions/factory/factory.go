@@ -3,9 +3,9 @@ package factory
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshio"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/meta4"
+	"github.com/dpb587/boshua/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/releaseversions/boshio"
+	"github.com/dpb587/boshua/datastore/releaseversions/meta4"
 	"github.com/sirupsen/logrus"
 )
 

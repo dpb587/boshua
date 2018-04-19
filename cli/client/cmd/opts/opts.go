@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/client"
-	"github.com/dpb587/bosh-compiled-releases/cli/client/args"
+	"github.com/dpb587/boshua/api/v2/client"
+	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/sirupsen/logrus"
 )
 

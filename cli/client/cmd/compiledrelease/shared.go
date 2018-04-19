@@ -3,8 +3,8 @@ package compiledrelease
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
-	"github.com/dpb587/bosh-compiled-releases/util"
+	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/util"
 	"github.com/dpb587/metalink"
 )
 

@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/api/v2/handlers/compiledreleaseversion"
-	"github.com/dpb587/bosh-compiled-releases/api/v2/handlers/releaseversions"
-	"github.com/dpb587/bosh-compiled-releases/api/v2/handlers/stemcellversions"
-	"github.com/dpb587/bosh-compiled-releases/compiler"
-	compiledreleaseversionsds "github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
-	releaseversionsds "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
-	stemcellversionsds "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
-	"github.com/dpb587/bosh-compiled-releases/util"
+	"github.com/dpb587/boshua/api/v2/handlers/compiledreleaseversion"
+	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
+	"github.com/dpb587/boshua/api/v2/handlers/stemcellversions"
+	"github.com/dpb587/boshua/compiler"
+	compiledreleaseversionsds "github.com/dpb587/boshua/datastore/compiledreleaseversions"
+	releaseversionsds "github.com/dpb587/boshua/datastore/releaseversions"
+	stemcellversionsds "github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/util"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )

@@ -3,7 +3,7 @@ package args
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/checksum"
+	"github.com/dpb587/boshua/checksum"
 )
 
 type Checksum struct {

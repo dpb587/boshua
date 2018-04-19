@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/inmemory"
+	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/datastore/stemcellversions/inmemory"
 
 	"github.com/sirupsen/logrus"
 )

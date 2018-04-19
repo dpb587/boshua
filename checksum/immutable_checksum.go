@@ -3,7 +3,7 @@ package checksum
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/checksum/algorithm"
+	"github.com/dpb587/boshua/checksum/algorithm"
 )
 
 type ImmutableChecksum struct {

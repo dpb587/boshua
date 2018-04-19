@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd"
+	"github.com/dpb587/boshua/cli/client/cmd"
 
 	flags "github.com/jessevdk/go-flags"
 )

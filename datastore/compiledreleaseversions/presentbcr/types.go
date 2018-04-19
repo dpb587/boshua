@@ -1,7 +1,7 @@
 package presentbcr
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/releaseversions"
 )
 
 type Record struct {

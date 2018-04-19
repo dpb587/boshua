@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
+	"github.com/dpb587/boshua/api/v2/models"
 	uuid "github.com/nu7hatch/gouuid"
 	"github.com/sirupsen/logrus"
 )

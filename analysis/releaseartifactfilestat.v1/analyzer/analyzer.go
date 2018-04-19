@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/analysis"
-	releaseartifactfilestat "github.com/dpb587/bosh-compiled-releases/analysis/releaseartifactfilestat.v1"
+	"github.com/dpb587/boshua/analysis"
+	releaseartifactfilestat "github.com/dpb587/boshua/analysis/releaseartifactfilestat.v1"
 )
 
 type Analyzer struct {

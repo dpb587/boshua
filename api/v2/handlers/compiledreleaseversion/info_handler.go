@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/middleware"
-	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
+	"github.com/dpb587/boshua/api/v2/middleware"
+	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
+	"github.com/dpb587/boshua/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/stemcellversions"
 	"github.com/sirupsen/logrus"
 )
 

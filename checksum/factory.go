@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dpb587/bosh-compiled-releases/checksum/algorithm"
+	"github.com/dpb587/boshua/checksum/algorithm"
 )
 
 func New(a algorithm.Algorithm) *WritableChecksum {

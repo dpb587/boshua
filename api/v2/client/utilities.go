@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
+	"github.com/dpb587/boshua/api/v2/models"
 )
 
 func RequestAndWait(client *Client, releaseRef models.ReleaseRef, stemcellRef models.StemcellRef) (*models.CRVInfoResponse, error) {

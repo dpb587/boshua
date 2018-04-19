@@ -1,6 +1,6 @@
 package meta4
 
-import "github.com/dpb587/bosh-compiled-releases/util/config"
+import "github.com/dpb587/boshua/util/config"
 
 type Config struct {
 	config.Config

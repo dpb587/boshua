@@ -8,10 +8,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dpb587/bosh-compiled-releases/analysis"
-	releaseartifactchecksums "github.com/dpb587/bosh-compiled-releases/analysis/releaseartifactchecksums.v1"
-	"github.com/dpb587/bosh-compiled-releases/checksum"
-	"github.com/dpb587/bosh-compiled-releases/checksum/algorithm"
+	"github.com/dpb587/boshua/analysis"
+	releaseartifactchecksums "github.com/dpb587/boshua/analysis/releaseartifactchecksums.v1"
+	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/checksum/algorithm"
 )
 
 type Analyzer struct {

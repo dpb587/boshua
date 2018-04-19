@@ -4,7 +4,7 @@ import (
 	"encoding"
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/checksum/algorithm"
+	"github.com/dpb587/boshua/checksum/algorithm"
 )
 
 type Checksum interface {

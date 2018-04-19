@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd/analysis"
-	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd/compiledrelease"
-	"github.com/dpb587/bosh-compiled-releases/cli/client/cmd/opts"
+	"github.com/dpb587/boshua/cli/client/cmd/analysis"
+	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease"
+	"github.com/dpb587/boshua/cli/client/cmd/opts"
 )
 
 type CmdOpts struct {

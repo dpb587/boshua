@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/bosh-compiled-releases/api/v2/models"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/datastore/releaseversions"
 	"github.com/sirupsen/logrus"
 )
 

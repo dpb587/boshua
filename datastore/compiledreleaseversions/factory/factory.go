@@ -3,10 +3,10 @@ package factory
 import (
 	"fmt"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/legacybcr"
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/presentbcr"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions/legacybcr"
+	"github.com/dpb587/boshua/datastore/compiledreleaseversions/presentbcr"
+	"github.com/dpb587/boshua/datastore/releaseversions"
 	"github.com/sirupsen/logrus"
 )
 

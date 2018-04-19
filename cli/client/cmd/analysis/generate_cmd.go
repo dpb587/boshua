@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dpb587/bosh-compiled-releases/analysis"
-	releaseartifactchecksumsv1 "github.com/dpb587/bosh-compiled-releases/analysis/releaseartifactchecksums.v1/analyzer"
-	releaseartifactfilestatv1 "github.com/dpb587/bosh-compiled-releases/analysis/releaseartifactfilestat.v1/analyzer"
-	releasemanifestsv1 "github.com/dpb587/bosh-compiled-releases/analysis/releasemanifests.v1/analyzer"
+	"github.com/dpb587/boshua/analysis"
+	releaseartifactchecksumsv1 "github.com/dpb587/boshua/analysis/releaseartifactchecksums.v1/analyzer"
+	releaseartifactfilestatv1 "github.com/dpb587/boshua/analysis/releaseartifactfilestat.v1/analyzer"
+	releasemanifestsv1 "github.com/dpb587/boshua/analysis/releasemanifests.v1/analyzer"
 )
 
 type GenerateCmd struct {

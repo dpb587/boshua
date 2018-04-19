@@ -1,7 +1,7 @@
 package releaseartifactchecksums
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/checksum"
+	"github.com/dpb587/boshua/checksum"
 )
 
 type Record struct {

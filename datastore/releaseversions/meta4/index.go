@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/inmemory"
-	"github.com/dpb587/bosh-compiled-releases/util"
+	"github.com/dpb587/boshua/datastore/releaseversions"
+	"github.com/dpb587/boshua/datastore/releaseversions/inmemory"
+	"github.com/dpb587/boshua/util"
 
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
