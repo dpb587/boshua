@@ -1,23 +1,28 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
 	handlersv2 "github.com/dpb587/bosh-compiled-releases/api/v2/handlers"
 	"github.com/dpb587/bosh-compiled-releases/api/v2/middleware"
 	"github.com/dpb587/bosh-compiled-releases/compiler"
+	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions"
 	compiledreleaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/aggregate"
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/legacybcr"
-	"github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/presentbcr"
+	compiledreleaseversionsfactory "github.com/dpb587/bosh-compiled-releases/datastore/compiledreleaseversions/factory"
+	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions"
 	releaseversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/aggregate"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/boshioreleaseindex"
-	"github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/meta4index"
+	releaseversionsfactory "github.com/dpb587/bosh-compiled-releases/datastore/releaseversions/factory"
+	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 	stemcellversionsaggregate "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/aggregate"
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/boshiostemcellindex"
+	stemcellversionsfactory "github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions/factory"
+	"github.com/dpb587/bosh-compiled-releases/server/config"
 	"github.com/dpb587/bosh-compiled-releases/util"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -26,42 +31,84 @@ func main() {
 	logger.Formatter = &logrus.JSONFormatter{}
 	logger.Level = logrus.DebugLevel
 
-	cc := &compiler.Compiler{
-		Target:       "dpb587-nightwatch-aws-use1",
-		Insecure:     true,
-		URL:          "https://concourse.nightwatch-aws-use1.dpb.io:4443",
-		Team:         "main",
-		Username:     "concourse",
-		Password:     "0ac23mfhem569wpbau6r",
-		PipelinePath: "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/ci/compilation.yml",
-		SecretsPath:  "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases/pipeline-vars.yml",
+	serverConfigBytes, err := ioutil.ReadFile(os.Args[1])
+	if err != nil {
+		log.Panicf("reading config: %v", err)
 	}
-	releaseVersionIndex := releaseversionsaggregate.New(
-		meta4index.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release"), "git+https://github.com/dpb587/openvpn-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release"),
-		meta4index.New(logger.WithField("datastore", "dpb587/openvpn-bosh-release#artifacts"), "git+https://github.com/dpb587/openvpn-bosh-release.git//release/stable#artifacts", "/Users/dpb587/Projects/src/github.com/dpb587/openvpn-bosh-release-artifacts/release/stable"),
-		meta4index.New(logger.WithField("datastore", "dpb587/ssoca-bosh-release"), "git+https://github.com/dpb587/ssoca-bosh-release.git//", "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release"),
-		boshioreleaseindex.New(logger.WithField("datastore", "bosh-io/releases-index"), "git+https://github.com/bosh-io/releases-index.git//", "/Users/dpb587/Projects/src/github.com/bosh-io/releases-index"),
-	)
-	stemcellVersionIndex := stemcellversionsaggregate.New(
-		boshiostemcellindex.New(logger.WithField("datastore", "bosh-io/stemcells-core-index"), "git+https://github.com/bosh-io/stemcells-core-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-core-index/published"),
-		boshiostemcellindex.New(logger.WithField("datastore", "bosh-io/stemcells-windows-index"), "git+https://github.com/bosh-io/stemcells-windows-index.git//published/", "/Users/dpb587/Projects/src/github.com/bosh-io/stemcells-windows-index/published"),
-	)
-	compiledReleaseVersionIndex := compiledreleaseversionsaggregate.New(
-		presentbcr.New(logger.WithField("datastore", "present"), releaseVersionIndex, "git+ssh@github.com:dpb587/bosh-compiled-releases-index.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases-index"),
-		legacybcr.New(logger.WithField("datastore", "legacy"), releaseVersionIndex, "git+ssh@github.com:dpb587/bosh-compiled-releases.git", "/Users/dpb587/Projects/src/github.com/dpb587/bosh-compiled-releases.gopath/src/github.com/dpb587/bosh-compiled-releases"),
-	)
-	releaseStemcellResolver := util.NewReleaseStemcellResolver(releaseVersionIndex, stemcellVersionIndex)
+
+	var serverConfig config.Config
+	err = yaml.Unmarshal(serverConfigBytes, &serverConfig)
+	if err != nil {
+		log.Panicf("parsing config: %v", err)
+	}
+
+	cc := &compiler.Compiler{
+		Target:       serverConfig.Concourse.Target,
+		Insecure:     serverConfig.Concourse.Insecure,
+		URL:          serverConfig.Concourse.URL,
+		Team:         serverConfig.Concourse.Team,
+		Username:     serverConfig.Concourse.Username,
+		Password:     serverConfig.Concourse.Password,
+		PipelinePath: serverConfig.Concourse.PipelinePath,
+		SecretsPath:  serverConfig.Concourse.SecretsPath,
+	}
+
+	var rv releaseversions.Index
+
+	{
+		var all []releaseversions.Index
+		factory := releaseversionsfactory.New(logger)
+
+		for _, cfg := range serverConfig.Releases {
+			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+			if err != nil {
+				log.Panicf("creating release version: %v", err)
+			}
+
+			all = append(all, idx)
+		}
+
+		rv = releaseversionsaggregate.New(all...)
+	}
+
+	var sv stemcellversions.Index
+
+	{
+		var all []stemcellversions.Index
+		factory := stemcellversionsfactory.New(logger)
+
+		for _, cfg := range serverConfig.Stemcells {
+			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+			if err != nil {
+				log.Panicf("creating stemcell version: %v", err)
+			}
+
+			all = append(all, idx)
+		}
+
+		sv = stemcellversionsaggregate.New(all...)
+	}
+
+	var crv compiledreleaseversions.Index
+
+	{
+		var all []compiledreleaseversions.Index
+		factory := compiledreleaseversionsfactory.New(logger, rv)
+
+		for _, cfg := range serverConfig.CompiledReleases {
+			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+			if err != nil {
+				log.Panicf("creating compiled release version: %v", err)
+			}
+
+			all = append(all, idx)
+		}
+
+		crv = compiledreleaseversionsaggregate.New(all...)
+	}
 
 	r := mux.NewRouter()
-	handlersv2.Mount(
-		r.PathPrefix("/v2").Subrouter(),
-		logger,
-		cc,
-		releaseStemcellResolver,
-		compiledReleaseVersionIndex,
-		releaseVersionIndex,
-		stemcellVersionIndex,
-	)
+	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, util.NewReleaseStemcellResolver(rv, sv), crv, rv, sv)
 
 	loggingRouter := middleware.NewLogging(logger, r)
 	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)

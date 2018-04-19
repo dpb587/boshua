@@ -1,4 +1,4 @@
-package boshiostemcellindex
+package boshio
 
 import (
 	"bytes"
@@ -20,16 +20,20 @@ type index struct {
 	logger             logrus.FieldLogger
 	metalinkRepository string
 	localPath          string
+	pullInterval       time.Duration
 
 	inmemory   stemcellversions.Index
 	lastLoaded time.Time
 }
 
-func New(logger logrus.FieldLogger, metalinkRepository, localPath string) stemcellversions.Index {
+var _ stemcellversions.Index = &index{}
+
+func New(config Config, logger logrus.FieldLogger) stemcellversions.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository: metalinkRepository,
-		localPath:          localPath,
+		metalinkRepository: config.Repository,
+		localPath:          config.LocalPath,
+		pullInterval:       config.PullInterval,
 	}
 
 	idx.inmemory = inmemory.New(idx.loader, idx.reloader)
@@ -46,7 +50,7 @@ func (i *index) Find(ref stemcellversions.StemcellVersionRef) (stemcellversions.
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) < 5*time.Minute {
+	if time.Now().Sub(i.lastLoaded) < i.pullInterval {
 		return false, nil
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil

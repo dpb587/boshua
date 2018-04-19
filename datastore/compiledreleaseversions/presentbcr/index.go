@@ -25,16 +25,20 @@ type index struct {
 	logger             logrus.FieldLogger
 	metalinkRepository string
 	localPath          string
+	pullInterval       time.Duration
 
 	inmemory   compiledreleaseversions.Index
 	lastLoaded time.Time
 }
 
-func New(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index, metalinkRepository, localPath string) compiledreleaseversions.Index {
+var _ compiledreleaseversions.Index = &index{}
+
+func New(config Config, releaseVersionIndex releaseversions.Index, logger logrus.FieldLogger) compiledreleaseversions.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository: metalinkRepository,
-		localPath:          localPath,
+		metalinkRepository: config.Repository,
+		localPath:          config.LocalPath,
+		pullInterval:       config.PullInterval,
 	}
 
 	idx.inmemory = inmemory.New(idx.loader, idx.reloader, releaseVersionIndex)
@@ -51,7 +55,7 @@ func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (com
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) < 5*time.Minute {
+	if time.Now().Sub(i.lastLoaded) < i.pullInterval {
 		return false, nil
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil

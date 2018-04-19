@@ -1,9 +1,10 @@
-package meta4index
+package boshio
 
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -17,22 +18,27 @@ import (
 
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type index struct {
 	logger             logrus.FieldLogger
 	metalinkRepository string
 	localPath          string
+	pullInterval       time.Duration
 
 	inmemory   releaseversions.Index
 	lastLoaded time.Time
 }
 
-func New(logger logrus.FieldLogger, metalinkRepository, localPath string) releaseversions.Index {
+var _ releaseversions.Index = &index{}
+
+func New(config Config, logger logrus.FieldLogger) releaseversions.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository: metalinkRepository,
-		localPath:          localPath,
+		metalinkRepository: config.Repository,
+		localPath:          config.LocalPath,
+		pullInterval:       config.PullInterval,
 	}
 
 	idx.inmemory = inmemory.New(idx.loader, idx.reloader)
@@ -49,7 +55,7 @@ func (i *index) Find(ref releaseversions.ReleaseVersionRef) (releaseversions.Rel
 }
 
 func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) < 5*time.Minute {
+	if time.Now().Sub(i.lastLoaded) < i.pullInterval {
 		return false, nil
 	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
 		return false, nil
@@ -68,7 +74,7 @@ func (i *index) reloader() (bool, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		i.logger.WithField("go.error", err).Errorf("pulling repository")
+		i.logger.WithField("error", err).Errorf("pulling repository")
 
 		return false, fmt.Errorf("pulling repository: %v", err)
 	}
@@ -85,7 +91,7 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
-	paths, err := filepath.Glob(filepath.Join(i.localPath, "*.meta4"))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
@@ -115,18 +121,36 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 			return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 		}
 
-		for _, hash := range meta4.Files[0].Hashes {
-			hashType, err := util.FromMetalinkHashType(hash.Type)
-			if err != nil {
-				continue
-			}
+		for _, files := range meta4.Files {
+			for _, hash := range files.Hashes {
+				hashType, err := util.FromMetalinkHashType(hash.Type)
+				if err != nil {
+					continue
+				}
 
-			releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum(fmt.Sprintf("%s:%s", hashType, hash.Hash)))
+				releaseversion.Checksums = append(releaseversion.Checksums, releaseversions.Checksum(fmt.Sprintf("%s:%s", hashType, hash.Hash)))
+			}
 		}
 
-		releaseversion.ReleaseVersionRef.Name = path.Base(path.Dir(meta4Path))
-		releaseversion.ReleaseVersionRef.Version = meta4.Files[0].Version
-		releaseversion.MetalinkSource["version"] = releaseversion.ReleaseVersionRef.Version
+		var metadataPath = fmt.Sprintf("%s/release.v1.yml", path.Dir(meta4Path))
+
+		if _, err = os.Stat(metadataPath); err == nil {
+			var metadataReleaseV1 MetadataReleaseV1
+
+			metadataBytes, err := ioutil.ReadFile(metadataPath)
+			if err != nil {
+				return nil, fmt.Errorf("reading %s: %v", metadataPath, err)
+			}
+
+			err = yaml.Unmarshal(metadataBytes, &metadataReleaseV1)
+			if err != nil {
+				return nil, fmt.Errorf("unmarshalling %s: %v", metadataPath, err)
+			}
+
+			releaseversion.ReleaseVersionRef.Name = metadataReleaseV1.Name
+			releaseversion.ReleaseVersionRef.Version = metadataReleaseV1.Version
+			releaseversion.MetalinkSource["version"] = releaseversion.ReleaseVersionRef.Version
+		}
 
 		inmemory = append(inmemory, releaseversion)
 	}

@@ -13,6 +13,8 @@ type index struct {
 	reloader Reloader
 }
 
+var _ releaseversions.Index = &index{}
+
 func New(loader Loader, reloader Reloader) releaseversions.Index {
 	return &index{
 		loader:   loader,

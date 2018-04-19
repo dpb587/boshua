@@ -10,6 +10,8 @@ type index struct {
 	aggregated []compiledreleaseversions.Index
 }
 
+var _ compiledreleaseversions.Index = &index{}
+
 func New(aggregated ...compiledreleaseversions.Index) compiledreleaseversions.Index {
 	return &index{
 		aggregated: aggregated,

@@ -13,6 +13,8 @@ type index struct {
 	reloader Reloader
 }
 
+var _ stemcellversions.Index = &index{}
+
 func New(loader Loader, reloader Reloader) stemcellversions.Index {
 	return &index{
 		loader:   loader,

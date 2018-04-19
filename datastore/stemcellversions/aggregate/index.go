@@ -1,13 +1,16 @@
 package aggregate
 
 import (
-	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 	"fmt"
+
+	"github.com/dpb587/bosh-compiled-releases/datastore/stemcellversions"
 )
 
 type index struct {
 	aggregated []stemcellversions.Index
 }
+
+var _ stemcellversions.Index = &index{}
 
 func New(aggregated ...stemcellversions.Index) stemcellversions.Index {
 	return &index{

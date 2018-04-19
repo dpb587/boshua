@@ -1,4 +1,4 @@
-package boshioreleaseindex
+package boshio
 
 type MetadataReleaseV1 struct {
 	Name    string `yaml:"Name"`
