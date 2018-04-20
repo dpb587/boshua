@@ -9,9 +9,10 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/middleware"
 	"github.com/dpb587/boshua/api/v2/models"
-	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
-	"github.com/dpb587/boshua/datastore/releaseversions"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,7 +60,7 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Release: releaseversions.ReleaseVersionRef{
 			Name:     reqData.Release.Name,
 			Version:  reqData.Release.Version,
-			Checksum: releaseversions.Checksum(reqData.Release.Checksum),
+			Checksum: reqData.Release.Checksum,
 		},
 		Stemcell: stemcellversions.StemcellVersionRef{
 			OS:      reqData.Stemcell.OS,
@@ -82,14 +83,14 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var checksums []models.Checksum
+	var checksums checksum.ImmutableChecksums
 
-	for _, checksum := range result.TarballChecksums {
-		if checksum.Algorithm() != "sha1" && checksum.Algorithm() != "sha256" {
+	for _, cs := range result.TarballChecksums {
+		if cs.Algorithm().Name() != "sha1" && cs.Algorithm().Name() != "sha256" {
 			continue
 		}
 
-		checksums = append(checksums, models.Checksum(checksum))
+		checksums = append(checksums, cs)
 	}
 
 	logger.Infof("compiled release found")

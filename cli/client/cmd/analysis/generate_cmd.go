@@ -5,9 +5,7 @@ import (
 	"os"
 
 	"github.com/dpb587/boshua/analysis"
-	releaseartifactchecksumsv1 "github.com/dpb587/boshua/analysis/releaseartifactchecksums.v1/analyzer"
-	releaseartifactfilestatv1 "github.com/dpb587/boshua/analysis/releaseartifactfilestat.v1/analyzer"
-	releasemanifestsv1 "github.com/dpb587/boshua/analysis/releasemanifests.v1/analyzer"
+	"github.com/dpb587/boshua/analysis/analyzer/factory"
 )
 
 type GenerateCmd struct {
@@ -23,16 +21,9 @@ type GenerateArgs struct {
 func (c *GenerateCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("analysis/generate")
 
-	var analyzer analysis.Analyzer
-
-	if c.AnalysisOpts.Analyzer == "releaseartifactchecksums.v1" {
-		analyzer = releaseartifactchecksumsv1.New(c.Args.Artifact)
-	} else if c.AnalysisOpts.Analyzer == "releaseartifactfilestat.v1" {
-		analyzer = releaseartifactfilestatv1.New(c.Args.Artifact)
-	} else if c.AnalysisOpts.Analyzer == "releasemanifests.v1" {
-		analyzer = releasemanifestsv1.New(c.Args.Artifact)
-	} else {
-		return fmt.Errorf("invalid analyzer: %s", c.AnalysisOpts.Analyzer)
+	analyzer, err := factory.Factory{}.Create(c.AnalysisOpts.Analyzer, c.Args.Artifact)
+	if err != nil {
+		return fmt.Errorf("finding analyzer: %s", c.AnalysisOpts.Analyzer)
 	}
 
 	return analyzer.Analyze(analysis.NewJSONWriter(os.Stdout))

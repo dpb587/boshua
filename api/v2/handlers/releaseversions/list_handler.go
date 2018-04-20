@@ -7,7 +7,8 @@ import (
 	"reflect"
 
 	"github.com/dpb587/boshua/api/v2/models"
-	"github.com/dpb587/boshua/datastore/releaseversions"
+	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,14 +42,14 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res := models.RVListResponse{}
 
 	for _, result := range results {
-		var checksums []models.Checksum
+		var checksums checksum.ImmutableChecksums
 
 		for _, checksum := range result.Checksums {
-			if checksum.Algorithm() != "sha1" && checksum.Algorithm() != "sha256" {
+			if checksum.Algorithm().Name() != "sha1" && checksum.Algorithm().Name() != "sha256" {
 				continue
 			}
 
-			checksums = append(checksums, models.Checksum(checksum))
+			checksums = append(checksums, checksum)
 		}
 
 		res.Data = append(res.Data, models.ReleaseRef{

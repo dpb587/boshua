@@ -4,10 +4,10 @@ import (
 	"github.com/dpb587/boshua/api/v2/handlers/compiledreleaseversion"
 	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
 	"github.com/dpb587/boshua/api/v2/handlers/stemcellversions"
-	"github.com/dpb587/boshua/compiler"
-	compiledreleaseversionsds "github.com/dpb587/boshua/datastore/compiledreleaseversions"
-	releaseversionsds "github.com/dpb587/boshua/datastore/releaseversions"
-	stemcellversionsds "github.com/dpb587/boshua/datastore/stemcellversions"
+	compiledreleaseversionsds "github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	releaseversionsds "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/scheduler/concourse"
+	stemcellversionsds "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/util"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 func Mount(
 	router *mux.Router,
 	logger logrus.FieldLogger,
-	cc *compiler.Compiler,
+	cc *concourse.Runner,
 	releaseStemcellResolver *util.ReleaseStemcellResolver,
 	compiledReleaseVersionIndex compiledreleaseversionsds.Index,
 	releaseVersionIndex releaseversionsds.Index,

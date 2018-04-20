@@ -15,8 +15,8 @@ func (cs WritableChecksums) Write(p []byte) (int, error) {
 	return len(p), nil // TODO optimistic
 }
 
-func (cs WritableChecksums) ImmutableChecksums() []ImmutableChecksum {
-	var res []ImmutableChecksum
+func (cs WritableChecksums) ImmutableChecksums() ImmutableChecksums {
+	var res ImmutableChecksums
 
 	for _, c := range cs {
 		res = append(res, c.ImmutableChecksum())

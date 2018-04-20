@@ -29,7 +29,7 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 			"value": map[string]interface{}{
 				"name":    resInfo.Data.Release.Name,
 				"version": resInfo.Data.Release.Version,
-				"sha1":    strings.TrimPrefix(string(resInfo.Data.Tarball.Checksums[0]), "sha1:"), // TODO .Preferred()
+				"sha1":    strings.TrimPrefix(resInfo.Data.Tarball.Checksums[0].String(), "sha1:"), // TODO .Preferred()
 				"url":     resInfo.Data.Tarball.URLs[0],
 				"stemcell": map[string]string{
 					"os":      resInfo.Data.Stemcell.OS,

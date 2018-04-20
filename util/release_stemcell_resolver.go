@@ -1,8 +1,8 @@
 package util
 
 import (
-	"github.com/dpb587/boshua/datastore/releaseversions"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
 type ReleaseStemcellResolver struct {

@@ -6,7 +6,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 
 	"github.com/cppforlife/go-patch/patch"
 )

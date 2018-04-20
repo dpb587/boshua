@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/dpb587/boshua/checksum"
+)
 
 type CRVInfoRequest struct {
 	Data CRVInfoRequestData `json:"data"`
@@ -22,8 +26,8 @@ type CRVInfoResponseData struct {
 }
 
 type CRVInfoResponseDataCompiled struct {
-	URLs      []string   `json:"urls"`
-	Size      *uint64    `json:"size,omitempty"`
-	Published *time.Time `json:"published,omitempty"`
-	Checksums Checksums  `json:"checksums"`
+	URLs      []string                    `json:"urls"`
+	Size      *uint64                     `json:"size,omitempty"`
+	Published *time.Time                  `json:"published,omitempty"`
+	Checksums checksum.ImmutableChecksums `json:"checksums"`
 }

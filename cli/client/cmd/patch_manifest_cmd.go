@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
 	"github.com/dpb587/boshua/manifest"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
 type PatchManifestCmd struct {
@@ -58,10 +59,15 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 	apiclient := c.AppOpts.GetClient()
 
 	for _, rel := range man.Requirements() {
+		cs, err := checksum.CreateFromString(rel.Source.Sha1)
+		if err != nil {
+			log.Fatalf("parsing checksum: %v", err)
+		}
+
 		releaseRef := models.ReleaseRef{
 			Name:     rel.Name,
 			Version:  rel.Version,
-			Checksum: models.Checksum(fmt.Sprintf("sha1:%s", rel.Source.Sha1)),
+			Checksum: cs,
 		}
 		stemcellRef := models.StemcellRef{
 			OS:      rel.Stemcell.OS,
@@ -127,7 +133,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			}
 		}
 
-		rel.Compiled.Sha1 = string(resInfo.Data.Tarball.Checksums[0])
+		rel.Compiled.Sha1 = resInfo.Data.Tarball.Checksums[0].String()
 		rel.Compiled.URL = resInfo.Data.Tarball.URLs[0]
 
 		err = man.UpdateRelease(rel)

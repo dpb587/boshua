@@ -7,7 +7,7 @@ import (
 	"reflect"
 
 	"github.com/dpb587/boshua/api/v2/models"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 

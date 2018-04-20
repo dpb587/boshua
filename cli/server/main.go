@@ -8,17 +8,17 @@ import (
 
 	handlersv2 "github.com/dpb587/boshua/api/v2/handlers"
 	"github.com/dpb587/boshua/api/v2/middleware"
-	"github.com/dpb587/boshua/compiler"
-	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
-	compiledreleaseversionsaggregate "github.com/dpb587/boshua/datastore/compiledreleaseversions/aggregate"
-	compiledreleaseversionsfactory "github.com/dpb587/boshua/datastore/compiledreleaseversions/factory"
-	"github.com/dpb587/boshua/datastore/releaseversions"
-	releaseversionsaggregate "github.com/dpb587/boshua/datastore/releaseversions/aggregate"
-	releaseversionsfactory "github.com/dpb587/boshua/datastore/releaseversions/factory"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
-	stemcellversionsaggregate "github.com/dpb587/boshua/datastore/stemcellversions/aggregate"
-	stemcellversionsfactory "github.com/dpb587/boshua/datastore/stemcellversions/factory"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	compiledreleaseversionsaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
+	compiledreleaseversionsfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
+	"github.com/dpb587/boshua/releaseversion/datastore"
+	releaseversionsaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
+	releaseversionsfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
+	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/server/config"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
+	stemcellversionsaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
+	stemcellversionsfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/dpb587/boshua/util"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ func main() {
 		log.Panicf("parsing config: %v", err)
 	}
 
-	cc := &compiler.Compiler{
+	cc := &concourse.Runner{
 		Target:       serverConfig.Concourse.Target,
 		Insecure:     serverConfig.Concourse.Insecure,
 		URL:          serverConfig.Concourse.URL,

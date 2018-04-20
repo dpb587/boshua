@@ -9,24 +9,25 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/middleware"
 	"github.com/dpb587/boshua/api/v2/models"
-	"github.com/dpb587/boshua/compiler"
-	"github.com/dpb587/boshua/datastore/compiledreleaseversions"
-	"github.com/dpb587/boshua/datastore/releaseversions"
-	"github.com/dpb587/boshua/datastore/stemcellversions"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/scheduler"
+	"github.com/dpb587/boshua/scheduler/concourse"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/util"
 	"github.com/sirupsen/logrus"
 )
 
 type RequestHandler struct {
 	logger                      logrus.FieldLogger
-	cc                          *compiler.Compiler
+	cc                          *concourse.Runner
 	releaseStemcellResolver     *util.ReleaseStemcellResolver
 	compiledReleaseVersionIndex compiledreleaseversions.Index
 }
 
 func NewRequestHandler(
 	logger logrus.FieldLogger,
-	cc *compiler.Compiler,
+	cc *concourse.Runner,
 	releaseStemcellResolver *util.ReleaseStemcellResolver,
 	compiledReleaseVersionIndex compiledreleaseversions.Index,
 ) http.Handler {
@@ -63,13 +64,13 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"stemcell.version": reqData.Stemcell.Version,
 	})
 
-	var status compiler.Status
+	var status scheduler.Status
 
 	_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 		Release: releaseversions.ReleaseVersionRef{
 			Name:     reqData.Release.Name,
 			Version:  reqData.Release.Version,
-			Checksum: releaseversions.Checksum(reqData.Release.Checksum),
+			Checksum: reqData.Release.Checksum,
 		},
 		Stemcell: stemcellversions.StemcellVersionRef{
 			OS:      reqData.Stemcell.OS,
@@ -81,7 +82,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			releaseversions.ReleaseVersionRef{
 				Name:     reqData.Release.Name,
 				Version:  reqData.Release.Version,
-				Checksum: releaseversions.Checksum(reqData.Release.Checksum),
+				Checksum: reqData.Release.Checksum,
 			},
 			stemcellversions.StemcellVersionRef{
 				OS:      reqData.Stemcell.OS,
@@ -113,7 +114,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ERROR: checking compilation status\n"))
 
 			return
-		} else if status == compiler.StatusUnknown {
+		} else if status == scheduler.StatusUnknown {
 			err = h.cc.Schedule(release, stemcell)
 			if err != nil {
 				logger.WithField("error", err).Errorf("scheduling compiled release")
@@ -124,7 +125,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			status = compiler.StatusPending
+			status = scheduler.StatusPending
 		}
 	} else if err != nil {
 		logger.WithField("error", err).Errorf("checking compiled release version")
@@ -134,18 +135,18 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	} else {
-		status = compiler.StatusSucceeded
+		status = scheduler.StatusSucceeded
 	}
 
 	var complete bool
 
 	switch status {
-	case compiler.StatusSucceeded:
+	case scheduler.StatusSucceeded:
 		_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
 			Release: releaseversions.ReleaseVersionRef{
 				Name:     reqData.Release.Name,
 				Version:  reqData.Release.Version,
-				Checksum: releaseversions.Checksum(reqData.Release.Checksum),
+				Checksum: reqData.Release.Checksum,
 			},
 			Stemcell: stemcellversions.StemcellVersionRef{
 				OS:      reqData.Stemcell.OS,
@@ -153,11 +154,11 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 		if err == compiledreleaseversions.MissingErr {
-			status = compiler.StatusFinishing
+			status = scheduler.StatusFinishing
 		} else {
 			complete = true
 		}
-	case compiler.StatusFailed:
+	case scheduler.StatusFailed:
 		complete = true
 	}
 

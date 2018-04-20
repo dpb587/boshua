@@ -33,14 +33,14 @@ func createMetalink(resInfo *models.CRVInfoResponse) metalink.Metalink {
 	}
 
 	for _, checksum := range resInfo.Data.Tarball.Checksums {
-		csType, err := util.MetalinkHashType(checksum.Algorithm())
+		csType, err := util.MetalinkHashType(checksum.Algorithm().Name())
 		if err != nil {
 			continue
 		}
 
 		meta4.Files[0].Hashes = append(meta4.Files[0].Hashes, metalink.Hash{
 			Type: csType,
-			Hash: checksum.Data(),
+			Hash: string(checksum.Data()),
 		})
 	}
 

@@ -21,7 +21,7 @@ func (o *Opts) GetCompiledReleaseVersion(api *client.Client) (*models.CRVInfoRes
 	releaseRef := models.ReleaseRef{
 		Name:     o.Release.Name,
 		Version:  o.Release.Version,
-		Checksum: models.Checksum(o.ReleaseChecksum.String()),
+		Checksum: o.ReleaseChecksum.ImmutableChecksum,
 	}
 	stemcellRef := models.StemcellRef{
 		OS:      o.Stemcell.OS,
