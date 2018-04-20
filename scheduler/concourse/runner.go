@@ -12,9 +12,9 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/scheduler"
+	"github.com/dpb587/boshua/stemcellversion"
 )
 
 type Runner struct {
@@ -31,7 +31,7 @@ type Runner struct {
 	needsLogin bool
 }
 
-func (c *Runner) Schedule(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) error {
+func (c *Runner) Schedule(release releaseversion.Subject, stemcell stemcellversion.Subject) error {
 	pipelineName := c.pipelineName(release, stemcell)
 
 	file, err := ioutil.TempFile("", "bcr-")
@@ -100,7 +100,7 @@ func (c *Runner) Schedule(release releaseversions.ReleaseVersion, stemcell stemc
 	return nil
 }
 
-func (c *Runner) Status(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) (scheduler.Status, error) {
+func (c *Runner) Status(release releaseversion.Subject, stemcell stemcellversion.Subject) (scheduler.Status, error) {
 	err := c.login()
 	if err != nil {
 		return scheduler.StatusUnknown, fmt.Errorf("logging in: %v", err)
@@ -147,7 +147,7 @@ func (c *Runner) Status(release releaseversions.ReleaseVersion, stemcell stemcel
 	return scheduler.StatusUnknown, errors.New("unrecognized pipeline state")
 }
 
-func (c *Runner) pipelineName(release releaseversions.ReleaseVersion, stemcell stemcellversions.StemcellVersion) string {
+func (c *Runner) pipelineName(release releaseversion.Subject, stemcell stemcellversion.Subject) string {
 	return fmt.Sprintf(
 		"bcr:%s:%s-%s-on-%s-stemcell-%s",
 		release.Checksums.Preferred(),

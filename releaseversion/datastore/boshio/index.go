@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/dpb587/boshua/util"
@@ -28,13 +29,13 @@ type index struct {
 	localPath          string
 	pullInterval       time.Duration
 
-	inmemory   releaseversions.Index
+	inmemory   datastore.Index
 	lastLoaded time.Time
 }
 
-var _ releaseversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) releaseversions.Index {
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: config.Repository,
@@ -47,11 +48,11 @@ func New(config Config, logger logrus.FieldLogger) releaseversions.Index {
 	return idx
 }
 
-func (i *index) List() ([]releaseversions.ReleaseVersion, error) {
+func (i *index) List() ([]releaseversion.Subject, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref releaseversions.ReleaseVersionRef) (releaseversions.ReleaseVersion, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -91,7 +92,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
+func (i *index) loader() ([]releaseversion.Subject, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
@@ -99,11 +100,11 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []releaseversions.ReleaseVersion{}
+	var inmemory = []releaseversion.Subject{}
 
 	for _, meta4Path := range paths {
-		releaseversion := releaseversions.ReleaseVersion{
-			ReleaseVersionRef: releaseversions.ReleaseVersionRef{},
+		releaseversion := releaseversion.Subject{
+			Reference: releaseversion.Reference{},
 			MetalinkSource: map[string]interface{}{
 				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 			},
@@ -152,9 +153,9 @@ func (i *index) loader() ([]releaseversions.ReleaseVersion, error) {
 				return nil, fmt.Errorf("unmarshalling %s: %v", metadataPath, err)
 			}
 
-			releaseversion.ReleaseVersionRef.Name = metadataReleaseV1.Name
-			releaseversion.ReleaseVersionRef.Version = metadataReleaseV1.Version
-			releaseversion.MetalinkSource["version"] = releaseversion.ReleaseVersionRef.Version
+			releaseversion.Reference.Name = metadataReleaseV1.Name
+			releaseversion.Reference.Version = metadataReleaseV1.Version
+			releaseversion.MetalinkSource["version"] = releaseversion.Reference.Version
 		}
 
 		inmemory = append(inmemory, releaseversion)

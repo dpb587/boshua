@@ -10,20 +10,21 @@ import (
 	"github.com/dpb587/boshua/api/v2/middleware"
 	"github.com/dpb587/boshua/api/v2/models"
 	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/sirupsen/logrus"
 )
 
 type InfoHandler struct {
 	logger                      logrus.FieldLogger
-	compiledReleaseVersionIndex compiledreleaseversions.Index
+	compiledReleaseVersionIndex datastore.Index
 }
 
 func NewInfoHandler(
 	logger logrus.FieldLogger,
-	compiledReleaseVersionIndex compiledreleaseversions.Index,
+	compiledReleaseVersionIndex datastore.Index,
 ) http.Handler {
 	return &InfoHandler{
 		logger: logger.WithFields(logrus.Fields{
@@ -56,18 +57,18 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"stemcell.version": reqData.Stemcell.Version,
 	})
 
-	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
-		Release: releaseversions.ReleaseVersionRef{
+	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
+		Release: releaseversion.Reference{
 			Name:     reqData.Release.Name,
 			Version:  reqData.Release.Version,
 			Checksum: reqData.Release.Checksum,
 		},
-		Stemcell: stemcellversions.StemcellVersionRef{
+		Stemcell: stemcellversion.Reference{
 			OS:      reqData.Stemcell.OS,
 			Version: reqData.Stemcell.Version,
 		},
 	})
-	if err == compiledreleaseversions.MissingErr {
+	if err == datastore.MissingErr {
 		logger.Infof("compiled release not found")
 
 		w.WriteHeader(http.StatusNotFound)

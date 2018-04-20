@@ -3,23 +3,24 @@ package aggregate
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
 type index struct {
-	aggregated []stemcellversions.Index
+	aggregated []datastore.Index
 }
 
-var _ stemcellversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(aggregated ...stemcellversions.Index) stemcellversions.Index {
+func New(aggregated ...datastore.Index) datastore.Index {
 	return &index{
 		aggregated: aggregated,
 	}
 }
 
-func (i *index) List() ([]stemcellversions.StemcellVersion, error) {
-	var result []stemcellversions.StemcellVersion
+func (i *index) List() ([]stemcellversion.Subject, error) {
+	var result []stemcellversion.Subject
 
 	for idxIdx, idx := range i.aggregated {
 		listed, err := idx.List()
@@ -33,17 +34,17 @@ func (i *index) List() ([]stemcellversions.StemcellVersion, error) {
 	return result, nil
 }
 
-func (i *index) Find(ref stemcellversions.StemcellVersionRef) (stemcellversions.StemcellVersion, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
 	for idxIdx, idx := range i.aggregated {
 		found, err := idx.Find(ref)
-		if err == stemcellversions.MissingErr {
+		if err == datastore.MissingErr {
 			continue
 		} else if err != nil {
-			return stemcellversions.StemcellVersion{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return stemcellversion.Subject{}, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
 		return found, nil
 	}
 
-	return stemcellversions.StemcellVersion{}, stemcellversions.MissingErr
+	return stemcellversion.Subject{}, datastore.MissingErr
 }

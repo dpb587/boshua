@@ -1,6 +1,6 @@
 package inmemory
 
-import "github.com/dpb587/boshua/stemcellversion/datastore"
+import "github.com/dpb587/boshua/stemcellversion"
 
-type Loader func() ([]stemcellversions.StemcellVersion, error)
+type Loader func() ([]stemcellversion.Subject, error)
 type Reloader func() (bool, error)

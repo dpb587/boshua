@@ -3,22 +3,23 @@ package inmemory
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/releaseversion/datastore"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 )
 
 type index struct {
-	inmemory []compiledreleaseversions.CompiledReleaseVersion
+	inmemory []compiledreleaseversion.Subject
 
 	loader   Loader
 	reloader Reloader
 
-	releaseVersionIndex releaseversions.Index
+	releaseVersionIndex releaseversiondatastore.Index
 }
 
-var _ compiledreleaseversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(loader Loader, reloader Reloader, releaseVersionIndex releaseversions.Index) compiledreleaseversions.Index {
+func New(loader Loader, reloader Reloader, releaseVersionIndex releaseversiondatastore.Index) datastore.Index {
 	return &index{
 		loader:              loader,
 		reloader:            reloader,
@@ -53,44 +54,44 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (compiledreleaseversions.CompiledReleaseVersion, error) {
+func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return compiledreleaseversions.CompiledReleaseVersion{}, fmt.Errorf("reloading: %v", err)
+		return compiledreleaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
-	for _, compiledreleaseversion := range i.inmemory {
-		if compiledreleaseversion.Release.Name != ref.Release.Name {
+	for _, subject := range i.inmemory {
+		if subject.Release.Name != ref.Release.Name {
 			continue
-		} else if compiledreleaseversion.Release.Version != ref.Release.Version {
+		} else if subject.Release.Version != ref.Release.Version {
 			continue
-		} else if compiledreleaseversion.Stemcell.OS != ref.Stemcell.OS {
+		} else if subject.Stemcell.OS != ref.Stemcell.OS {
 			continue
-		} else if compiledreleaseversion.Stemcell.Version != ref.Stemcell.Version {
+		} else if subject.Stemcell.Version != ref.Stemcell.Version {
 			continue
-		} else if compiledreleaseversion.Release.Checksum.String() == ref.Release.Checksum.String() {
+		} else if subject.Release.Checksum.String() == ref.Release.Checksum.String() {
 			// shortcut
-			return compiledreleaseversion, nil
+			return subject, nil
 		}
 
 		// checksum matrix
-		_, err := i.releaseVersionIndex.Find(compiledreleaseversion.Release)
-		if err == releaseversions.MissingErr {
-			return compiledreleaseversions.CompiledReleaseVersion{}, compiledreleaseversions.MissingErr
+		_, err := i.releaseVersionIndex.Find(subject.Release)
+		if err == releaseversiondatastore.MissingErr {
+			return compiledreleaseversion.Subject{}, datastore.MissingErr
 		} else if err != nil {
-			return compiledreleaseversions.CompiledReleaseVersion{}, fmt.Errorf("finding source: %v", err)
+			return compiledreleaseversion.Subject{}, fmt.Errorf("finding source: %v", err)
 		}
 
-		return compiledreleaseversion, nil
+		return subject, nil
 	}
 
-	return compiledreleaseversions.CompiledReleaseVersion{}, compiledreleaseversions.MissingErr
+	return compiledreleaseversion.Subject{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]compiledreleaseversions.CompiledReleaseVersion, error) {
+func (i *index) List() ([]compiledreleaseversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return []compiledreleaseversions.CompiledReleaseVersion{}, fmt.Errorf("reloading: %v", err)
+		return []compiledreleaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

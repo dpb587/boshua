@@ -14,10 +14,10 @@ import (
 
 type ListHandler struct {
 	logger              logrus.FieldLogger
-	releaseVersionIndex releaseversions.Index
+	releaseVersionIndex datastore.Index
 }
 
-func NewListHandler(logger logrus.FieldLogger, releaseVersionIndex releaseversions.Index) http.Handler {
+func NewListHandler(logger logrus.FieldLogger, releaseVersionIndex datastore.Index) http.Handler {
 	return &ListHandler{
 		logger: logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(ListHandler{}).PkgPath(),

@@ -9,11 +9,14 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/middleware"
 	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler"
 	"github.com/dpb587/boshua/scheduler/concourse"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/util"
 	"github.com/sirupsen/logrus"
 )
@@ -22,14 +25,14 @@ type RequestHandler struct {
 	logger                      logrus.FieldLogger
 	cc                          *concourse.Runner
 	releaseStemcellResolver     *util.ReleaseStemcellResolver
-	compiledReleaseVersionIndex compiledreleaseversions.Index
+	compiledReleaseVersionIndex datastore.Index
 }
 
 func NewRequestHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
 	releaseStemcellResolver *util.ReleaseStemcellResolver,
-	compiledReleaseVersionIndex compiledreleaseversions.Index,
+	compiledReleaseVersionIndex datastore.Index,
 ) http.Handler {
 	return &RequestHandler{
 		logger: logger.WithFields(logrus.Fields{
@@ -66,30 +69,30 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var status scheduler.Status
 
-	_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
-		Release: releaseversions.ReleaseVersionRef{
+	_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
+		Release: releaseversion.Reference{
 			Name:     reqData.Release.Name,
 			Version:  reqData.Release.Version,
 			Checksum: reqData.Release.Checksum,
 		},
-		Stemcell: stemcellversions.StemcellVersionRef{
+		Stemcell: stemcellversion.Reference{
 			OS:      reqData.Stemcell.OS,
 			Version: reqData.Stemcell.Version,
 		},
 	})
-	if err == compiledreleaseversions.MissingErr {
+	if err == datastore.MissingErr {
 		release, stemcell, err := h.releaseStemcellResolver.Resolve(
-			releaseversions.ReleaseVersionRef{
+			releaseversion.Reference{
 				Name:     reqData.Release.Name,
 				Version:  reqData.Release.Version,
 				Checksum: reqData.Release.Checksum,
 			},
-			stemcellversions.StemcellVersionRef{
+			stemcellversion.Reference{
 				OS:      reqData.Stemcell.OS,
 				Version: reqData.Stemcell.Version,
 			},
 		)
-		if err == releaseversions.MissingErr || err == stemcellversions.MissingErr {
+		if err == releaseversiondatastore.MissingErr || err == stemcellversiondatastore.MissingErr {
 			logger.WithField("error", err).Infof("resolving reference")
 
 			w.WriteHeader(http.StatusNotFound)
@@ -142,18 +145,18 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversions.CompiledReleaseVersionRef{
-			Release: releaseversions.ReleaseVersionRef{
+		_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
+			Release: releaseversion.Reference{
 				Name:     reqData.Release.Name,
 				Version:  reqData.Release.Version,
 				Checksum: reqData.Release.Checksum,
 			},
-			Stemcell: stemcellversions.StemcellVersionRef{
+			Stemcell: stemcellversion.Reference{
 				OS:      reqData.Stemcell.OS,
 				Version: reqData.Stemcell.Version,
 			},
 		})
-		if err == compiledreleaseversions.MissingErr {
+		if err == datastore.MissingErr {
 			status = scheduler.StatusFinishing
 		} else {
 			complete = true

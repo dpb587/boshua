@@ -1,4 +1,4 @@
-package stemcellversions
+package datastore
 
 import "errors"
 

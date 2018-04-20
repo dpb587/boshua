@@ -13,10 +13,12 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
-	"github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/util"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
@@ -28,13 +30,13 @@ type index struct {
 	localPath          string
 	pullInterval       time.Duration
 
-	inmemory   compiledreleaseversions.Index
+	inmemory   datastore.Index
 	lastLoaded time.Time
 }
 
-var _ compiledreleaseversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, releaseVersionIndex releaseversions.Index, logger logrus.FieldLogger) compiledreleaseversions.Index {
+func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: config.Repository,
@@ -47,11 +49,11 @@ func New(config Config, releaseVersionIndex releaseversions.Index, logger logrus
 	return idx
 }
 
-func (i *index) List() ([]compiledreleaseversions.CompiledReleaseVersion, error) {
+func (i *index) List() ([]compiledreleaseversion.Subject, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref compiledreleaseversions.CompiledReleaseVersionRef) (compiledreleaseversions.CompiledReleaseVersion, error) {
+func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Subject, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -91,7 +93,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, error) {
+func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/compiled-release.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
@@ -99,7 +101,7 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []compiledreleaseversions.CompiledReleaseVersion{}
+	var inmemory = []compiledreleaseversion.Subject{}
 
 	for _, bcrJsonPath := range paths {
 		bcrBytes, err := ioutil.ReadFile(bcrJsonPath)
@@ -128,14 +130,14 @@ func (i *index) loader() ([]compiledreleaseversions.CompiledReleaseVersion, erro
 			return nil, fmt.Errorf("unmarshalling %s: %v", bcrMeta4Path, err)
 		}
 
-		bcr := compiledreleaseversions.CompiledReleaseVersion{
-			CompiledReleaseVersionRef: compiledreleaseversions.CompiledReleaseVersionRef{
-				Release: releaseversions.ReleaseVersionRef{
+		bcr := compiledreleaseversion.Subject{
+			Reference: compiledreleaseversion.Reference{
+				Release: releaseversion.Reference{
 					Name:     bcrJson.Release.Name,
 					Version:  bcrJson.Release.Version,
 					Checksum: bcrJson.Release.Checksums[0],
 				},
-				Stemcell: stemcellversions.StemcellVersionRef{
+				Stemcell: stemcellversion.Reference{
 					OS:      bcrJson.Stemcell.OS,
 					Version: bcrJson.Stemcell.Version,
 				},

@@ -3,7 +3,7 @@ package stemcellversion
 import "github.com/dpb587/boshua/stemcellversion/datastore"
 
 type Subject struct {
-	input stemcellversions.StemcellVersion
+	input stemcellversion.Subject
 }
 
 func (s Subject) SupportedAnalyzers() []string {

@@ -3,7 +3,7 @@ package compiledreleaseversion
 import "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 
 type Subject struct {
-	input compiledreleaseversions.CompiledReleaseVersion
+	input compiledreleaseversion.Subject
 }
 
 func (s Subject) SupportedAnalyzers() []string {

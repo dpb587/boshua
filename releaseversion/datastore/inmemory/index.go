@@ -3,19 +3,20 @@ package inmemory
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 )
 
 type index struct {
-	inmemory []releaseversions.ReleaseVersion
+	inmemory []releaseversion.Subject
 
 	loader   Loader
 	reloader Reloader
 }
 
-var _ releaseversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(loader Loader, reloader Reloader) releaseversions.Index {
+func New(loader Loader, reloader Reloader) datastore.Index {
 	return &index{
 		loader:   loader,
 		reloader: reloader,
@@ -49,31 +50,31 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref releaseversions.ReleaseVersionRef) (releaseversions.ReleaseVersion, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return releaseversions.ReleaseVersion{}, fmt.Errorf("reloading: %v", err)
+		return releaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
-	for _, releaseversion := range i.inmemory {
-		if releaseversion.ReleaseVersionRef.Name != ref.Name {
+	for _, subject := range i.inmemory {
+		if subject.Reference.Name != ref.Name {
 			continue
-		} else if releaseversion.ReleaseVersionRef.Version != ref.Version {
+		} else if subject.Reference.Version != ref.Version {
 			continue
 		}
 
-		if releaseversion.Checksums.Contains(&ref.Checksum) {
-			return releaseversion, nil
+		if subject.Checksums.Contains(&ref.Checksum) {
+			return subject, nil
 		}
 	}
 
-	return releaseversions.ReleaseVersion{}, releaseversions.MissingErr
+	return releaseversion.Subject{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]releaseversions.ReleaseVersion, error) {
+func (i *index) List() ([]releaseversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return []releaseversions.ReleaseVersion{}, fmt.Errorf("reloading: %v", err)
+		return []releaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

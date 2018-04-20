@@ -3,19 +3,20 @@ package inmemory
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
 type index struct {
-	inmemory []stemcellversions.StemcellVersion
+	inmemory []stemcellversion.Subject
 
 	loader   Loader
 	reloader Reloader
 }
 
-var _ stemcellversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(loader Loader, reloader Reloader) stemcellversions.Index {
+func New(loader Loader, reloader Reloader) datastore.Index {
 	return &index{
 		loader:   loader,
 		reloader: reloader,
@@ -49,29 +50,29 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref stemcellversions.StemcellVersionRef) (stemcellversions.StemcellVersion, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return stemcellversions.StemcellVersion{}, fmt.Errorf("reloading: %v", err)
+		return stemcellversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	for _, stemcellversion := range i.inmemory {
-		if stemcellversion.StemcellVersionRef.OS != ref.OS {
+		if stemcellversion.Reference.OS != ref.OS {
 			continue
-		} else if stemcellversion.StemcellVersionRef.Version != ref.Version {
+		} else if stemcellversion.Reference.Version != ref.Version {
 			continue
 		}
 
 		return stemcellversion, nil
 	}
 
-	return stemcellversions.StemcellVersion{}, stemcellversions.MissingErr
+	return stemcellversion.Subject{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]stemcellversions.StemcellVersion, error) {
+func (i *index) List() ([]stemcellversion.Subject, error) {
 	err := i.load()
 	if err != nil {
-		return []stemcellversions.StemcellVersion{}, fmt.Errorf("reloading: %v", err)
+		return []stemcellversion.Subject{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

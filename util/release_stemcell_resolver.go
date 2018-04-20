@@ -1,18 +1,20 @@
 package util
 
 import (
-	"github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
 type ReleaseStemcellResolver struct {
-	releaseVersionIndex  releaseversions.Index
-	stemcellVersionIndex stemcellversions.Index
+	releaseVersionIndex  releaseversiondatastore.Index
+	stemcellVersionIndex stemcellversiondatastore.Index
 }
 
 func NewReleaseStemcellResolver(
-	releaseVersionIndex releaseversions.Index,
-	stemcellVersionIndex stemcellversions.Index,
+	releaseVersionIndex releaseversiondatastore.Index,
+	stemcellVersionIndex stemcellversiondatastore.Index,
 ) *ReleaseStemcellResolver {
 	return &ReleaseStemcellResolver{
 		releaseVersionIndex:  releaseVersionIndex,
@@ -20,15 +22,15 @@ func NewReleaseStemcellResolver(
 	}
 }
 
-func (rsr *ReleaseStemcellResolver) Resolve(releaseRef releaseversions.ReleaseVersionRef, stemcellRef stemcellversions.StemcellVersionRef) (releaseversions.ReleaseVersion, stemcellversions.StemcellVersion, error) {
+func (rsr *ReleaseStemcellResolver) Resolve(releaseRef releaseversion.Reference, stemcellRef stemcellversion.Reference) (releaseversion.Subject, stemcellversion.Subject, error) {
 	release, err := rsr.releaseVersionIndex.Find(releaseRef)
 	if err != nil {
-		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, err
+		return releaseversion.Subject{}, stemcellversion.Subject{}, err
 	}
 
 	stemcell, err := rsr.stemcellVersionIndex.Find(stemcellRef)
 	if err != nil {
-		return releaseversions.ReleaseVersion{}, stemcellversions.StemcellVersion{}, err
+		return releaseversion.Subject{}, stemcellversion.Subject{}, err
 	}
 
 	return release, stemcell, nil

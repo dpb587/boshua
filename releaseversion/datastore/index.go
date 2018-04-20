@@ -1,6 +1,8 @@
-package releaseversions
+package datastore
+
+import "github.com/dpb587/boshua/releaseversion"
 
 type Index interface {
-	Find(ref ReleaseVersionRef) (ReleaseVersion, error)
-	List() ([]ReleaseVersion, error)
+	Find(ref releaseversion.Reference) (releaseversion.Subject, error)
+	List() ([]releaseversion.Subject, error)
 }

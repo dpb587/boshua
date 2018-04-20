@@ -12,15 +12,15 @@ type factory struct {
 	logger logrus.FieldLogger
 }
 
-var _ stemcellversions.Factory = &factory{}
+var _ datastore.Factory = &factory{}
 
-func New(logger logrus.FieldLogger) stemcellversions.Factory {
+func New(logger logrus.FieldLogger) datastore.Factory {
 	return &factory{
 		logger: logger,
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}) (stemcellversions.Index, error) {
+func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
 	logger := f.logger.WithField("datastore", name)
 
 	switch provider {

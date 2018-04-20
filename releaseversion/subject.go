@@ -1,11 +1,11 @@
-package releaseversions
+package releaseversion
 
 import (
 	"github.com/dpb587/boshua/checksum"
 )
 
-type ReleaseVersion struct {
-	ReleaseVersionRef
+type Subject struct {
+	Reference
 
 	Checksums      checksum.ImmutableChecksums
 	MetalinkSource map[string]interface{}

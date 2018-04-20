@@ -3,23 +3,24 @@ package aggregate
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 )
 
 type index struct {
-	aggregated []releaseversions.Index
+	aggregated []datastore.Index
 }
 
-var _ releaseversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(aggregated ...releaseversions.Index) releaseversions.Index {
+func New(aggregated ...datastore.Index) datastore.Index {
 	return &index{
 		aggregated: aggregated,
 	}
 }
 
-func (i *index) List() ([]releaseversions.ReleaseVersion, error) {
-	var result []releaseversions.ReleaseVersion
+func (i *index) List() ([]releaseversion.Subject, error) {
+	var result []releaseversion.Subject
 
 	for idxIdx, idx := range i.aggregated {
 		listed, err := idx.List()
@@ -33,17 +34,17 @@ func (i *index) List() ([]releaseversions.ReleaseVersion, error) {
 	return result, nil
 }
 
-func (i *index) Find(ref releaseversions.ReleaseVersionRef) (releaseversions.ReleaseVersion, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
 	for idxIdx, idx := range i.aggregated {
 		found, err := idx.Find(ref)
-		if err == releaseversions.MissingErr {
+		if err == datastore.MissingErr {
 			continue
 		} else if err != nil {
-			return releaseversions.ReleaseVersion{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return releaseversion.Subject{}, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
 		return found, nil
 	}
 
-	return releaseversions.ReleaseVersion{}, releaseversions.MissingErr
+	return releaseversion.Subject{}, datastore.MissingErr
 }

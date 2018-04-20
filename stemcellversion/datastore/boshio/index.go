@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/inmemory"
 
@@ -22,13 +23,13 @@ type index struct {
 	localPath          string
 	pullInterval       time.Duration
 
-	inmemory   stemcellversions.Index
+	inmemory   datastore.Index
 	lastLoaded time.Time
 }
 
-var _ stemcellversions.Index = &index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) stemcellversions.Index {
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: config.Repository,
@@ -41,11 +42,11 @@ func New(config Config, logger logrus.FieldLogger) stemcellversions.Index {
 	return idx
 }
 
-func (i *index) List() ([]stemcellversions.StemcellVersion, error) {
+func (i *index) List() ([]stemcellversion.Subject, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref stemcellversions.StemcellVersionRef) (stemcellversions.StemcellVersion, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -85,7 +86,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]stemcellversions.StemcellVersion, error) {
+func (i *index) loader() ([]stemcellversion.Subject, error) {
 	i.lastLoaded = time.Now()
 
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.localPath))
@@ -95,11 +96,11 @@ func (i *index) loader() ([]stemcellversions.StemcellVersion, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []stemcellversions.StemcellVersion{}
+	var inmemory = []stemcellversion.Subject{}
 
 	for _, meta4Path := range paths {
-		stemcellversion := stemcellversions.StemcellVersion{
-			StemcellVersionRef: stemcellversions.StemcellVersionRef{},
+		stemcellversion := stemcellversion.Subject{
+			Reference: stemcellversion.Reference{},
 			MetalinkSource: map[string]interface{}{
 				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 				"include_files": []string{
@@ -108,10 +109,10 @@ func (i *index) loader() ([]stemcellversions.StemcellVersion, error) {
 			},
 		}
 
-		stemcellversion.StemcellVersionRef.OS = path.Base(path.Dir(path.Dir(meta4Path)))
-		stemcellversion.StemcellVersionRef.Version = path.Base(path.Dir(meta4Path))
+		stemcellversion.Reference.OS = path.Base(path.Dir(path.Dir(meta4Path)))
+		stemcellversion.Reference.Version = path.Base(path.Dir(meta4Path))
 		// stemcells are not currently recording their version :(
-		// stemcellversion.MetalinkSource["version"] = stemcellversion.StemcellVersionRef.Version
+		// stemcellversion.MetalinkSource["version"] = stemcellversion.Reference.Version
 
 		inmemory = append(inmemory, stemcellversion)
 	}

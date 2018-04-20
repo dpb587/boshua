@@ -1,4 +1,4 @@
-package compiledreleaseversions
+package compiledreleaseversion
 
 import (
 	"time"
@@ -6,8 +6,8 @@ import (
 	"github.com/dpb587/boshua/checksum"
 )
 
-type CompiledReleaseVersion struct {
-	CompiledReleaseVersionRef
+type Subject struct {
+	Reference
 
 	TarballURL       string
 	TarballSize      *uint64

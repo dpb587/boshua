@@ -1,4 +1,4 @@
-package compiledreleaseversions
+package datastore
 
 import "errors"
 

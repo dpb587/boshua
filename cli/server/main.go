@@ -8,15 +8,15 @@ import (
 
 	handlersv2 "github.com/dpb587/boshua/api/v2/handlers"
 	"github.com/dpb587/boshua/api/v2/middleware"
-	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	compiledreleaseversionsaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
 	compiledreleaseversionsfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
-	"github.com/dpb587/boshua/releaseversion/datastore"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionsaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionsfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/server/config"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversionsaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionsfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/dpb587/boshua/util"
@@ -53,10 +53,10 @@ func main() {
 		SecretsPath:  serverConfig.Concourse.SecretsPath,
 	}
 
-	var rv releaseversions.Index
+	var rv releaseversiondatastore.Index
 
 	{
-		var all []releaseversions.Index
+		var all []releaseversiondatastore.Index
 		factory := releaseversionsfactory.New(logger)
 
 		for _, cfg := range serverConfig.Releases {
@@ -71,10 +71,10 @@ func main() {
 		rv = releaseversionsaggregate.New(all...)
 	}
 
-	var sv stemcellversions.Index
+	var sv stemcellversiondatastore.Index
 
 	{
-		var all []stemcellversions.Index
+		var all []stemcellversiondatastore.Index
 		factory := stemcellversionsfactory.New(logger)
 
 		for _, cfg := range serverConfig.Stemcells {
@@ -89,10 +89,10 @@ func main() {
 		sv = stemcellversionsaggregate.New(all...)
 	}
 
-	var crv compiledreleaseversions.Index
+	var crv compiledreleaseversiondatastore.Index
 
 	{
-		var all []compiledreleaseversions.Index
+		var all []compiledreleaseversiondatastore.Index
 		factory := compiledreleaseversionsfactory.New(logger, rv)
 
 		for _, cfg := range serverConfig.CompiledReleases {

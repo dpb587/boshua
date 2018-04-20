@@ -11,7 +11,7 @@ import (
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
 )
 
 type PatchManifestCmd struct {
@@ -30,7 +30,7 @@ type PatchManifestCmd struct {
 func (c *PatchManifestCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("patch-manifest")
 
-	localStemcell := stemcellversions.StemcellVersionRef{
+	localStemcell := stemcellversion.Reference{
 		OS:      c.LocalStemcell.OS,
 		Version: c.LocalStemcell.Version,
 	}

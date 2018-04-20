@@ -13,10 +13,10 @@ import (
 
 type ListHandler struct {
 	logger               logrus.FieldLogger
-	stemcellVersionIndex stemcellversions.Index
+	stemcellVersionIndex datastore.Index
 }
 
-func NewListHandler(logger logrus.FieldLogger, stemcellVersionIndex stemcellversions.Index) http.Handler {
+func NewListHandler(logger logrus.FieldLogger, stemcellVersionIndex datastore.Index) http.Handler {
 	return &ListHandler{
 		logger: logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(ListHandler{}).PkgPath(),
