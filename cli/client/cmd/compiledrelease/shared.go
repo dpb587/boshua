@@ -40,7 +40,7 @@ func createMetalink(resInfo *models.CRVInfoResponse) metalink.Metalink {
 
 		meta4.Files[0].Hashes = append(meta4.Files[0].Hashes, metalink.Hash{
 			Type: csType,
-			Hash: string(checksum.Data()),
+			Hash: fmt.Sprintf("%x", checksum.Data()),
 		})
 	}
 
