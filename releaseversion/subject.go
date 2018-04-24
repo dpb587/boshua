@@ -25,6 +25,10 @@ func (s Subject) SubjectReference() boshua.Reference {
 	}
 }
 
+func (s Subject) SubjectMetalinkStorage() map[string]interface{} {
+	return s.MetalinkSource
+}
+
 func (s Subject) id() string {
 	cs := s.Checksums.Preferred()
 

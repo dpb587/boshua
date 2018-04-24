@@ -23,6 +23,19 @@ func (s ResolvedSubject) SubjectReference() boshua.Reference {
 	}
 }
 
+func (s ResolvedSubject) SubjectMetalinkStorage() map[string]interface{} {
+	return map[string]interface{}{
+		"uri": fmt.Sprintf("git@github.com:dpb587/bosh-compiled-releases-index.git//%s", s.StoragePath()),
+		"options": map[string]string{
+			"private_key": "((index_private_key))",
+		},
+	}
+}
+
+func (s ResolvedSubject) StoragePath() string {
+	return fmt.Sprintf("%s/%s/%s", s.SubjectReference().Context, s.SubjectReference().ID, "compilation")
+}
+
 func (s ResolvedSubject) id() string {
 	cs := s.ResolvedReleaseVersion.Checksums.Preferred()
 

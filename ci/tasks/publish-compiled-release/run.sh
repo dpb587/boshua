@@ -8,7 +8,7 @@ mkdir -p index-out/$storage
 
 tarball_path=$( echo $PWD/compiled-release/*.tgz )
 tarball_name="$( basename "$tarball_path" )"
-metalink_path="index-out/$storage/compiled-release.meta4"
+metalink_path="index-out/$storage/compilation.meta4"
 
 meta4 create --metalink="$metalink_path"
 meta4 set-published --metalink="$metalink_path" "$( date -u +%Y-%m-%dT%H:%M:%SZ )"

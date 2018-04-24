@@ -17,7 +17,7 @@ type Task struct {
 var _ task.Task = &Task{}
 
 func (t Task) Type() string {
-	return "compiledreleaseversion.compilation"
+	return "compilation"
 }
 
 func (t Task) SubjectReference() boshua.Reference {
@@ -25,8 +25,6 @@ func (t Task) SubjectReference() boshua.Reference {
 }
 
 func (t Task) Config() (atc.Config, error) {
-	cs := t.subject.ResolvedReleaseVersion.Checksums.Preferred()
-
 	contextBytes, err := json.MarshalIndent(map[string]interface{}{
 		"release": map[string]interface{}{
 			"name":      t.subject.ResolvedReleaseVersion.Name,
@@ -160,14 +158,7 @@ func (t Task) Config() (atc.Config, error) {
 								Task:           "publish-compiled-release",
 								TaskConfigPath: "bosh-compiled-releases/ci/tasks/publish-compiled-release/task.yml",
 								Params: atc.Params{
-									"storage": fmt.Sprintf(
-										"%s/%s/%s-%s/%s",
-										t.subject.ResolvedReleaseVersion.Name,
-										t.subject.ResolvedReleaseVersion.Version,
-										t.subject.ResolvedStemcellVersion.OS,
-										t.subject.ResolvedStemcellVersion.Version,
-										cs.String(),
-									),
+									"storage":         t.subject.StoragePath(),
 									"context":         string(contextBytes),
 									"release_version": t.subject.ResolvedReleaseVersion.Version,
 									"s3_bucket":       "((s3_bucket))",

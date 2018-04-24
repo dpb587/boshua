@@ -23,6 +23,10 @@ func (s Subject) SubjectReference() boshua.Reference {
 	}
 }
 
+func (s Subject) SubjectMetalinkStorage() map[string]interface{} {
+	return s.MetalinkSource
+}
+
 func (s Subject) id() string {
 	h := sha1.New()
 	h.Write([]byte(strings.Join(
