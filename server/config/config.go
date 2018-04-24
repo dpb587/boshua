@@ -2,9 +2,9 @@ package config
 
 type Config struct {
 	Concourse        ConcourseConfig   `yaml:"concourse"`
-	Stemcells        []DatastoreConfig `yaml:"stemcells"`
-	Releases         []DatastoreConfig `yaml:"releases"`
-	CompiledReleases []DatastoreConfig `yaml:"compiled_releases"`
+	Stemcells        []DatastoreConfig `yaml:"stemcell_versions"`
+	Releases         []DatastoreConfig `yaml:"release_versions"`
+	CompiledReleases []DatastoreConfig `yaml:"compiled_release_versions"`
 }
 
 type DatastoreConfig struct {
@@ -21,6 +21,5 @@ type ConcourseConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 
-	PipelinePath string `yaml:"pipeline_path"`
-	SecretsPath  string `yaml:"vars_path"`
+	SecretsPath string `yaml:"secrets_path"`
 }

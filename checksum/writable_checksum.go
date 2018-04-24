@@ -22,15 +22,15 @@ func (c *WritableChecksum) Data() []byte {
 	return c.hasher.Sum(nil)
 }
 
-func (c *WritableChecksum) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("%s:%x", c.algorithm.Name(), c.Data())), nil
-}
-
 func (c *WritableChecksum) Write(p []byte) (int, error) {
 	return c.hasher.Write(p)
 }
 
-func (c *WritableChecksum) String() string {
+func (c WritableChecksum) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%s:%x", c.algorithm.Name(), c.Data())), nil
+}
+
+func (c WritableChecksum) String() string {
 	r, _ := c.MarshalText()
 	return string(r)
 }

@@ -1,5 +1,9 @@
 package analysis
 
+import "github.com/dpb587/boshua"
+
 type Subject interface {
-	AnalysisSubject()
+	boshua.Subject
+
+	SupportedAnalyzers() []string
 }

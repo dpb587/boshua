@@ -11,27 +11,28 @@ import (
 	"github.com/dpb587/boshua/api/v2/models"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	"github.com/dpb587/boshua/compiledreleaseversion/manager"
+	"github.com/dpb587/boshua/compiledreleaseversion/task/compilation"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/stemcellversion"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/util"
 	"github.com/sirupsen/logrus"
 )
 
 type RequestHandler struct {
-	logger                      logrus.FieldLogger
-	cc                          *concourse.Runner
-	releaseStemcellResolver     *util.ReleaseStemcellResolver
-	compiledReleaseVersionIndex datastore.Index
+	logger                        logrus.FieldLogger
+	cc                            *concourse.Runner
+	compiledReleaseVersionManager *manager.Manager
+	compiledReleaseVersionIndex   datastore.Index
 }
 
 func NewRequestHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
-	releaseStemcellResolver *util.ReleaseStemcellResolver,
+	compiledReleaseVersionManager *manager.Manager,
 	compiledReleaseVersionIndex datastore.Index,
 ) http.Handler {
 	return &RequestHandler{
@@ -41,8 +42,8 @@ func NewRequestHandler(
 			"api.handler":   "compiledreleaseversion/request",
 		}),
 		cc: cc,
-		releaseStemcellResolver:     releaseStemcellResolver,
-		compiledReleaseVersionIndex: compiledReleaseVersionIndex,
+		compiledReleaseVersionManager: compiledReleaseVersionManager,
+		compiledReleaseVersionIndex:   compiledReleaseVersionIndex,
 	}
 }
 
@@ -69,7 +70,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var status scheduler.Status
 
-	_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
+	reqDataRef := compiledreleaseversion.Reference{
 		Release: releaseversion.Reference{
 			Name:     reqData.Release.Name,
 			Version:  reqData.Release.Version,
@@ -79,19 +80,12 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			OS:      reqData.Stemcell.OS,
 			Version: reqData.Stemcell.Version,
 		},
-	})
+	}
+	reqDataSubject := compiledreleaseversion.Subject{Reference: reqDataRef}
+
+	_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
 	if err == datastore.MissingErr {
-		release, stemcell, err := h.releaseStemcellResolver.Resolve(
-			releaseversion.Reference{
-				Name:     reqData.Release.Name,
-				Version:  reqData.Release.Version,
-				Checksum: reqData.Release.Checksum,
-			},
-			stemcellversion.Reference{
-				OS:      reqData.Stemcell.OS,
-				Version: reqData.Stemcell.Version,
-			},
-		)
+		resolvedCompiledReleaseVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataSubject)
 		if err == releaseversiondatastore.MissingErr || err == stemcellversiondatastore.MissingErr {
 			logger.WithField("error", err).Infof("resolving reference")
 
@@ -108,8 +102,10 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		task := compilation.New(resolvedCompiledReleaseVersion)
+
 		// check existing status
-		status, err = h.cc.Status(release, stemcell)
+		status, err = h.cc.Status(task)
 		if err != nil {
 			logger.WithField("error", err).Errorf("checking compilation status")
 
@@ -118,7 +114,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			return
 		} else if status == scheduler.StatusUnknown {
-			err = h.cc.Schedule(release, stemcell)
+			err = h.cc.Schedule(task)
 			if err != nil {
 				logger.WithField("error", err).Errorf("scheduling compiled release")
 
@@ -145,17 +141,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
-			Release: releaseversion.Reference{
-				Name:     reqData.Release.Name,
-				Version:  reqData.Release.Version,
-				Checksum: reqData.Release.Checksum,
-			},
-			Stemcell: stemcellversion.Reference{
-				OS:      reqData.Stemcell.OS,
-				Version: reqData.Stemcell.Version,
-			},
-		})
+		_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
 		if err == datastore.MissingErr {
 			status = scheduler.StatusFinishing
 		} else {

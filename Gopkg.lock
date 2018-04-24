@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/bmizerany/pat"
+  packages = ["."]
+  revision = "6226ea591a40176dd3ff9cd8eff81ed6ca721a00"
+
+[[projects]]
+  branch = "master"
   name = "github.com/charlievieth/fs"
   packages = ["."]
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
@@ -28,6 +34,12 @@
     "system"
   ]
   revision = "c6a922e299b8eb5eaadad8a2842e3ab7e043dc5d"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/concourse/atc"
+  packages = ["."]
+  revision = "4b3bab23aa15556b7666f21910a74a1d46e4d433"
 
 [[projects]]
   branch = "master"
@@ -124,6 +136,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+
+[[projects]]
+  branch = "master"
   name = "github.com/nu7hatch/gouuid"
   packages = ["."]
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
@@ -139,6 +157,12 @@
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
   version = "v1.0.5"
+
+[[projects]]
+  name = "github.com/tedsuo/rata"
+  packages = ["."]
+  revision = "0649c23705dfb45a9693b668c4fc1c0666f485d9"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -200,6 +224,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "05850d360290f91ba3b67be67409227141b405adc25eeaeed21de748c8059401"
+  inputs-digest = "7b314bf106b879ebd4bd8ff704c160aa374c0d1641806b8964f1c0bf3a7230b0"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -2,7 +2,6 @@ package concourse
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,9 +11,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/scheduler"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/scheduler/task"
 )
 
 type Runner struct {
@@ -25,51 +23,34 @@ type Runner struct {
 	Username string
 	Password string
 
-	PipelinePath string
-	SecretsPath  string
+	SecretsPath string
 
 	needsLogin bool
 }
 
-func (c *Runner) Schedule(release releaseversion.Subject, stemcell stemcellversion.Subject) error {
-	pipelineName := c.pipelineName(release, stemcell)
+func (c *Runner) Schedule(t task.Task) error {
+	pipelineName := fmt.Sprintf("%s:%s:%s", t.Type(), t.SubjectReference().Context, t.SubjectReference().ID)
 
-	file, err := ioutil.TempFile("", "bcr-")
+	file, err := ioutil.TempFile("", "boshua-")
 	if err != nil {
 		return fmt.Errorf("creating temp file: %v", err)
 	}
 
 	defer file.Close()
 
-	contextBytes, err := json.MarshalIndent(map[string]interface{}{
-		"release": map[string]interface{}{
-			"name":      release.Name,
-			"version":   release.Version,
-			"checksums": release.Checksums,
-		},
-		"stemcell": map[string]interface{}{
-			"os":      stemcell.OS,
-			"version": stemcell.Version,
-		},
-	}, "", "  ")
+	pipeline, err := t.Config()
 	if err != nil {
-		return fmt.Errorf("marshalling context: %v", err)
+		return fmt.Errorf("building pipeline: %v", err)
 	}
 
-	varsBytes, err := yaml.Marshal(map[string]interface{}{
-		"release_version": release.Version,
-		"release_source":  release.MetalinkSource,
-		"stemcell_source": stemcell.MetalinkSource,
-		"index_storage":   fmt.Sprintf("%s/%s/%s-%s/%s", release.Name, release.Version, stemcell.OS, stemcell.Version, release.Checksums.Preferred()),
-		"index_context":   string(contextBytes),
-	})
+	pipelineBytes, err := yaml.Marshal(pipeline)
 	if err != nil {
-		return fmt.Errorf("marshalling vars: %v", err)
+		return fmt.Errorf("marshaling pipeline: %v", err)
 	}
 
-	_, err = file.Write(varsBytes)
+	_, err = file.Write(pipelineBytes)
 	if err != nil {
-		return fmt.Errorf("writing temp file: %v", err)
+		return fmt.Errorf("writing pipeline: %v", err)
 	}
 
 	err = c.login()
@@ -81,9 +62,8 @@ func (c *Runner) Schedule(release releaseversion.Subject, stemcell stemcellversi
 		bytes.NewBufferString("y\n"),
 		"set-pipeline",
 		"--pipeline", pipelineName,
-		"--config", c.PipelinePath,
+		"--config", file.Name(),
 		"--load-vars-from", c.SecretsPath,
-		"--load-vars-from", file.Name(),
 	)
 	if err != nil {
 		return fmt.Errorf("setting pipeline: %v", err)
@@ -100,16 +80,15 @@ func (c *Runner) Schedule(release releaseversion.Subject, stemcell stemcellversi
 	return nil
 }
 
-func (c *Runner) Status(release releaseversion.Subject, stemcell stemcellversion.Subject) (scheduler.Status, error) {
+func (c *Runner) Status(t task.Task) (scheduler.Status, error) {
+	pipelineName := fmt.Sprintf("%s:%s:%s", t.Type(), t.SubjectReference().Context, t.SubjectReference().ID)
+
 	err := c.login()
 	if err != nil {
 		return scheduler.StatusUnknown, fmt.Errorf("logging in: %v", err)
 	}
 
-	stdout, stderr, err := c.run(
-		"jobs",
-		"--pipeline", c.pipelineName(release, stemcell),
-	)
+	stdout, stderr, err := c.run("jobs", "--pipeline", pipelineName)
 	if err != nil {
 		if strings.Contains(string(stderr), "error: resource not found") {
 			return scheduler.StatusUnknown, nil
@@ -145,17 +124,6 @@ func (c *Runner) Status(release releaseversion.Subject, stemcell stemcellversion
 	}
 
 	return scheduler.StatusUnknown, errors.New("unrecognized pipeline state")
-}
-
-func (c *Runner) pipelineName(release releaseversion.Subject, stemcell stemcellversion.Subject) string {
-	return fmt.Sprintf(
-		"bcr:%s:%s-%s-on-%s-stemcell-%s",
-		release.Checksums.Preferred(),
-		release.Name,
-		release.Version,
-		stemcell.OS,
-		stemcell.Version,
-	)
 }
 
 func (c *Runner) login() error {

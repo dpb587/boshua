@@ -1,6 +1,7 @@
 package checksum
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/dpb587/boshua/checksum/algorithm"
@@ -22,7 +23,14 @@ func (c *ImmutableChecksum) Data() []byte {
 }
 
 func (c *ImmutableChecksum) UnmarshalJSON(data []byte) error {
-	nc, err := CreateFromString(string(data))
+	var raw string
+
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+
+	nc, err := CreateFromString(raw)
 	if err != nil {
 		return fmt.Errorf("parsing checksum: %v", err)
 	}
@@ -32,11 +40,11 @@ func (c *ImmutableChecksum) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *ImmutableChecksum) MarshalText() ([]byte, error) {
+func (c ImmutableChecksum) MarshalText() ([]byte, error) {
 	return []byte(fmt.Sprintf("%s:%x", c.algorithm.Name(), c.data)), nil
 }
 
-func (c *ImmutableChecksum) String() string {
+func (c ImmutableChecksum) String() string {
 	r, _ := c.MarshalText()
 	return string(r)
 }

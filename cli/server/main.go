@@ -11,6 +11,7 @@ import (
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	compiledreleaseversionsaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
 	compiledreleaseversionsfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
+	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionsaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionsfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
@@ -19,7 +20,6 @@ import (
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversionsaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionsfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
-	"github.com/dpb587/boshua/util"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -43,14 +43,13 @@ func main() {
 	}
 
 	cc := &concourse.Runner{
-		Target:       serverConfig.Concourse.Target,
-		Insecure:     serverConfig.Concourse.Insecure,
-		URL:          serverConfig.Concourse.URL,
-		Team:         serverConfig.Concourse.Team,
-		Username:     serverConfig.Concourse.Username,
-		Password:     serverConfig.Concourse.Password,
-		PipelinePath: serverConfig.Concourse.PipelinePath,
-		SecretsPath:  serverConfig.Concourse.SecretsPath,
+		Target:      serverConfig.Concourse.Target,
+		Insecure:    serverConfig.Concourse.Insecure,
+		URL:         serverConfig.Concourse.URL,
+		Team:        serverConfig.Concourse.Team,
+		Username:    serverConfig.Concourse.Username,
+		Password:    serverConfig.Concourse.Password,
+		SecretsPath: serverConfig.Concourse.SecretsPath,
 	}
 
 	var rv releaseversiondatastore.Index
@@ -108,7 +107,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, util.NewReleaseStemcellResolver(rv, sv), crv, rv, sv)
+	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, sv)
 
 	loggingRouter := middleware.NewLogging(logger, r)
 	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)
