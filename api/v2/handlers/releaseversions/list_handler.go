@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/boshua/api/v2/models"
+	api "github.com/dpb587/boshua/api/v2/models/releaseversion"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/sirupsen/logrus"
@@ -39,7 +39,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := models.RVListResponse{}
+	res := api.GETIndexResponse{}
 
 	for _, result := range results {
 		var checksums checksum.ImmutableChecksums
@@ -52,7 +52,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			checksums = append(checksums, checksum)
 		}
 
-		res.Data = append(res.Data, models.ReleaseVersionRef{
+		res.Data = append(res.Data, api.Reference{
 			Name:     result.Name,
 			Version:  result.Version,
 			Checksum: checksums[0],

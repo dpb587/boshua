@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/dpb587/boshua/api/v2/models"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
 	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/util/metalinkutil"
 )
 
@@ -65,22 +65,17 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			log.Fatalf("parsing checksum: %v", err)
 		}
 
-		releaseVersionRef := models.ReleaseVersionRef{
-			Name:     rel.Name,
-			Version:  rel.Version,
-			Checksum: cs,
+		releaseVersionRef := releaseversion.Reference{
+			Name:      rel.Name,
+			Version:   rel.Version,
+			Checksums: checksum.ImmutableChecksums{cs},
 		}
-		osVersionRef := models.OSVersionRef{
+		osVersionRef := osversion.Reference{
 			Name:    rel.Stemcell.OS,
 			Version: rel.Stemcell.Version,
 		}
 
-		resInfo, err := apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
-			Data: models.CRVInfoRequestData{
-				ReleaseVersionRef: releaseVersionRef,
-				OSVersionRef:      osVersionRef,
-			},
-		})
+		resInfo, err := apiclient.GetCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
 		if err != nil {
 			log.Fatalf("finding compiled release: %v", err)
 		} else if resInfo == nil {
@@ -91,12 +86,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			priorStatus := "unknown"
 
 			for {
-				res, err := apiclient.CompiledReleaseVersionRequest(models.CRVRequestRequest{
-					Data: models.CRVRequestRequestData{
-						ReleaseVersionRef: releaseVersionRef,
-						OSVersionRef:      osVersionRef,
-					},
-				})
+				res, err := apiclient.RequestCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
 				if err != nil {
 					log.Fatalf("requesting compiled release: %v", err)
 				} else if res == nil {
@@ -121,12 +111,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 				continue
 			}
 
-			resInfo, err = apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
-				Data: models.CRVInfoRequestData{
-					ReleaseVersionRef: releaseVersionRef,
-					OSVersionRef:      osVersionRef,
-				},
-			})
+			resInfo, err = apiclient.GetCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
 			if err != nil {
 				log.Fatalf("finding compiled release: %v", err)
 			} else if resInfo == nil {
@@ -134,8 +119,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			}
 		}
 
-		rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String()
-		rel.Compiled.URL = resInfo.Data.Artifact.URLs[0].URL
+		rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String()
+		rel.Compiled.URL = resInfo.Data.URLs[0].URL
 
 		err = man.UpdateRelease(rel)
 		if err != nil {

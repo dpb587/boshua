@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/boshua/api/v2/models"
+	api "github.com/dpb587/boshua/api/v2/models/osversion"
 	"github.com/dpb587/boshua/osversion/datastore"
 	"github.com/sirupsen/logrus"
 )
@@ -38,10 +38,10 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := models.OVListResponse{}
+	res := api.GETListResponse{}
 
 	for _, result := range results {
-		res.Data = append(res.Data, models.OSVersionRef{
+		res.Data = append(res.Data, api.Reference{
 			Name:    result.Name,
 			Version: result.Version,
 		})

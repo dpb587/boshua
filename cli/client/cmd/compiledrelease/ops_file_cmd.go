@@ -25,16 +25,16 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 
 	opsBytes, err := yaml.Marshal([]map[string]interface{}{
 		{
-			"path": fmt.Sprintf("/releases/name=%s?", resInfo.Data.ReleaseVersionRef.Name),
+			"path": fmt.Sprintf("/releases/name=%s?", c.CompiledReleaseOpts.Release.Name),
 			"type": "replace",
 			"value": map[string]interface{}{
-				"name":    resInfo.Data.ReleaseVersionRef.Name,
-				"version": resInfo.Data.ReleaseVersionRef.Version,
-				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
-				"url":     resInfo.Data.Artifact.URLs[0].URL,
+				"name":    c.CompiledReleaseOpts.Release.Name,
+				"version": c.CompiledReleaseOpts.Release.Version,
+				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
+				"url":     resInfo.Data.URLs[0].URL,
 				"stemcell": map[string]string{
-					"os":      resInfo.Data.OSVersionRef.Name,
-					"version": resInfo.Data.OSVersionRef.Version,
+					"os":      c.CompiledReleaseOpts.OS.Name,
+					"version": c.CompiledReleaseOpts.OS.Version,
 				},
 			},
 		},

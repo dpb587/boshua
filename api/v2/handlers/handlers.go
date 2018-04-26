@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"github.com/dpb587/boshua/api/v2/handlers/compiledreleaseversion"
-	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
 	"github.com/dpb587/boshua/api/v2/handlers/osversions"
+	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
 	compiledreleaseversionsds "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
+	osversionsds "github.com/dpb587/boshua/osversion/datastore"
 	releaseversionsds "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler/concourse"
-	osversionsds "github.com/dpb587/boshua/osversion/datastore"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -22,9 +22,9 @@ func Mount(
 	releaseVersionIndex releaseversionsds.Index,
 	osVersionIndex osversionsds.Index,
 ) {
-	router.Handle("/compiled-release-version/info", compiledreleaseversion.NewInfoHandler(logger, compiledReleaseVersionIndex)).Methods("POST")
+	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewGETCompilationHandler(logger, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods("GET")
 	// router.Handle("/compiled-release-version/log", compiledreleaseversion.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods("POST")
-	router.Handle("/compiled-release-version/request", compiledreleaseversion.NewRequestHandler(logger, cc, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods("POST")
+	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewPOSTCompilationHandler(logger, cc, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods("POST")
 	router.Handle("/release-versions/list", releaseversions.NewListHandler(logger, releaseVersionIndex)).Methods("POST")
 	// router.Handle("/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods("POST")
 	// router.Handle("/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods("POST")

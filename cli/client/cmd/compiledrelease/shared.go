@@ -1,14 +1,14 @@
 package compiledrelease
 
 import (
-	"github.com/dpb587/boshua/api/v2/models"
+	api "github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
 	"github.com/dpb587/metalink"
 )
 
-func createMetalink(resInfo *models.CRVInfoResponse) metalink.Metalink {
+func createMetalink(compilation *api.GETCompilationResponse) metalink.Metalink {
 	meta4 := metalink.Metalink{
 		Files: []metalink.File{
-			resInfo.Data.Artifact,
+			compilation.Data,
 		},
 		Generator: "bosh-compiled-releases/0.0.0",
 	}
