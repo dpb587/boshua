@@ -30,10 +30,10 @@ func NewListHandler(logger logrus.FieldLogger, osVersionIndex datastore.Index) h
 func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	results, err := h.osVersionIndex.List()
 	if err != nil {
-		log.Printf("listing stemcell versions: %v", err)
+		log.Printf("listing os versions: %v", err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("ERROR: listing stemcell versions\n"))
+		w.Write([]byte("ERROR: listing os versions\n"))
 
 		return
 	}

@@ -21,7 +21,7 @@ type PatchManifestCmd struct {
 	Release     []string `long:"release" description:"Only check the release(s) matching this name (glob-friendly)"`
 	SkipRelease []string `long:"skip-release" description:"Skip the release(s) matching this name (glob-friendly)"`
 
-	LocalOS args.OS `long:"local-os" description:"Explicit local stemcell OS and version (used for bootstrap manifests)"`
+	LocalOS args.OS `long:"local-os" description:"Explicit local OS and version (used for bootstrap manifests)"`
 
 	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
 	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`

@@ -18,7 +18,7 @@ func (s *OS) UnmarshalFlag(data string) error {
 	split := strings.Split(data, "/")
 
 	if len(split) != 2 {
-		return fmt.Errorf("expected stemcell format of os/version: %s", data)
+		return fmt.Errorf("expected os format of name/version: %s", data)
 	}
 
 	s.Name = split[0]

@@ -2,4 +2,4 @@ package datastore
 
 import "errors"
 
-var MissingErr = errors.New("stemcell version not found")
+var MissingErr = errors.New("os version not found")

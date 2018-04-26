@@ -6,8 +6,8 @@ var _ analysis.Subject = &Artifact{}
 
 func (s Artifact) SupportedAnalyzers() []string {
 	return []string{
-		"stemcellimagechecksums.v1",
-		"stemcellimagefilestat.v1",
-		"stemcellmanifest.v1",
+		"osimagechecksums.v1",
+		"osimagefilestat.v1",
+		"osmanifest.v1",
 	}
 }

@@ -2,15 +2,15 @@ package manager
 
 import (
 	"github.com/dpb587/boshua/compiledreleaseversion"
-	"github.com/dpb587/boshua/releaseversion"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/osversion"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
+	"github.com/dpb587/boshua/releaseversion"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 )
 
 type Manager struct {
-	releaseVersionIndex  releaseversiondatastore.Index
-	osVersionIndex osversiondatastore.Index
+	releaseVersionIndex releaseversiondatastore.Index
+	osVersionIndex      osversiondatastore.Index
 }
 
 func NewManager(
@@ -18,8 +18,8 @@ func NewManager(
 	osVersionIndex osversiondatastore.Index,
 ) *Manager {
 	return &Manager{
-		releaseVersionIndex:  releaseVersionIndex,
-		osVersionIndex: osVersionIndex,
+		releaseVersionIndex: releaseVersionIndex,
+		osVersionIndex:      osVersionIndex,
 	}
 }
 
@@ -29,10 +29,10 @@ func (rsr *Manager) Resolve(ref compiledreleaseversion.Reference) (releaseversio
 		return releaseversion.Artifact{}, osversion.Artifact{}, err
 	}
 
-	stemcell, err := rsr.osVersionIndex.Find(ref.OSVersion)
+	os, err := rsr.osVersionIndex.Find(ref.OSVersion)
 	if err != nil {
 		return releaseversion.Artifact{}, osversion.Artifact{}, err
 	}
 
-	return release, stemcell, nil
+	return release, os, nil
 }

@@ -6,7 +6,7 @@ type CRVRequestRequest struct {
 
 type CRVRequestRequestData struct {
 	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref"`
-	OSVersionRef OSVersionRef `json:"stemcell_version_ref"`
+	OSVersionRef OSVersionRef `json:"os_version_ref"`
 }
 
 type CRVRequestResponse struct {
