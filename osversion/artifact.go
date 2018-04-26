@@ -1,4 +1,4 @@
-package stemcellversion
+package osversion
 
 import (
 	"crypto/sha1"
@@ -20,7 +20,7 @@ var _ boshua.Artifact = &Artifact{}
 
 func (s Artifact) ArtifactReference() boshua.Reference {
 	return boshua.Reference{
-		Context: "stemcellversion",
+		Context: "osversion",
 		ID:      s.id(),
 	}
 }

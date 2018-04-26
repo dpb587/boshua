@@ -6,7 +6,7 @@ import (
 
 	"github.com/dpb587/boshua"
 	"github.com/dpb587/boshua/releaseversion"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/metalink"
 )
 
@@ -15,7 +15,7 @@ type Artifact struct {
 	MetalinkSource map[string]interface{}
 
 	ReleaseVersion  releaseversion.Reference
-	StemcellVersion stemcellversion.Reference
+	OSVersion osversion.Reference
 }
 
 func (s Artifact) ArtifactReference() boshua.Reference {
@@ -42,8 +42,8 @@ func (s Artifact) id() string {
 	h := sha1.New()
 	h.Write([]byte(fmt.Sprintf(
 		"compiledreleaseversion:v1:%s:%s:%s",
-		s.StemcellVersion.OS,
-		s.StemcellVersion.Version,
+		s.OSVersion.OS,
+		s.OSVersion.Version,
 		s.ReleaseVersion.ArtifactReference().ID,
 	)))
 

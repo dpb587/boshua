@@ -18,7 +18,7 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
@@ -147,7 +147,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 
 			inmemory = append(inmemory, compiledreleaseversion.New(
 				releaseRef,
-				stemcellversion.Reference{
+				osversion.Reference{
 					OS:      record.Stemcell.OS,
 					Version: record.Stemcell.Version,
 				},

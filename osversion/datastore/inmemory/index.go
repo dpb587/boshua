@@ -3,12 +3,12 @@ package inmemory
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/stemcellversion"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/osversion/datastore"
 )
 
 type index struct {
-	inmemory []stemcellversion.Artifact
+	inmemory []osversion.Artifact
 
 	loader   Loader
 	reloader Reloader
@@ -50,29 +50,29 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return osversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
-	for _, stemcellversion := range i.inmemory {
-		if stemcellversion.Reference.OS != ref.OS {
+	for _, osversion := range i.inmemory {
+		if osversion.Reference.OS != ref.OS {
 			continue
-		} else if stemcellversion.Reference.Version != ref.Version {
+		} else if osversion.Reference.Version != ref.Version {
 			continue
 		}
 
-		return stemcellversion, nil
+		return osversion, nil
 	}
 
-	return stemcellversion.Artifact{}, datastore.MissingErr
+	return osversion.Artifact{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]stemcellversion.Artifact, error) {
+func (i *index) List() ([]osversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return []stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return []osversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

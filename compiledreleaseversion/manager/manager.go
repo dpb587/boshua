@@ -4,34 +4,34 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion"
-	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/osversion"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 )
 
 type Manager struct {
 	releaseVersionIndex  releaseversiondatastore.Index
-	stemcellVersionIndex stemcellversiondatastore.Index
+	osVersionIndex osversiondatastore.Index
 }
 
 func NewManager(
 	releaseVersionIndex releaseversiondatastore.Index,
-	stemcellVersionIndex stemcellversiondatastore.Index,
+	osVersionIndex osversiondatastore.Index,
 ) *Manager {
 	return &Manager{
 		releaseVersionIndex:  releaseVersionIndex,
-		stemcellVersionIndex: stemcellVersionIndex,
+		osVersionIndex: osVersionIndex,
 	}
 }
 
-func (rsr *Manager) Resolve(ref compiledreleaseversion.Reference) (releaseversion.Artifact, stemcellversion.Artifact, error) {
+func (rsr *Manager) Resolve(ref compiledreleaseversion.Reference) (releaseversion.Artifact, osversion.Artifact, error) {
 	release, err := rsr.releaseVersionIndex.Find(ref.ReleaseVersion)
 	if err != nil {
-		return releaseversion.Artifact{}, stemcellversion.Artifact{}, err
+		return releaseversion.Artifact{}, osversion.Artifact{}, err
 	}
 
-	stemcell, err := rsr.stemcellVersionIndex.Find(ref.StemcellVersion)
+	stemcell, err := rsr.osVersionIndex.Find(ref.OSVersion)
 	if err != nil {
-		return releaseversion.Artifact{}, stemcellversion.Artifact{}, err
+		return releaseversion.Artifact{}, osversion.Artifact{}, err
 	}
 
 	return release, stemcell, nil

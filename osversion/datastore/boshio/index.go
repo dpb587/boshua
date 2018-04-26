@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/boshua/stemcellversion"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore/inmemory"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/osversion/datastore"
+	"github.com/dpb587/boshua/osversion/datastore/inmemory"
 	"github.com/dpb587/metalink"
 
 	"github.com/sirupsen/logrus"
@@ -46,11 +46,11 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return idx
 }
 
-func (i *index) List() ([]stemcellversion.Artifact, error) {
+func (i *index) List() ([]osversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -90,7 +90,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]stemcellversion.Artifact, error) {
+func (i *index) loader() ([]osversion.Artifact, error) {
 	i.lastLoaded = time.Now()
 
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.localPath))
@@ -100,10 +100,10 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []stemcellversion.Artifact{}
+	var inmemory = []osversion.Artifact{}
 
 	for _, meta4Path := range paths {
-		ref := stemcellversion.Reference{
+		ref := osversion.Reference{
 			OS:      path.Base(path.Dir(path.Dir(meta4Path))),
 			Version: path.Base(path.Dir(meta4Path)),
 		}
@@ -137,7 +137,7 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 
 		inmemory = append(
 			inmemory,
-			stemcellversion.New(
+			osversion.New(
 				ref,
 				*meta4File,
 				map[string]interface{}{

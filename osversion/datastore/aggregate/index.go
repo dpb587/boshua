@@ -3,8 +3,8 @@ package aggregate
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/stemcellversion"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/osversion/datastore"
 )
 
 type index struct {
@@ -19,8 +19,8 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]stemcellversion.Artifact, error) {
-	var result []stemcellversion.Artifact
+func (i *index) List() ([]osversion.Artifact, error) {
+	var result []osversion.Artifact
 
 	for idxIdx, idx := range i.aggregated {
 		listed, err := idx.List()
@@ -34,17 +34,17 @@ func (i *index) List() ([]stemcellversion.Artifact, error) {
 	return result, nil
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
 	for idxIdx, idx := range i.aggregated {
 		found, err := idx.Find(ref)
 		if err == datastore.MissingErr {
 			continue
 		} else if err != nil {
-			return stemcellversion.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return osversion.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
 		return found, nil
 	}
 
-	return stemcellversion.Artifact{}, datastore.MissingErr
+	return osversion.Artifact{}, datastore.MissingErr
 }

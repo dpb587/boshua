@@ -6,12 +6,12 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 
 	"github.com/cppforlife/go-patch/patch"
 )
 
-func Parse(manifestBytes []byte, localStemcell stemcellversion.Reference) (*Manifest, error) {
+func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, error) {
 	var parsed parseManifest
 
 	err := yaml.Unmarshal(manifestBytes, &parsed)

@@ -1,4 +1,4 @@
-package stemcellversions
+package osversions
 
 import (
 	"encoding/json"
@@ -7,28 +7,28 @@ import (
 	"reflect"
 
 	"github.com/dpb587/boshua/api/v2/models"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/osversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
 type ListHandler struct {
 	logger               logrus.FieldLogger
-	stemcellVersionIndex datastore.Index
+	osVersionIndex datastore.Index
 }
 
-func NewListHandler(logger logrus.FieldLogger, stemcellVersionIndex datastore.Index) http.Handler {
+func NewListHandler(logger logrus.FieldLogger, osVersionIndex datastore.Index) http.Handler {
 	return &ListHandler{
 		logger: logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(ListHandler{}).PkgPath(),
 			"api.version":   "v2",
-			"api.handler":   "stemcellversions/list",
+			"api.handler":   "osversions/list",
 		}),
-		stemcellVersionIndex: stemcellVersionIndex,
+		osVersionIndex: osVersionIndex,
 	}
 }
 
 func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	results, err := h.stemcellVersionIndex.List()
+	results, err := h.osVersionIndex.List()
 	if err != nil {
 		log.Printf("listing stemcell versions: %v", err)
 
@@ -38,10 +38,10 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := models.SVListResponse{}
+	res := models.OVListResponse{}
 
 	for _, result := range results {
-		res.Data = append(res.Data, models.StemcellVersionRef{
+		res.Data = append(res.Data, models.OSVersionRef{
 			OS:      result.OS,
 			Version: result.Version,
 		})

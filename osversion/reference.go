@@ -1,4 +1,4 @@
-package stemcellversion
+package osversion
 
 type Reference struct {
 	OS      string

@@ -11,7 +11,7 @@ import (
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/util/metalinkutil"
 )
 
@@ -31,7 +31,7 @@ type PatchManifestCmd struct {
 func (c *PatchManifestCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("patch-manifest")
 
-	localStemcell := stemcellversion.Reference{
+	localStemcell := osversion.Reference{
 		OS:      c.LocalStemcell.OS,
 		Version: c.LocalStemcell.Version,
 	}
@@ -70,7 +70,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			Version:  rel.Version,
 			Checksum: cs,
 		}
-		stemcellVersionRef := models.StemcellVersionRef{
+		osVersionRef := models.OSVersionRef{
 			OS:      rel.Stemcell.OS,
 			Version: rel.Stemcell.Version,
 		}
@@ -78,7 +78,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 		resInfo, err := apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
 				ReleaseVersionRef:  releaseVersionRef,
-				StemcellVersionRef: stemcellVersionRef,
+				OSVersionRef: osVersionRef,
 			},
 		})
 		if err != nil {
@@ -94,7 +94,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 				res, err := apiclient.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
 						ReleaseVersionRef:  releaseVersionRef,
-						StemcellVersionRef: stemcellVersionRef,
+						OSVersionRef: osVersionRef,
 					},
 				})
 				if err != nil {
@@ -124,7 +124,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			resInfo, err = apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 				Data: models.CRVInfoRequestData{
 					ReleaseVersionRef:  releaseVersionRef,
-					StemcellVersionRef: stemcellVersionRef,
+					OSVersionRef: osVersionRef,
 				},
 			})
 			if err != nil {

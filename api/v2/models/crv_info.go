@@ -10,7 +10,7 @@ type CRVInfoRequest struct {
 
 type CRVInfoRequestData struct {
 	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref"`
-	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref"`
+	OSVersionRef OSVersionRef `json:"stemcell_version_ref"`
 }
 
 type CRVInfoResponse struct {
@@ -19,6 +19,6 @@ type CRVInfoResponse struct {
 
 type CRVInfoResponseData struct {
 	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref,omitempty"`
-	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref,omitempty"`
+	OSVersionRef OSVersionRef `json:"stemcell_version_ref,omitempty"`
 	Artifact           metalink.File      `json:"artifact,omitempty"`
 }

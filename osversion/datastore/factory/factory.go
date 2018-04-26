@@ -3,8 +3,8 @@ package factory
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore/boshio"
+	"github.com/dpb587/boshua/osversion/datastore"
+	"github.com/dpb587/boshua/osversion/datastore/boshio"
 	"github.com/sirupsen/logrus"
 )
 

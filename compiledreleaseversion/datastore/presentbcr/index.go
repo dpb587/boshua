@@ -16,7 +16,7 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
 	"github.com/dpb587/boshua/releaseversion"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
@@ -135,7 +135,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 					Version:   bcrJson.Release.Version,
 					Checksums: bcrJson.Release.Checksums,
 				},
-				stemcellversion.Reference{
+				osversion.Reference{
 					OS:      bcrJson.Stemcell.OS,
 					Version: bcrJson.Stemcell.Version,
 				},

@@ -9,13 +9,13 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/scheduler/task"
-	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/osversion"
 )
 
 type Task struct {
 	artifact        compiledreleaseversion.Artifact
 	releaseVersion  releaseversion.Artifact
-	stemcellVersion stemcellversion.Artifact
+	osVersion osversion.Artifact
 }
 
 var _ task.Task = &Task{}
@@ -36,8 +36,8 @@ func (t Task) Config() (atc.Config, error) {
 			"checksums": t.artifact.ReleaseVersion.Checksums,
 		},
 		"stemcell": map[string]interface{}{
-			"os":      t.artifact.StemcellVersion.OS,
-			"version": t.artifact.StemcellVersion.Version,
+			"os":      t.artifact.OSVersion.OS,
+			"version": t.artifact.OSVersion.Version,
 		},
 	}, "", "  ")
 	if err != nil {
@@ -76,7 +76,7 @@ func (t Task) Config() (atc.Config, error) {
 				Name:       "stemcell",
 				CheckEvery: "24h",
 				Type:       "metalink-repository",
-				Source:     atc.Source(t.stemcellVersion.ArtifactMetalinkStorage()),
+				Source:     atc.Source(t.osVersion.ArtifactMetalinkStorage()),
 			},
 			{
 				Name:       "release",

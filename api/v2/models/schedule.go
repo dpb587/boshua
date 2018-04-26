@@ -6,7 +6,7 @@ type ScheduleRequest struct {
 
 type ScheduleRequestData struct {
 	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref"`
-	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref"`
+	OSVersionRef OSVersionRef `json:"stemcell_version_ref"`
 }
 
 type ScheduleResponse struct {

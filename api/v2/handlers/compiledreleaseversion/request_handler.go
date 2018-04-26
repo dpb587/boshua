@@ -18,8 +18,8 @@ import (
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler"
 	"github.com/dpb587/boshua/scheduler/concourse"
-	"github.com/dpb587/boshua/stemcellversion"
-	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/osversion"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -65,8 +65,8 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"release.name":     reqData.ReleaseVersionRef.Name,
 		"release.version":  reqData.ReleaseVersionRef.Version,
 		"release.checksum": reqData.ReleaseVersionRef.Checksum,
-		"stemcell.os":      reqData.StemcellVersionRef.OS,
-		"stemcell.version": reqData.StemcellVersionRef.Version,
+		"stemcell.os":      reqData.OSVersionRef.OS,
+		"stemcell.version": reqData.OSVersionRef.Version,
 	})
 
 	var status scheduler.Status
@@ -77,16 +77,16 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Version:   reqData.ReleaseVersionRef.Version,
 			Checksums: checksum.ImmutableChecksums{reqData.ReleaseVersionRef.Checksum},
 		},
-		StemcellVersion: stemcellversion.Reference{
-			OS:      reqData.StemcellVersionRef.OS,
-			Version: reqData.StemcellVersionRef.Version,
+		OSVersion: osversion.Reference{
+			OS:      reqData.OSVersionRef.OS,
+			Version: reqData.OSVersionRef.Version,
 		},
 	}
 
 	_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
 	if err == datastore.MissingErr {
-		releaseVersion, stemcellVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataRef)
-		if err == releaseversiondatastore.MissingErr || err == stemcellversiondatastore.MissingErr {
+		releaseVersion, osVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataRef)
+		if err == releaseversiondatastore.MissingErr || err == osversiondatastore.MissingErr {
 			logger.WithField("error", err).Infof("resolving reference")
 
 			w.WriteHeader(http.StatusNotFound)
@@ -102,7 +102,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		task := compilation.New(releaseVersion, stemcellVersion)
+		task := compilation.New(releaseVersion, osVersion)
 
 		// check existing status
 		status, err = h.cc.Status(task)

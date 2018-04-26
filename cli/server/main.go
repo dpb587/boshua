@@ -17,9 +17,9 @@ import (
 	releaseversionsfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/server/config"
-	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	stemcellversionsaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
-	stemcellversionsfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
+	osversionsaggregate "github.com/dpb587/boshua/osversion/datastore/aggregate"
+	osversionsfactory "github.com/dpb587/boshua/osversion/datastore/factory"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -70,11 +70,11 @@ func main() {
 		rv = releaseversionsaggregate.New(all...)
 	}
 
-	var sv stemcellversiondatastore.Index
+	var sv osversiondatastore.Index
 
 	{
-		var all []stemcellversiondatastore.Index
-		factory := stemcellversionsfactory.New(logger)
+		var all []osversiondatastore.Index
+		factory := osversionsfactory.New(logger)
 
 		for _, cfg := range serverConfig.Stemcells {
 			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
@@ -85,7 +85,7 @@ func main() {
 			all = append(all, idx)
 		}
 
-		sv = stemcellversionsaggregate.New(all...)
+		sv = osversionsaggregate.New(all...)
 	}
 
 	var crv compiledreleaseversiondatastore.Index

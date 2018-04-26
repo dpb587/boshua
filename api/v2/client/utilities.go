@@ -8,11 +8,11 @@ import (
 	"github.com/dpb587/boshua/api/v2/models"
 )
 
-func RequestAndWait(client *Client, releaseRef models.ReleaseVersionRef, stemcellRef models.StemcellVersionRef) (*models.CRVInfoResponse, error) {
+func RequestAndWait(client *Client, releaseRef models.ReleaseVersionRef, stemcellRef models.OSVersionRef) (*models.CRVInfoResponse, error) {
 	resInfo, err := client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 		Data: models.CRVInfoRequestData{
 			ReleaseVersionRef:  releaseRef,
-			StemcellVersionRef: stemcellRef,
+			OSVersionRef: stemcellRef,
 		},
 	})
 	if err != nil {
@@ -24,7 +24,7 @@ func RequestAndWait(client *Client, releaseRef models.ReleaseVersionRef, stemcel
 			res, err := client.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 				Data: models.CRVRequestRequestData{
 					ReleaseVersionRef:  releaseRef,
-					StemcellVersionRef: stemcellRef,
+					OSVersionRef: stemcellRef,
 				},
 			})
 			if err != nil {
@@ -48,7 +48,7 @@ func RequestAndWait(client *Client, releaseRef models.ReleaseVersionRef, stemcel
 		resInfo, err = client.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
 				ReleaseVersionRef:  releaseRef,
-				StemcellVersionRef: stemcellRef,
+				OSVersionRef: stemcellRef,
 			},
 		})
 		if err != nil {

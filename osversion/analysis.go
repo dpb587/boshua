@@ -1,4 +1,4 @@
-package stemcellversion
+package osversion
 
 import "github.com/dpb587/boshua/analysis"
 
