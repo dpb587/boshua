@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/dpb587/boshua/util/metalinkutil"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -24,16 +25,16 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 
 	opsBytes, err := yaml.Marshal([]map[string]interface{}{
 		{
-			"path": fmt.Sprintf("/releases/name=%s?", resInfo.Data.Release.Name),
+			"path": fmt.Sprintf("/releases/name=%s?", resInfo.Data.ReleaseVersionRef.Name),
 			"type": "replace",
 			"value": map[string]interface{}{
-				"name":    resInfo.Data.Release.Name,
-				"version": resInfo.Data.Release.Version,
-				"sha1":    strings.TrimPrefix(resInfo.Data.Tarball.Checksums[0].String(), "sha1:"), // TODO .Preferred()
-				"url":     resInfo.Data.Tarball.URLs[0],
+				"name":    resInfo.Data.ReleaseVersionRef.Name,
+				"version": resInfo.Data.ReleaseVersionRef.Version,
+				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
+				"url":     resInfo.Data.Artifact.URLs[0].URL,
 				"stemcell": map[string]string{
-					"os":      resInfo.Data.Stemcell.OS,
-					"version": resInfo.Data.Stemcell.Version,
+					"os":      resInfo.Data.StemcellVersionRef.OS,
+					"version": resInfo.Data.StemcellVersionRef.Version,
 				},
 			},
 		},

@@ -20,8 +20,8 @@ func (t Task) Type() string {
 	return t.analyzer
 }
 
-func (t Task) SubjectReference() boshua.Reference {
-	return t.subject.SubjectReference()
+func (t Task) ArtifactReference() boshua.Reference {
+	return t.subject.ArtifactReference()
 }
 
 func (t Task) Config() (atc.Config, error) {
@@ -49,7 +49,7 @@ func (t Task) Config() (atc.Config, error) {
 				Name:       "artifact",
 				CheckEvery: "24h",
 				Type:       "metalink-repository",
-				Source:     atc.Source(t.subject.SubjectMetalinkStorage()),
+				Source:     atc.Source(t.subject.ArtifactMetalinkStorage()),
 			},
 			{
 				Name:       "index",
@@ -96,8 +96,8 @@ func (t Task) Config() (atc.Config, error) {
 						Params: atc.Params{
 							"storage": fmt.Sprintf(
 								"%s/%s/%s",
-								t.subject.SubjectReference().Context,
-								t.subject.SubjectReference().ID,
+								t.subject.ArtifactReference().Context,
+								t.subject.ArtifactReference().ID,
 								t.analyzer,
 							),
 							"analyzer":      t.analyzer,

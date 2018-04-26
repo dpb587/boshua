@@ -19,8 +19,8 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]releaseversion.Subject, error) {
-	var result []releaseversion.Subject
+func (i *index) List() ([]releaseversion.Artifact, error) {
+	var result []releaseversion.Artifact
 
 	for idxIdx, idx := range i.aggregated {
 		listed, err := idx.List()
@@ -34,17 +34,17 @@ func (i *index) List() ([]releaseversion.Subject, error) {
 	return result, nil
 }
 
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
 	for idxIdx, idx := range i.aggregated {
 		found, err := idx.Find(ref)
 		if err == datastore.MissingErr {
 			continue
 		} else if err != nil {
-			return releaseversion.Subject{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return releaseversion.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
 		return found, nil
 	}
 
-	return releaseversion.Subject{}, datastore.MissingErr
+	return releaseversion.Artifact{}, datastore.MissingErr
 }

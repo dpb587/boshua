@@ -12,14 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
 	"github.com/dpb587/boshua/releaseversion"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion"
-	"github.com/dpb587/boshua/util"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +33,7 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logger logrus.FieldLogger) datastore.Index {
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: config.Repository,
@@ -44,16 +41,16 @@ func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logge
 		pullInterval:       config.PullInterval,
 	}
 
-	idx.inmemory = inmemory.New(idx.loader, idx.reloader, releaseVersionIndex)
+	idx.inmemory = inmemory.New(idx.loader, idx.reloader)
 
 	return idx
 }
 
-func (i *index) List() ([]compiledreleaseversion.Subject, error) {
+func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Subject, error) {
+func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -93,7 +90,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
+func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/compiled-release.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
@@ -101,7 +98,7 @@ func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []compiledreleaseversion.Subject{}
+	var inmemory = []compiledreleaseversion.Artifact{}
 
 	for _, bcrJsonPath := range paths {
 		bcrBytes, err := ioutil.ReadFile(bcrJsonPath)
@@ -116,56 +113,39 @@ func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
 			return nil, fmt.Errorf("unmarshalling %s: %v", bcrJsonPath, err)
 		}
 
-		bcrMeta4Path := path.Join(path.Dir(bcrJsonPath), "compiled-release.meta4")
+		meta4Path := path.Join(path.Dir(bcrJsonPath), "compiled-release.meta4")
 
-		meta4Bytes, err := ioutil.ReadFile(bcrMeta4Path)
+		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {
-			return nil, fmt.Errorf("reading %s: %v", bcrMeta4Path, err)
+			return nil, fmt.Errorf("reading %s: %v", meta4Path, err)
 		}
 
-		var bcrMeta4 metalink.Metalink
+		var meta4 metalink.Metalink
 
-		err = metalink.Unmarshal(meta4Bytes, &bcrMeta4)
+		err = metalink.Unmarshal(meta4Bytes, &meta4)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshalling %s: %v", bcrMeta4Path, err)
+			return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 		}
 
-		bcr := compiledreleaseversion.Subject{
-			Reference: compiledreleaseversion.Reference{
-				Release: releaseversion.Reference{
-					Name:     bcrJson.Release.Name,
-					Version:  bcrJson.Release.Version,
-					Checksum: bcrJson.Release.Checksums[0],
+		inmemory = append(
+			inmemory,
+			compiledreleaseversion.New(
+				releaseversion.Reference{
+					Name:      bcrJson.Release.Name,
+					Version:   bcrJson.Release.Version,
+					Checksums: bcrJson.Release.Checksums,
 				},
-				Stemcell: stemcellversion.Reference{
+				stemcellversion.Reference{
 					OS:      bcrJson.Stemcell.OS,
 					Version: bcrJson.Stemcell.Version,
 				},
-			},
-		}
-
-		bcr.TarballPublished = bcrMeta4.Published
-		bcr.TarballSize = &bcrMeta4.Files[0].Size
-
-		for _, hash := range bcrMeta4.Files[0].Hashes {
-			hashType, err := util.FromMetalinkHashType(hash.Type)
-			if err != nil {
-				continue
-			}
-
-			cs, err := checksum.CreateFromString(fmt.Sprintf("%s:%s", hashType, hash.Hash))
-			if err != nil {
-				continue
-			}
-
-			bcr.TarballChecksums = append(bcr.TarballChecksums, cs)
-		}
-
-		for _, url := range bcrMeta4.Files[0].URLs {
-			bcr.TarballURL = url.URL
-		}
-
-		inmemory = append(inmemory, bcr)
+				meta4.Files[0],
+				map[string]interface{}{
+					"uri":     fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+					"version": bcrJson.Release.Version,
+				},
+			),
+		)
 	}
 
 	return inmemory, nil

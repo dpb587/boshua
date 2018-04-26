@@ -6,6 +6,6 @@ import (
 )
 
 type Reference struct {
-	Release  releaseversion.Reference
-	Stemcell stemcellversion.Reference
+	ReleaseVersion  releaseversion.Reference
+	StemcellVersion stemcellversion.Reference
 }

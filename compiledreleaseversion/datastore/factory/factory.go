@@ -35,7 +35,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 			return nil, fmt.Errorf("loading options: %v", err)
 		}
 
-		return presentbcr.New(config, f.releaseVersionsIndex, logger), nil
+		return presentbcr.New(config, logger), nil
 	case "legacybcr":
 		config := legacybcr.Config{}
 		err := config.Load(options)

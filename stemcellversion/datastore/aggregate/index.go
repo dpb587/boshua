@@ -19,8 +19,8 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]stemcellversion.Subject, error) {
-	var result []stemcellversion.Subject
+func (i *index) List() ([]stemcellversion.Artifact, error) {
+	var result []stemcellversion.Artifact
 
 	for idxIdx, idx := range i.aggregated {
 		listed, err := idx.List()
@@ -34,17 +34,17 @@ func (i *index) List() ([]stemcellversion.Subject, error) {
 	return result, nil
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
 	for idxIdx, idx := range i.aggregated {
 		found, err := idx.Find(ref)
 		if err == datastore.MissingErr {
 			continue
 		} else if err != nil {
-			return stemcellversion.Subject{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return stemcellversion.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
 		return found, nil
 	}
 
-	return stemcellversion.Subject{}, datastore.MissingErr
+	return stemcellversion.Artifact{}, datastore.MissingErr
 }

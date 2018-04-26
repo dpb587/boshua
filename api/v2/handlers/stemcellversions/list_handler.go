@@ -41,7 +41,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	res := models.SVListResponse{}
 
 	for _, result := range results {
-		res.Data = append(res.Data, models.StemcellRef{
+		res.Data = append(res.Data, models.StemcellVersionRef{
 			OS:      result.OS,
 			Version: result.Version,
 		})

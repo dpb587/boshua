@@ -11,12 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
-	"github.com/dpb587/boshua/util"
-
+	"github.com/dpb587/boshua/util/metalinkutil"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
@@ -46,11 +44,11 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return idx
 }
 
-func (i *index) List() ([]releaseversion.Subject, error) {
+func (i *index) List() ([]releaseversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -90,7 +88,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]releaseversion.Subject, error) {
+func (i *index) loader() ([]releaseversion.Artifact, error) {
 	paths, err := filepath.Glob(filepath.Join(i.localPath, "*.meta4"))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
@@ -98,15 +96,9 @@ func (i *index) loader() ([]releaseversion.Subject, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []releaseversion.Subject{}
+	var inmemory = []releaseversion.Artifact{}
 
 	for _, meta4Path := range paths {
-		releaseversion := releaseversion.Subject{
-			Reference: releaseversion.Reference{},
-			MetalinkSource: map[string]interface{}{
-				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
-			},
-		}
 
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {
@@ -120,25 +112,25 @@ func (i *index) loader() ([]releaseversion.Subject, error) {
 			return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 		}
 
-		for _, hash := range meta4.Files[0].Hashes {
-			hashType, err := util.FromMetalinkHashType(hash.Type)
-			if err != nil {
-				continue
-			}
+		meta4File := meta4.Files[0]
 
-			cs, err := checksum.CreateFromString(fmt.Sprintf("%s:%s", hashType, hash.Hash))
-			if err != nil {
-				continue
-			}
-
-			releaseversion.Checksums = append(releaseversion.Checksums, cs)
+		ref := releaseversion.Reference{
+			Name:      path.Base(path.Dir(meta4Path)),
+			Version:   meta4File.Version,
+			Checksums: metalinkutil.HashesToChecksums(meta4File.Hashes),
 		}
 
-		releaseversion.Reference.Name = path.Base(path.Dir(meta4Path))
-		releaseversion.Reference.Version = meta4.Files[0].Version
-		releaseversion.MetalinkSource["version"] = releaseversion.Reference.Version
-
-		inmemory = append(inmemory, releaseversion)
+		inmemory = append(
+			inmemory,
+			releaseversion.New(
+				ref,
+				meta4File,
+				map[string]interface{}{
+					"uri":     fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+					"version": ref.Version,
+				},
+			),
+		)
 	}
 
 	return inmemory, nil

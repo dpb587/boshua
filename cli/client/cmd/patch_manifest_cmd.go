@@ -12,6 +12,7 @@ import (
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
 	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/boshua/util/metalinkutil"
 )
 
 type PatchManifestCmd struct {
@@ -64,20 +65,20 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			log.Fatalf("parsing checksum: %v", err)
 		}
 
-		releaseRef := models.ReleaseRef{
+		releaseVersionRef := models.ReleaseVersionRef{
 			Name:     rel.Name,
 			Version:  rel.Version,
 			Checksum: cs,
 		}
-		stemcellRef := models.StemcellRef{
+		stemcellVersionRef := models.StemcellVersionRef{
 			OS:      rel.Stemcell.OS,
 			Version: rel.Stemcell.Version,
 		}
 
 		resInfo, err := apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
-				Release:  releaseRef,
-				Stemcell: stemcellRef,
+				ReleaseVersionRef:  releaseVersionRef,
+				StemcellVersionRef: stemcellVersionRef,
 			},
 		})
 		if err != nil {
@@ -92,8 +93,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			for {
 				res, err := apiclient.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
-						Release:  releaseRef,
-						Stemcell: stemcellRef,
+						ReleaseVersionRef:  releaseVersionRef,
+						StemcellVersionRef: stemcellVersionRef,
 					},
 				})
 				if err != nil {
@@ -122,8 +123,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 
 			resInfo, err = apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 				Data: models.CRVInfoRequestData{
-					Release:  releaseRef,
-					Stemcell: stemcellRef,
+					ReleaseVersionRef:  releaseVersionRef,
+					StemcellVersionRef: stemcellVersionRef,
 				},
 			})
 			if err != nil {
@@ -133,8 +134,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			}
 		}
 
-		rel.Compiled.Sha1 = resInfo.Data.Tarball.Checksums[0].String()
-		rel.Compiled.URL = resInfo.Data.Tarball.URLs[0]
+		rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String()
+		rel.Compiled.URL = resInfo.Data.Artifact.URLs[0].URL
 
 		err = man.UpdateRelease(rel)
 		if err != nil {

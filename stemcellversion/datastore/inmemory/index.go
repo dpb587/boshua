@@ -8,7 +8,7 @@ import (
 )
 
 type index struct {
-	inmemory []stemcellversion.Subject
+	inmemory []stemcellversion.Artifact
 
 	loader   Loader
 	reloader Reloader
@@ -50,10 +50,10 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return stemcellversion.Subject{}, fmt.Errorf("reloading: %v", err)
+		return stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	for _, stemcellversion := range i.inmemory {
@@ -66,13 +66,13 @@ func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, er
 		return stemcellversion, nil
 	}
 
-	return stemcellversion.Subject{}, datastore.MissingErr
+	return stemcellversion.Artifact{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]stemcellversion.Subject, error) {
+func (i *index) List() ([]stemcellversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return []stemcellversion.Subject{}, fmt.Errorf("reloading: %v", err)
+		return []stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

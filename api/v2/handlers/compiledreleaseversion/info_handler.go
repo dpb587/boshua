@@ -50,22 +50,22 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger = logger.WithFields(logrus.Fields{
-		"release.name":     reqData.Release.Name,
-		"release.version":  reqData.Release.Version,
-		"release.checksum": reqData.Release.Checksum,
-		"stemcell.os":      reqData.Stemcell.OS,
-		"stemcell.version": reqData.Stemcell.Version,
+		"release.name":     reqData.ReleaseVersionRef.Name,
+		"release.version":  reqData.ReleaseVersionRef.Version,
+		"release.checksum": reqData.ReleaseVersionRef.Checksum,
+		"stemcell.os":      reqData.StemcellVersionRef.OS,
+		"stemcell.version": reqData.StemcellVersionRef.Version,
 	})
 
 	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
-		Release: releaseversion.Reference{
-			Name:     reqData.Release.Name,
-			Version:  reqData.Release.Version,
-			Checksum: reqData.Release.Checksum,
+		ReleaseVersion: releaseversion.Reference{
+			Name:      reqData.ReleaseVersionRef.Name,
+			Version:   reqData.ReleaseVersionRef.Version,
+			Checksums: checksum.ImmutableChecksums{reqData.ReleaseVersionRef.Checksum},
 		},
-		Stemcell: stemcellversion.Reference{
-			OS:      reqData.Stemcell.OS,
-			Version: reqData.Stemcell.Version,
+		StemcellVersion: stemcellversion.Reference{
+			OS:      reqData.StemcellVersionRef.OS,
+			Version: reqData.StemcellVersionRef.Version,
 		},
 	})
 	if err == datastore.MissingErr {
@@ -84,30 +84,13 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var checksums checksum.ImmutableChecksums
-
-	for _, cs := range result.TarballChecksums {
-		if cs.Algorithm().Name() != "sha1" && cs.Algorithm().Name() != "sha256" {
-			continue
-		}
-
-		checksums = append(checksums, cs)
-	}
-
 	logger.Infof("compiled release found")
 
 	res := models.CRVInfoResponse{
 		Data: models.CRVInfoResponseData{
-			Release:  reqData.Release,
-			Stemcell: reqData.Stemcell,
-			Tarball: models.CRVInfoResponseDataCompiled{
-				URLs: []string{
-					result.TarballURL,
-				},
-				Size:      result.TarballSize,
-				Published: result.TarballPublished,
-				Checksums: checksums,
-			},
+			ReleaseVersionRef:  reqData.ReleaseVersionRef,
+			StemcellVersionRef: reqData.StemcellVersionRef,
+			Artifact:           result.MetalinkFile,
 		},
 	}
 

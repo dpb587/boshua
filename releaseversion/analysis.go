@@ -2,9 +2,9 @@ package releaseversion
 
 import "github.com/dpb587/boshua/analysis"
 
-var _ analysis.Subject = &Subject{}
+var _ analysis.Subject = &Artifact{}
 
-func (Subject) SupportedAnalyzers() []string {
+func (Artifact) SupportedAnalyzers() []string {
 	return []string{
 		"releaseartifactchecksums.v1",
 		"releaseartifactfilestat.v1",

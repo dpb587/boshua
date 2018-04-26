@@ -29,7 +29,7 @@ type Runner struct {
 }
 
 func (c *Runner) Schedule(t task.Task) error {
-	pipelineName := fmt.Sprintf("%s:%s:%s", t.Type(), t.SubjectReference().Context, t.SubjectReference().ID)
+	pipelineName := c.pipelineName(t)
 
 	file, err := ioutil.TempFile("", "boshua-")
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Runner) Schedule(t task.Task) error {
 }
 
 func (c *Runner) Status(t task.Task) (scheduler.Status, error) {
-	pipelineName := fmt.Sprintf("%s:%s:%s", t.Type(), t.SubjectReference().Context, t.SubjectReference().ID)
+	pipelineName := c.pipelineName(t)
 
 	err := c.login()
 	if err != nil {
@@ -187,4 +187,8 @@ func (c *Runner) runStdin(stdin io.Reader, args ...string) ([]byte, []byte, erro
 
 func (c *Runner) run(args ...string) ([]byte, []byte, error) {
 	return c.runStdin(bytes.NewBuffer(nil), args...)
+}
+
+func (c *Runner) pipelineName(t task.Task) string {
+	return fmt.Sprintf("%s:%s:%s", t.Type(), t.ArtifactReference().Context, t.ArtifactReference().ID)
 }

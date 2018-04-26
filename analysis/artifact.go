@@ -1,4 +1,4 @@
-package compiledreleaseversion
+package analysis
 
 import (
 	"time"
@@ -6,9 +6,7 @@ import (
 	"github.com/dpb587/boshua/checksum"
 )
 
-type Subject struct {
-	Reference
-
+type Artifact struct {
 	TarballURL       string
 	TarballSize      *uint64
 	TarballPublished *time.Time

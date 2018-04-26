@@ -1,9 +1,7 @@
 package models
 
 import (
-	"time"
-
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/metalink"
 )
 
 type CRVInfoRequest struct {
@@ -11,8 +9,8 @@ type CRVInfoRequest struct {
 }
 
 type CRVInfoRequestData struct {
-	Release  ReleaseRef  `json:"release"`
-	Stemcell StemcellRef `json:"stemcell"`
+	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref"`
+	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref"`
 }
 
 type CRVInfoResponse struct {
@@ -20,14 +18,7 @@ type CRVInfoResponse struct {
 }
 
 type CRVInfoResponseData struct {
-	Release  ReleaseRef                  `json:"release,omitempty"`
-	Stemcell StemcellRef                 `json:"stemcell,omitempty"`
-	Tarball  CRVInfoResponseDataCompiled `json:"tarball,omitempty"`
-}
-
-type CRVInfoResponseDataCompiled struct {
-	URLs      []string                    `json:"urls"`
-	Size      *uint64                     `json:"size,omitempty"`
-	Published *time.Time                  `json:"published,omitempty"`
-	Checksums checksum.ImmutableChecksums `json:"checksums"`
+	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref,omitempty"`
+	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref,omitempty"`
+	Artifact           metalink.File      `json:"artifact,omitempty"`
 }

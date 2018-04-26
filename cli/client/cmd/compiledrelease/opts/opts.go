@@ -18,12 +18,12 @@ type Opts struct {
 }
 
 func (o *Opts) GetCompiledReleaseVersion(api *client.Client) (*models.CRVInfoResponse, error) {
-	releaseRef := models.ReleaseRef{
+	releaseRef := models.ReleaseVersionRef{
 		Name:     o.Release.Name,
 		Version:  o.Release.Version,
 		Checksum: o.ReleaseChecksum.ImmutableChecksum,
 	}
-	stemcellRef := models.StemcellRef{
+	stemcellRef := models.StemcellVersionRef{
 		OS:      o.Stemcell.OS,
 		Version: o.Stemcell.Version,
 	}
@@ -34,8 +34,8 @@ func (o *Opts) GetCompiledReleaseVersion(api *client.Client) (*models.CRVInfoRes
 
 	return api.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 		Data: models.CRVInfoRequestData{
-			Release:  releaseRef,
-			Stemcell: stemcellRef,
+			ReleaseVersionRef:  releaseRef,
+			StemcellVersionRef: stemcellRef,
 		},
 	})
 }

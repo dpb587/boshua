@@ -5,8 +5,8 @@ type CRVRequestRequest struct {
 }
 
 type CRVRequestRequestData struct {
-	Release  ReleaseRef  `json:"release"`
-	Stemcell StemcellRef `json:"stemcell"`
+	ReleaseVersionRef  ReleaseVersionRef  `json:"release_version_ref"`
+	StemcellVersionRef StemcellVersionRef `json:"stemcell_version_ref"`
 }
 
 type CRVRequestResponse struct {

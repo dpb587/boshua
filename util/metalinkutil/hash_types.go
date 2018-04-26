@@ -1,8 +1,8 @@
-package util
+package metalinkutil
 
 import "fmt"
 
-func MetalinkHashType(algorithm string) (string, error) {
+func ToMetalinkHashType(algorithm string) (string, error) {
 	switch algorithm {
 	case "md5":
 		return "md5", nil

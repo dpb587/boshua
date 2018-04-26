@@ -2,7 +2,9 @@ package manager
 
 import (
 	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
@@ -21,20 +23,16 @@ func NewManager(
 	}
 }
 
-func (rsr *Manager) Resolve(subject compiledreleaseversion.Subject) (compiledreleaseversion.ResolvedSubject, error) {
-	release, err := rsr.releaseVersionIndex.Find(subject.Reference.Release)
+func (rsr *Manager) Resolve(ref compiledreleaseversion.Reference) (releaseversion.Artifact, stemcellversion.Artifact, error) {
+	release, err := rsr.releaseVersionIndex.Find(ref.ReleaseVersion)
 	if err != nil {
-		return compiledreleaseversion.ResolvedSubject{}, err
+		return releaseversion.Artifact{}, stemcellversion.Artifact{}, err
 	}
 
-	stemcell, err := rsr.stemcellVersionIndex.Find(subject.Reference.Stemcell)
+	stemcell, err := rsr.stemcellVersionIndex.Find(ref.StemcellVersion)
 	if err != nil {
-		return compiledreleaseversion.ResolvedSubject{}, err
+		return releaseversion.Artifact{}, stemcellversion.Artifact{}, err
 	}
 
-	return compiledreleaseversion.ResolvedSubject{
-		Subject:                 subject,
-		ResolvedReleaseVersion:  release,
-		ResolvedStemcellVersion: stemcell,
-	}, nil
+	return release, stemcell, nil
 }

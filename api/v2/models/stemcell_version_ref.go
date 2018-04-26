@@ -1,6 +1,6 @@
 package models
 
-type StemcellRef struct {
+type StemcellVersionRef struct {
 	OS      string `json:"os"`
 	Version string `json:"version"`
 }

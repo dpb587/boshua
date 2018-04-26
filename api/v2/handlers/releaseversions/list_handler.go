@@ -52,7 +52,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			checksums = append(checksums, checksum)
 		}
 
-		res.Data = append(res.Data, models.ReleaseRef{
+		res.Data = append(res.Data, models.ReleaseVersionRef{
 			Name:     result.Name,
 			Version:  result.Version,
 			Checksum: checksums[0],

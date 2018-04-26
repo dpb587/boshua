@@ -8,7 +8,7 @@ import (
 )
 
 type index struct {
-	inmemory []releaseversion.Subject
+	inmemory []releaseversion.Artifact
 
 	loader   Loader
 	reloader Reloader
@@ -50,31 +50,33 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Subject, error) {
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return releaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
+		return releaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
-	for _, subject := range i.inmemory {
-		if subject.Reference.Name != ref.Name {
+	for _, artifact := range i.inmemory {
+		if artifact.Reference.Name != ref.Name {
 			continue
-		} else if subject.Reference.Version != ref.Version {
+		} else if artifact.Reference.Version != ref.Version {
 			continue
 		}
 
-		if subject.Checksums.Contains(&ref.Checksum) {
-			return subject, nil
+		for _, cs := range ref.Checksums.Prioritized() {
+			if artifact.MatchesChecksum(&cs) {
+				return artifact, nil
+			}
 		}
 	}
 
-	return releaseversion.Subject{}, datastore.MissingErr
+	return releaseversion.Artifact{}, datastore.MissingErr
 }
 
-func (i *index) List() ([]releaseversion.Subject, error) {
+func (i *index) List() ([]releaseversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return []releaseversion.Subject{}, fmt.Errorf("reloading: %v", err)
+		return []releaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
 	}
 
 	return i.inmemory, nil

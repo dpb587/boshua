@@ -5,6 +5,6 @@ import "github.com/concourse/atc"
 
 type Task interface {
 	Type() string
-	SubjectReference() boshua.Reference
+	ArtifactReference() boshua.Reference
 	Config() (atc.Config, error)
 }

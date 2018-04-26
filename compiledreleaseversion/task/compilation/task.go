@@ -7,11 +7,15 @@ import (
 	"github.com/concourse/atc"
 	"github.com/dpb587/boshua"
 	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/scheduler/task"
+	"github.com/dpb587/boshua/stemcellversion"
 )
 
 type Task struct {
-	subject compiledreleaseversion.ResolvedSubject
+	artifact        compiledreleaseversion.Artifact
+	releaseVersion  releaseversion.Artifact
+	stemcellVersion stemcellversion.Artifact
 }
 
 var _ task.Task = &Task{}
@@ -20,20 +24,20 @@ func (t Task) Type() string {
 	return "compilation"
 }
 
-func (t Task) SubjectReference() boshua.Reference {
-	return t.subject.SubjectReference()
+func (t Task) ArtifactReference() boshua.Reference {
+	return t.artifact.ArtifactReference()
 }
 
 func (t Task) Config() (atc.Config, error) {
 	contextBytes, err := json.MarshalIndent(map[string]interface{}{
 		"release": map[string]interface{}{
-			"name":      t.subject.ResolvedReleaseVersion.Name,
-			"version":   t.subject.ResolvedReleaseVersion.Version,
-			"checksums": t.subject.ResolvedReleaseVersion.Checksums,
+			"name":      t.artifact.ReleaseVersion.Name,
+			"version":   t.artifact.ReleaseVersion.Version,
+			"checksums": t.artifact.ReleaseVersion.Checksums,
 		},
 		"stemcell": map[string]interface{}{
-			"os":      t.subject.ResolvedStemcellVersion.OS,
-			"version": t.subject.ResolvedStemcellVersion.Version,
+			"os":      t.artifact.StemcellVersion.OS,
+			"version": t.artifact.StemcellVersion.Version,
 		},
 	}, "", "  ")
 	if err != nil {
@@ -72,13 +76,13 @@ func (t Task) Config() (atc.Config, error) {
 				Name:       "stemcell",
 				CheckEvery: "24h",
 				Type:       "metalink-repository",
-				Source:     atc.Source(t.subject.ResolvedStemcellVersion.MetalinkSource),
+				Source:     atc.Source(t.stemcellVersion.ArtifactMetalinkStorage()),
 			},
 			{
 				Name:       "release",
 				CheckEvery: "24h",
 				Type:       "metalink-repository",
-				Source:     atc.Source(t.subject.ResolvedReleaseVersion.MetalinkSource),
+				Source:     atc.Source(t.releaseVersion.ArtifactMetalinkStorage()),
 			},
 			{
 				Name:       "env",
@@ -158,9 +162,9 @@ func (t Task) Config() (atc.Config, error) {
 								Task:           "publish-compiled-release",
 								TaskConfigPath: "bosh-compiled-releases/ci/tasks/publish-compiled-release/task.yml",
 								Params: atc.Params{
-									"storage":         t.subject.StoragePath(),
+									"storage":         t.artifact.StoragePath(),
 									"context":         string(contextBytes),
-									"release_version": t.subject.ResolvedReleaseVersion.Version,
+									"release_version": t.artifact.ReleaseVersion.Version,
 									"s3_bucket":       "((s3_bucket))",
 									"s3_host":         "((s3_host))",
 									"s3_access_key":   "((s3_access_key))",

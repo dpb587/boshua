@@ -3,6 +3,7 @@ package boshio
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -13,9 +14,12 @@ import (
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/inmemory"
+	"github.com/dpb587/metalink"
 
 	"github.com/sirupsen/logrus"
 )
+
+const compileMatch = "bosh-stemcell-*-warden-boshlite-ubuntu-trusty-go_agent.tgz"
 
 type index struct {
 	logger             logrus.FieldLogger
@@ -42,11 +46,11 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return idx
 }
 
-func (i *index) List() ([]stemcellversion.Subject, error) {
+func (i *index) List() ([]stemcellversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Subject, error) {
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -86,7 +90,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]stemcellversion.Subject, error) {
+func (i *index) loader() ([]stemcellversion.Artifact, error) {
 	i.lastLoaded = time.Now()
 
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.localPath))
@@ -96,25 +100,54 @@ func (i *index) loader() ([]stemcellversion.Subject, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []stemcellversion.Subject{}
+	var inmemory = []stemcellversion.Artifact{}
 
 	for _, meta4Path := range paths {
-		stemcellversion := stemcellversion.Subject{
-			Reference: stemcellversion.Reference{},
-			MetalinkSource: map[string]interface{}{
-				"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
-				"include_files": []string{
-					"bosh-stemcell-*-warden-boshlite-ubuntu-trusty-go_agent.tgz",
-				},
-			},
+		ref := stemcellversion.Reference{
+			OS:      path.Base(path.Dir(path.Dir(meta4Path))),
+			Version: path.Base(path.Dir(meta4Path)),
 		}
 
-		stemcellversion.Reference.OS = path.Base(path.Dir(path.Dir(meta4Path)))
-		stemcellversion.Reference.Version = path.Base(path.Dir(meta4Path))
-		// stemcells are not currently recording their version :(
-		// stemcellversion.MetalinkSource["version"] = stemcellversion.Reference.Version
+		meta4Bytes, err := ioutil.ReadFile(meta4Path)
+		if err != nil {
+			return nil, fmt.Errorf("reading metalink: %v", err)
+		}
 
-		inmemory = append(inmemory, stemcellversion)
+		var meta4 metalink.Metalink
+
+		err = metalink.Unmarshal(meta4Bytes, &meta4)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshaling metalink: %v", err)
+		}
+
+		var meta4File *metalink.File
+
+		for _, file := range meta4.Files {
+			if matched, _ := filepath.Match(compileMatch, file.Name); matched {
+				meta4File = &file
+
+				break
+			}
+		}
+
+		if meta4File == nil {
+			// TODO log warning?
+			continue
+		}
+
+		inmemory = append(
+			inmemory,
+			stemcellversion.New(
+				ref,
+				*meta4File,
+				map[string]interface{}{
+					"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+					"include_files": []string{
+						compileMatch,
+					},
+				},
+			),
+		)
 	}
 
 	return inmemory, nil

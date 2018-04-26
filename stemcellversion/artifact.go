@@ -6,28 +6,38 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua"
+	"github.com/dpb587/metalink"
 )
 
-type Subject struct {
+type Artifact struct {
 	Reference
 
+	MetalinkFile   metalink.File
 	MetalinkSource map[string]interface{}
 }
 
-var _ boshua.Subject = &Subject{}
+var _ boshua.Artifact = &Artifact{}
 
-func (s Subject) SubjectReference() boshua.Reference {
+func (s Artifact) ArtifactReference() boshua.Reference {
 	return boshua.Reference{
 		Context: "stemcellversion",
 		ID:      s.id(),
 	}
 }
 
-func (s Subject) SubjectMetalinkStorage() map[string]interface{} {
+func (s Artifact) ArtifactMetalink() metalink.Metalink {
+	return metalink.Metalink{
+		Files: []metalink.File{
+			s.MetalinkFile,
+		},
+	}
+}
+
+func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
 	return s.MetalinkSource
 }
 
-func (s Subject) id() string {
+func (s Artifact) id() string {
 	h := sha1.New()
 	h.Write([]byte(strings.Join(
 		[]string{

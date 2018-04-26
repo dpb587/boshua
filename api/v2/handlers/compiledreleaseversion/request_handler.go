@@ -9,6 +9,7 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/middleware"
 	"github.com/dpb587/boshua/api/v2/models"
+	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
@@ -61,31 +62,30 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger = logger.WithFields(logrus.Fields{
-		"release.name":     reqData.Release.Name,
-		"release.version":  reqData.Release.Version,
-		"release.checksum": reqData.Release.Checksum,
-		"stemcell.os":      reqData.Stemcell.OS,
-		"stemcell.version": reqData.Stemcell.Version,
+		"release.name":     reqData.ReleaseVersionRef.Name,
+		"release.version":  reqData.ReleaseVersionRef.Version,
+		"release.checksum": reqData.ReleaseVersionRef.Checksum,
+		"stemcell.os":      reqData.StemcellVersionRef.OS,
+		"stemcell.version": reqData.StemcellVersionRef.Version,
 	})
 
 	var status scheduler.Status
 
 	reqDataRef := compiledreleaseversion.Reference{
-		Release: releaseversion.Reference{
-			Name:     reqData.Release.Name,
-			Version:  reqData.Release.Version,
-			Checksum: reqData.Release.Checksum,
+		ReleaseVersion: releaseversion.Reference{
+			Name:      reqData.ReleaseVersionRef.Name,
+			Version:   reqData.ReleaseVersionRef.Version,
+			Checksums: checksum.ImmutableChecksums{reqData.ReleaseVersionRef.Checksum},
 		},
-		Stemcell: stemcellversion.Reference{
-			OS:      reqData.Stemcell.OS,
-			Version: reqData.Stemcell.Version,
+		StemcellVersion: stemcellversion.Reference{
+			OS:      reqData.StemcellVersionRef.OS,
+			Version: reqData.StemcellVersionRef.Version,
 		},
 	}
-	reqDataSubject := compiledreleaseversion.Subject{Reference: reqDataRef}
 
 	_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
 	if err == datastore.MissingErr {
-		resolvedCompiledReleaseVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataSubject)
+		releaseVersion, stemcellVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataRef)
 		if err == releaseversiondatastore.MissingErr || err == stemcellversiondatastore.MissingErr {
 			logger.WithField("error", err).Infof("resolving reference")
 
@@ -102,7 +102,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		task := compilation.New(resolvedCompiledReleaseVersion)
+		task := compilation.New(releaseVersion, stemcellVersion)
 
 		// check existing status
 		status, err = h.cc.Status(task)

@@ -19,6 +19,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,30 +29,32 @@ type index struct {
 	localPath          string
 	pullInterval       time.Duration
 
-	inmemory   datastore.Index
-	lastLoaded time.Time
+	releaseVersionIndex releaseversiondatastore.Index
+	inmemory            datastore.Index
+	lastLoaded          time.Time
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository: config.Repository,
-		localPath:          config.LocalPath,
-		pullInterval:       config.PullInterval,
+		logger:              logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		metalinkRepository:  config.Repository,
+		localPath:           config.LocalPath,
+		pullInterval:        config.PullInterval,
+		releaseVersionIndex: releaseVersionIndex,
 	}
 
-	idx.inmemory = inmemory.New(idx.loader, idx.reloader, releaseVersionIndex)
+	idx.inmemory = inmemory.New(idx.loader, idx.reloader)
 
 	return idx
 }
 
-func (i *index) List() ([]compiledreleaseversion.Subject, error) {
+func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Subject, error) {
+func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return i.inmemory.Find(ref)
 }
 
@@ -91,7 +94,7 @@ func (i *index) reloader() (bool, error) {
 	return true, nil
 }
 
-func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
+func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
@@ -99,7 +102,7 @@ func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
 
 	i.logger.Infof("found %d entries", len(paths))
 
-	var inmemory = []compiledreleaseversion.Subject{}
+	var inmemory = []compiledreleaseversion.Artifact{}
 
 	for _, bcrPath := range paths {
 		bcrBytes, err := ioutil.ReadFile(bcrPath)
@@ -116,23 +119,41 @@ func (i *index) loader() ([]compiledreleaseversion.Subject, error) {
 				return nil, fmt.Errorf("unmarshalling %s: %v", bcrPath, err)
 			}
 
-			inmemory = append(inmemory, compiledreleaseversion.Subject{
-				Reference: compiledreleaseversion.Reference{
-					Release: releaseversion.Reference{
-						Name:     record.Name,
-						Version:  record.Version,
-						Checksum: record.Source.Digest,
-					},
-					Stemcell: stemcellversion.Reference{
-						OS:      record.Stemcell.OS,
-						Version: record.Stemcell.Version,
+			meta4File := metalink.File{
+				Name: fmt.Sprintf("%s-%s-on-%s-%s.tgz", record.Name, record.Version, record.Stemcell.OS, record.Stemcell.Version),
+				URLs: []metalink.URL{
+					{
+						URL: record.Tarball.URL,
 					},
 				},
-				TarballChecksums: checksum.ImmutableChecksums{
-					record.Tarball.Digest,
+				Hashes: []metalink.Hash{
+					{
+						Type: "sha-1",
+						Hash: fmt.Sprintf("%x", record.Tarball.Digest.Data()),
+					},
 				},
-				TarballURL: record.Tarball.URL,
-			})
+			}
+
+			releaseRef := releaseversion.Reference{
+				Name:      record.Name,
+				Version:   record.Version,
+				Checksums: checksum.ImmutableChecksums{record.Source.Digest},
+			}
+
+			releaseArtifact, err := i.releaseVersionIndex.Find(releaseRef)
+			if err == nil {
+				releaseRef = releaseArtifact.Reference
+			}
+
+			inmemory = append(inmemory, compiledreleaseversion.New(
+				releaseRef,
+				stemcellversion.Reference{
+					OS:      record.Stemcell.OS,
+					Version: record.Stemcell.Version,
+				},
+				meta4File,
+				map[string]interface{}{},
+			))
 		}
 	}
 
