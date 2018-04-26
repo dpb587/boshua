@@ -12,8 +12,8 @@ import (
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/sirupsen/logrus"
 )
 
@@ -53,8 +53,8 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"release.name":     reqData.ReleaseVersionRef.Name,
 		"release.version":  reqData.ReleaseVersionRef.Version,
 		"release.checksum": reqData.ReleaseVersionRef.Checksum,
-		"stemcell.os":      reqData.OSVersionRef.OS,
-		"stemcell.version": reqData.OSVersionRef.Version,
+		"os.name":          reqData.OSVersionRef.Name,
+		"os.version":       reqData.OSVersionRef.Version,
 	})
 
 	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
@@ -64,7 +64,7 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Checksums: checksum.ImmutableChecksums{reqData.ReleaseVersionRef.Checksum},
 		},
 		OSVersion: osversion.Reference{
-			OS:      reqData.OSVersionRef.OS,
+			Name:    reqData.OSVersionRef.Name,
 			Version: reqData.OSVersionRef.Version,
 		},
 	})
@@ -88,9 +88,9 @@ func (h *InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	res := models.CRVInfoResponse{
 		Data: models.CRVInfoResponseData{
-			ReleaseVersionRef:  reqData.ReleaseVersionRef,
-			OSVersionRef: reqData.OSVersionRef,
-			Artifact:           result.MetalinkFile,
+			ReleaseVersionRef: reqData.ReleaseVersionRef,
+			OSVersionRef:      reqData.OSVersionRef,
+			Artifact:          result.MetalinkFile,
 		},
 	}
 

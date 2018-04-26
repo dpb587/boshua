@@ -14,12 +14,12 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	"github.com/dpb587/boshua/compiledreleaseversion/task/compilation"
+	"github.com/dpb587/boshua/osversion"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler"
 	"github.com/dpb587/boshua/scheduler/concourse"
-	"github.com/dpb587/boshua/osversion"
-	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
@@ -65,8 +65,8 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"release.name":     reqData.ReleaseVersionRef.Name,
 		"release.version":  reqData.ReleaseVersionRef.Version,
 		"release.checksum": reqData.ReleaseVersionRef.Checksum,
-		"stemcell.os":      reqData.OSVersionRef.OS,
-		"stemcell.version": reqData.OSVersionRef.Version,
+		"os.name":          reqData.OSVersionRef.Name,
+		"os.version":       reqData.OSVersionRef.Version,
 	})
 
 	var status scheduler.Status
@@ -78,7 +78,7 @@ func (h *RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Checksums: checksum.ImmutableChecksums{reqData.ReleaseVersionRef.Checksum},
 		},
 		OSVersion: osversion.Reference{
-			OS:      reqData.OSVersionRef.OS,
+			Name:    reqData.OSVersionRef.Name,
 			Version: reqData.OSVersionRef.Version,
 		},
 	}

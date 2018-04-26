@@ -12,7 +12,7 @@ import (
 )
 
 type ListHandler struct {
-	logger               logrus.FieldLogger
+	logger         logrus.FieldLogger
 	osVersionIndex datastore.Index
 }
 
@@ -42,7 +42,7 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	for _, result := range results {
 		res.Data = append(res.Data, models.OSVersionRef{
-			OS:      result.OS,
+			Name:    result.Name,
 			Version: result.Version,
 		})
 	}

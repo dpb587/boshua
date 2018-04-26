@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua"
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
 )
 
@@ -14,8 +14,8 @@ type Artifact struct {
 	MetalinkFile   metalink.File
 	MetalinkSource map[string]interface{}
 
-	ReleaseVersion  releaseversion.Reference
-	OSVersion osversion.Reference
+	ReleaseVersion releaseversion.Reference
+	OSVersion      osversion.Reference
 }
 
 func (s Artifact) ArtifactReference() boshua.Reference {
@@ -42,7 +42,7 @@ func (s Artifact) id() string {
 	h := sha1.New()
 	h.Write([]byte(fmt.Sprintf(
 		"compiledreleaseversion:v1:%s:%s:%s",
-		s.OSVersion.OS,
+		s.OSVersion.Name,
 		s.OSVersion.Version,
 		s.ReleaseVersion.ArtifactReference().ID,
 	)))

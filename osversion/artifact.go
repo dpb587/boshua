@@ -41,7 +41,7 @@ func (s Artifact) id() string {
 	h := sha1.New()
 	h.Write([]byte(strings.Join(
 		[]string{
-			s.Reference.OS,
+			s.Reference.Name,
 			s.Reference.Version,
 		},
 		"/",

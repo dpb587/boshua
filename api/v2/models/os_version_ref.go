@@ -1,6 +1,6 @@
 package models
 
 type OSVersionRef struct {
-	OS      string `json:"os"`
+	Name    string `json:"name"`
 	Version string `json:"version"`
 }

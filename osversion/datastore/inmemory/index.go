@@ -57,7 +57,7 @@ func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
 	}
 
 	for _, osversion := range i.inmemory {
-		if osversion.Reference.OS != ref.OS {
+		if osversion.Reference.Name != ref.Name {
 			continue
 		} else if osversion.Reference.Version != ref.Version {
 			continue

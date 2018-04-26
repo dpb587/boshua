@@ -7,15 +7,15 @@ import (
 	"github.com/concourse/atc"
 	"github.com/dpb587/boshua"
 	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/scheduler/task"
-	"github.com/dpb587/boshua/osversion"
 )
 
 type Task struct {
-	artifact        compiledreleaseversion.Artifact
-	releaseVersion  releaseversion.Artifact
-	osVersion osversion.Artifact
+	artifact       compiledreleaseversion.Artifact
+	releaseVersion releaseversion.Artifact
+	osVersion      osversion.Artifact
 }
 
 var _ task.Task = &Task{}
@@ -35,8 +35,8 @@ func (t Task) Config() (atc.Config, error) {
 			"version":   t.artifact.ReleaseVersion.Version,
 			"checksums": t.artifact.ReleaseVersion.Checksums,
 		},
-		"stemcell": map[string]interface{}{
-			"os":      t.artifact.OSVersion.OS,
+		"os": map[string]interface{}{
+			"name":    t.artifact.OSVersion.Name,
 			"version": t.artifact.OSVersion.Version,
 		},
 	}, "", "  ")

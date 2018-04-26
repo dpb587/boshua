@@ -1,6 +1,6 @@
 package osversion
 
 type Reference struct {
-	OS      string
+	Name    string
 	Version string
 }

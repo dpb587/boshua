@@ -21,7 +21,7 @@ type PatchManifestCmd struct {
 	Release     []string `long:"release" description:"Only check the release(s) matching this name (glob-friendly)"`
 	SkipRelease []string `long:"skip-release" description:"Skip the release(s) matching this name (glob-friendly)"`
 
-	LocalStemcell args.Stemcell `long:"local-stemcell" description:"Explicit local stemcell OS and version (used for bootstrap manifests)"`
+	LocalOS args.OS `long:"local-os" description:"Explicit local stemcell OS and version (used for bootstrap manifests)"`
 
 	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
 	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
@@ -32,8 +32,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("patch-manifest")
 
 	localStemcell := osversion.Reference{
-		OS:      c.LocalStemcell.OS,
-		Version: c.LocalStemcell.Version,
+		Name:    c.LocalOS.Name,
+		Version: c.LocalOS.Version,
 	}
 
 	if localStemcell.Version == "" {
@@ -71,14 +71,14 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			Checksum: cs,
 		}
 		osVersionRef := models.OSVersionRef{
-			OS:      rel.Stemcell.OS,
+			Name:    rel.Stemcell.OS,
 			Version: rel.Stemcell.Version,
 		}
 
 		resInfo, err := apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 			Data: models.CRVInfoRequestData{
-				ReleaseVersionRef:  releaseVersionRef,
-				OSVersionRef: osVersionRef,
+				ReleaseVersionRef: releaseVersionRef,
+				OSVersionRef:      osVersionRef,
 			},
 		})
 		if err != nil {
@@ -93,8 +93,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			for {
 				res, err := apiclient.CompiledReleaseVersionRequest(models.CRVRequestRequest{
 					Data: models.CRVRequestRequestData{
-						ReleaseVersionRef:  releaseVersionRef,
-						OSVersionRef: osVersionRef,
+						ReleaseVersionRef: releaseVersionRef,
+						OSVersionRef:      osVersionRef,
 					},
 				})
 				if err != nil {
@@ -123,8 +123,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 
 			resInfo, err = apiclient.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 				Data: models.CRVInfoRequestData{
-					ReleaseVersionRef:  releaseVersionRef,
-					OSVersionRef: osVersionRef,
+					ReleaseVersionRef: releaseVersionRef,
+					OSVersionRef:      osVersionRef,
 				},
 			})
 			if err != nil {

@@ -5,23 +5,23 @@ import (
 	"strings"
 )
 
-type Stemcell struct {
-	OS      string
+type OS struct {
+	Name    string
 	Version string
 }
 
-func (s Stemcell) String() string {
-	return fmt.Sprintf("%s/%s", s.OS, s.Version)
+func (s OS) String() string {
+	return fmt.Sprintf("%s/%s", s.Name, s.Version)
 }
 
-func (s *Stemcell) UnmarshalFlag(data string) error {
+func (s *OS) UnmarshalFlag(data string) error {
 	split := strings.Split(data, "/")
 
 	if len(split) != 2 {
 		return fmt.Errorf("expected stemcell format of os/version: %s", data)
 	}
 
-	s.OS = split[0]
+	s.Name = split[0]
 	s.Version = split[1]
 
 	return nil

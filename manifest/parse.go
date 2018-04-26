@@ -75,7 +75,7 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 			// already compiled; ignore
 			continue
 		} else if cloudProviderReleaseInstalled && release.Name == cloudProviderRelease.Release {
-			if localStemcell.OS != stemcell.OS || localStemcell.Version != stemcell.Version {
+			if localStemcell.Name != stemcell.Name || localStemcell.Version != stemcell.Version {
 				// used by both remote and local; ignore for now
 				continue
 			}

@@ -104,7 +104,7 @@ func (i *index) loader() ([]osversion.Artifact, error) {
 
 	for _, meta4Path := range paths {
 		ref := osversion.Reference{
-			OS:      path.Base(path.Dir(path.Dir(meta4Path))),
+			Name:    path.Base(path.Dir(path.Dir(meta4Path))),
 			Version: path.Base(path.Dir(meta4Path)),
 		}
 

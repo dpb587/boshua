@@ -61,7 +61,7 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 			continue
 		} else if artifact.ReleaseVersion.Version != ref.ReleaseVersion.Version {
 			continue
-		} else if artifact.OSVersion.OS != ref.OSVersion.OS {
+		} else if artifact.OSVersion.Name != ref.OSVersion.Name {
 			continue
 		} else if artifact.OSVersion.Version != ref.OSVersion.Version {
 			continue

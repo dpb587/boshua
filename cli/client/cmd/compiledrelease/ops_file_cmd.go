@@ -33,7 +33,7 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
 				"url":     resInfo.Data.Artifact.URLs[0].URL,
 				"stemcell": map[string]string{
-					"os":      resInfo.Data.OSVersionRef.OS,
+					"os":      resInfo.Data.OSVersionRef.Name,
 					"version": resInfo.Data.OSVersionRef.Version,
 				},
 			},

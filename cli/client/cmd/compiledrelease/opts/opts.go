@@ -11,31 +11,31 @@ import (
 type Opts struct {
 	Release         args.Release  `long:"release" description:"The release name and version"`
 	ReleaseChecksum args.Checksum `long:"release-checksum" description:"The release checksum"`
-	Stemcell        args.Stemcell `long:"stemcell" description:"The stemcell OS and version"`
+	OS              args.OS       `long:"os" description:"The OS and version"`
 
 	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
 	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }
 
 func (o *Opts) GetCompiledReleaseVersion(api *client.Client) (*models.CRVInfoResponse, error) {
-	releaseRef := models.ReleaseVersionRef{
+	releaseVersionRef := models.ReleaseVersionRef{
 		Name:     o.Release.Name,
 		Version:  o.Release.Version,
 		Checksum: o.ReleaseChecksum.ImmutableChecksum,
 	}
-	stemcellRef := models.OSVersionRef{
-		OS:      o.Stemcell.OS,
-		Version: o.Stemcell.Version,
+	osVersionRef := models.OSVersionRef{
+		Name:    o.OS.Name,
+		Version: o.OS.Version,
 	}
 
 	if o.RequestAndWait {
-		return client.RequestAndWait(api, releaseRef, stemcellRef)
+		return client.RequestAndWait(api, releaseVersionRef, osVersionRef)
 	}
 
 	return api.CompiledReleaseVersionInfo(models.CRVInfoRequest{
 		Data: models.CRVInfoRequestData{
-			ReleaseVersionRef:  releaseRef,
-			OSVersionRef: stemcellRef,
+			ReleaseVersionRef: releaseVersionRef,
+			OSVersionRef:      osVersionRef,
 		},
 	})
 }
