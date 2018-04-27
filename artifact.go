@@ -8,6 +8,9 @@ import (
 
 type Artifact interface {
 	ArtifactReference() Reference
+
+	ArtifactStorageDir() string
+
 	ArtifactMetalink() metalink.Metalink
 	ArtifactMetalinkStorage() map[string]interface{}
 }

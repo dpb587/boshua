@@ -34,9 +34,13 @@ bosh-director/bosh -n deploy deployment.yml
 
 bosh-director/bosh export-release "$release_name/$release_version" "$stemcell_os/$stemcell_version"
 
-bosh-director/bosh task --event 4 > compiled-release/compilation.json
+bosh-director/bosh task --event 4 > compiled-release/events.json
 
-mv *.tgz compiled-release/$release_name-$release_version-on-$stemcell_os-stemcell-$stemcell_version-compiled-1.$( date -u +%Y%m%d%H%M%S ).0.tgz
+version=$( 1.$( date -u +%Y%m%d%H%M%S ).0 )
+
+echo -n "$version" > compiled-release/version
+
+mv *.tgz compiled-release/$release_name-$release_version-on-$stemcell_os-stemcell-$stemcell_version-compiled-$version.tgz
 
 bosh-director/bosh inspect-release "$release_name/$release_version"
 

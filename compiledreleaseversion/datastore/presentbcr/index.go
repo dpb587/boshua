@@ -91,7 +91,7 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/compiled-release.json", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/compiledreleaseversion/**/**/**/compiled-release-version.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
@@ -113,7 +113,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 			return nil, fmt.Errorf("unmarshalling %s: %v", bcrJsonPath, err)
 		}
 
-		meta4Path := path.Join(path.Dir(bcrJsonPath), "compiled-release.meta4")
+		meta4Path := path.Join(path.Dir(bcrJsonPath), "artifact.meta4")
 
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {

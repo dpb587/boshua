@@ -15,8 +15,7 @@ run:
   path: bosh-compiled-releases/ci/tasks/publish-compiled-release/run.sh
 params:
   storage: ~
-  context: ~
-  release_version: ~
+  reference: ~
   s3_bucket: ~
   s3_host: ~
   s3_access_key: ~

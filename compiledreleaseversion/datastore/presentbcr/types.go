@@ -10,9 +10,9 @@ type Record struct {
 }
 
 type RecordRelease struct {
-	Name      string                       `json:"name"`
-	Version   string                       `json:"version"`
-	Checksums []checksum.ImmutableChecksum `json:"checksums"`
+	Name      string                      `json:"name"`
+	Version   string                      `json:"version"`
+	Checksums checksum.ImmutableChecksums `json:"checksums"`
 }
 
 type RecordStemcell struct {

@@ -29,7 +29,7 @@ func (t Task) ArtifactReference() boshua.Reference {
 }
 
 func (t Task) Config() (atc.Config, error) {
-	contextBytes, err := json.MarshalIndent(map[string]interface{}{
+	referenceBytes, err := json.MarshalIndent(map[string]interface{}{
 		"release": map[string]interface{}{
 			"name":      t.artifact.ReleaseVersion.Name,
 			"version":   t.artifact.ReleaseVersion.Version,
@@ -41,7 +41,7 @@ func (t Task) Config() (atc.Config, error) {
 		},
 	}, "", "  ")
 	if err != nil {
-		return atc.Config{}, fmt.Errorf("marshalling context: %v", err)
+		return atc.Config{}, fmt.Errorf("marshalling reference: %v", err)
 	}
 
 	return atc.Config{
@@ -162,13 +162,12 @@ func (t Task) Config() (atc.Config, error) {
 								Task:           "publish-compiled-release",
 								TaskConfigPath: "bosh-compiled-releases/ci/tasks/publish-compiled-release/task.yml",
 								Params: atc.Params{
-									"storage":         t.artifact.StoragePath(),
-									"context":         string(contextBytes),
-									"release_version": t.artifact.ReleaseVersion.Version,
-									"s3_bucket":       "((s3_bucket))",
-									"s3_host":         "((s3_host))",
-									"s3_access_key":   "((s3_access_key))",
-									"s3_secret_key":   "((s3_secret_key))",
+									"storage":       t.artifact.ArtifactStorageDir(),
+									"reference":     string(referenceBytes),
+									"s3_bucket":     "((s3_bucket))",
+									"s3_host":       "((s3_host))",
+									"s3_access_key": "((s3_access_key))",
+									"s3_secret_key": "((s3_secret_key))",
 								},
 							},
 							{
