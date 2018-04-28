@@ -15,7 +15,8 @@ type Cmd struct {
 	*opts.Opts
 
 	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts"`
-	MetalinkCmd MetalinkCmd   `command:"metalink" description:"For showing a metalink of the compiled release"`
+
+	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the compiled release"`
 }
 
 func New(app *cmdopts.Opts) *Cmd {

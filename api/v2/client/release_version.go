@@ -16,7 +16,7 @@ import (
 func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*api.GETAnalysisResponse, error) {
 	logger := c.logger.WithField("api.handler", "releaseversion/analysis")
 
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/release-version/analysis", c.endpoint), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/release-version/analysis/info", c.endpoint), nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
@@ -53,7 +53,7 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*api.POSTAnalysisResponse, error) {
 	logger := c.logger.WithField("api.handler", "releaseversion/analysis")
 
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/release-version/analysis", c.endpoint), nil)
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/release-version/analysis/queue", c.endpoint), nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "code.cloudfoundry.org/workpool"
+  packages = ["."]
+  revision = "99757edba73523adac0d2460f4c3555f938663b5"
+
+[[projects]]
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
   revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
@@ -224,6 +230,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7b314bf106b879ebd4bd8ff704c160aa374c0d1641806b8964f1c0bf3a7230b0"
+  inputs-digest = "0986ddae0f009b74eab2363d21c2f803246beb5d616c2c61af67a758b8c3e1f2"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -27,12 +27,24 @@ func Mount(
 	osVersionIndex osversionds.Index,
 	analysisIndex analysisds.Index,
 ) {
+	{
+		handler := releaseversion.NewAnalysisHandler(logger, cc, analysisIndex, releaseVersionIndex)
+
+		router.HandleFunc(releaseversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+		router.HandleFunc(releaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+	}
+
+	{
+		handler := compiledreleaseversion.NewAnalysisHandler(logger, cc, analysisIndex, compiledReleaseVersionIndex)
+
+		router.HandleFunc(compiledreleaseversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+		router.HandleFunc(compiledreleaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+	}
+
 	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewGETCompilationHandler(logger, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods(http.MethodGet)
 	// router.Handle("/compiled-release-version/log", compiledreleaseversion.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewPOSTCompilationHandler(logger, cc, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	router.Handle("/release-versions/list", releaseversions.NewListHandler(logger, releaseVersionIndex)).Methods(http.MethodPost)
-	router.Handle("/release-version/analysis", releaseversion.NewGETAnalysisHandler(logger, analysisIndex, releaseVersionIndex)).Methods(http.MethodGet)
-	router.Handle("/release-version/analysis", releaseversion.NewPOSTAnalysisHandler(logger, cc, analysisIndex, releaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	router.Handle("/stemcell-versions/list", osversions.NewListHandler(logger, osVersionIndex)).Methods(http.MethodPost)

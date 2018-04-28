@@ -8,8 +8,9 @@ import (
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/cmd/analysisutil/opts"
+	compiledreleaseopts "github.com/dpb587/boshua/cli/client/cmd/compiledrelease/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
-	releaseopts "github.com/dpb587/boshua/cli/client/cmd/release/opts"
+	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 )
 
@@ -21,27 +22,32 @@ type Cmd struct {
 }
 
 type CmdOpts struct {
-	AppOpts      *cmdopts.Opts `no-flag:"true"`
-	ReleaseOpts  *releaseopts.Opts
-	AnalysisOpts *opts.Opts
+	AppOpts             *cmdopts.Opts `no-flag:"true"`
+	CompiledReleaseOpts *compiledreleaseopts.Opts
+	AnalysisOpts        *opts.Opts
 }
 
 func (o *CmdOpts) getAnalysis() (*analysis.GETAnalysisResponse, error) {
 	client := o.AppOpts.GetClient()
 
-	ref := releaseversion.Reference{
-		Name:      o.ReleaseOpts.Release.Name,
-		Version:   o.ReleaseOpts.Release.Version,
-		Checksums: checksum.ImmutableChecksums{o.ReleaseOpts.ReleaseChecksum.ImmutableChecksum},
+	releaseVersionRef := releaseversion.Reference{
+		Name:      o.CompiledReleaseOpts.Release.Name,
+		Version:   o.CompiledReleaseOpts.Release.Version,
+		Checksums: checksum.ImmutableChecksums{o.CompiledReleaseOpts.ReleaseChecksum.ImmutableChecksum},
+	}
+	osVersionRef := osversion.Reference{
+		Name:    o.CompiledReleaseOpts.OS.Name,
+		Version: o.CompiledReleaseOpts.OS.Version,
 	}
 	analyzer := o.AnalysisOpts.Analyzer
 
 	if o.AnalysisOpts.NoWait {
-		return client.GetReleaseVersionAnalysis(ref, analyzer)
+		return client.GetCompiledReleaseVersionAnalysis(releaseVersionRef, osVersionRef, analyzer)
 	}
 
-	return client.RequireReleaseVersionAnalysis(
-		ref,
+	return client.RequireCompiledReleaseVersionAnalysis(
+		releaseVersionRef,
+		osVersionRef,
 		analyzer,
 		func(task scheduler.TaskStatus) {
 			if o.AppOpts.Quiet {
@@ -53,15 +59,15 @@ func (o *CmdOpts) getAnalysis() (*analysis.GETAnalysisResponse, error) {
 	)
 }
 
-func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
+func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
 	cmd := &Cmd{
 		Opts: &opts.Opts{},
 	}
 
 	cmdOpts := &CmdOpts{
-		AppOpts:      app,
-		ReleaseOpts:  release,
-		AnalysisOpts: cmd.Opts,
+		AppOpts:             app,
+		CompiledReleaseOpts: compiledrelease,
+		AnalysisOpts:        cmd.Opts,
 	}
 
 	cmd.MetalinkCmd.CmdOpts = cmdOpts

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"code.cloudfoundry.org/workpool"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
@@ -24,7 +25,7 @@ type PatchManifestCmd struct {
 
 	LocalOS args.OS `long:"local-os" description:"Explicit local OS and version (used for bootstrap manifests)"`
 
-	Parallel    int           `long:"parallel" description:"Maximum number of parallel operations"`
+	Parallel    int           `long:"parallel" description:"Maximum number of parallel operations" default:"3"`
 	NoWait      bool          `long:"no-wait" description:"Do not request and wait for compilation if not already available"`
 	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }
@@ -60,64 +61,78 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 
 	apiclient := c.AppOpts.GetClient()
 
-	for _, rel := range man.Requirements() {
-		cs, err := checksum.CreateFromString(rel.Source.Sha1)
-		if err != nil {
-			log.Fatalf("parsing checksum: %v", err)
-		}
+	var parallelize []func()
 
-		releaseVersionRef := releaseversion.Reference{
-			Name:      rel.Name,
-			Version:   rel.Version,
-			Checksums: checksum.ImmutableChecksums{cs},
-		}
-		osVersionRef := osversion.Reference{
-			Name:    rel.Stemcell.OS,
-			Version: rel.Stemcell.Version,
-		}
+	requirements := man.Requirements()
 
-		resInfo, err := apiclient.GetCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
-		if err != nil {
-			log.Fatalf("finding compiled release: %v", err)
-		} else if resInfo == nil {
-			if c.NoWait {
-				if !c.AppOpts.Quiet {
-					fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: unavailable\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
-				}
+	for relIdx := range requirements {
+		rel := requirements[relIdx]
 
-				continue
+		parallelize = append(parallelize, func() {
+			cs, err := checksum.CreateFromString(rel.Source.Sha1)
+			if err != nil {
+				log.Fatalf("parsing checksum: %v", err)
 			}
 
-			// TODO this currently causes a duplicate GET for the sake of reusing code
-			resInfo, err = apiclient.RequireCompiledReleaseVersionCompilation(
-				releaseVersionRef,
-				osVersionRef,
-				func(task scheduler.TaskStatus) {
-					if !c.AppOpts.Quiet {
-						fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: compilation %s\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug(), task.Status)
-					}
-				},
-			)
+			releaseVersionRef := releaseversion.Reference{
+				Name:      rel.Name,
+				Version:   rel.Version,
+				Checksums: checksum.ImmutableChecksums{cs},
+			}
+			osVersionRef := osversion.Reference{
+				Name:    rel.Stemcell.OS,
+				Version: rel.Stemcell.Version,
+			}
 
+			resInfo, err := apiclient.GetCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
 			if err != nil {
 				log.Fatalf("finding compiled release: %v", err)
 			} else if resInfo == nil {
-				log.Fatalf("finding compiled release: unable to verify request")
+				if c.NoWait {
+					if !c.AppOpts.Quiet {
+						fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: unavailable\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
+					}
+
+					return
+				}
+
+				// TODO this currently causes a duplicate GET for the sake of reusing code
+				resInfo, err = apiclient.RequireCompiledReleaseVersionCompilation(
+					releaseVersionRef,
+					osVersionRef,
+					func(task scheduler.TaskStatus) {
+						if !c.AppOpts.Quiet {
+							fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: compilation %s\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug(), task.Status)
+						}
+					},
+				)
+
+				if err != nil {
+					log.Fatalf("finding compiled release: %v", err)
+				} else if resInfo == nil {
+					log.Fatalf("finding compiled release: unable to verify request")
+				}
 			}
-		}
 
-		if !c.AppOpts.Quiet {
-			fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: available\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
-		}
+			if !c.AppOpts.Quiet {
+				fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: available\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
+			}
 
-		rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String()
-		rel.Compiled.URL = resInfo.Data.URLs[0].URL
+			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String()
+			rel.Compiled.URL = resInfo.Data.URLs[0].URL
 
-		err = man.UpdateRelease(rel)
-		if err != nil {
-			log.Fatalf("updating release: %v", err)
-		}
+			err = man.UpdateRelease(rel)
+			if err != nil {
+				log.Fatalf("updating release: %v", err)
+			}
+		})
 	}
+
+	pool, err := workpool.NewThrottler(c.Parallel, parallelize)
+	if err != nil {
+		log.Fatalf("parallelizing: %v", err)
+	}
+	pool.Work()
 
 	bytes, err = man.Bytes()
 	if err != nil {

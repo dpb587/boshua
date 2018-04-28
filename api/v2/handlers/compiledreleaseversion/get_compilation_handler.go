@@ -51,6 +51,26 @@ func (h *GETCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		OSVersion:      osVersionRef,
 	}
 
+	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
+	if errResolve != nil {
+		status := http.StatusInternalServerError
+
+		if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
+			status = http.StatusBadRequest
+		}
+
+		err = errResolve
+
+		writeFailure(logger, w, r, status, fmt.Errorf("resolving ref: %v", err))
+
+		return
+	}
+
+	ref = compiledreleaseversion.Reference{
+		ReleaseVersion: releaseVersion.Reference,
+		OSVersion:      osVersion.Reference,
+	}
+
 	result, err := h.compiledReleaseVersionIndex.Find(ref)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -58,17 +78,6 @@ func (h *GETCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		if err == datastore.MissingErr {
 			// differentiate missing compilation vs invalid release/os
 			status = http.StatusNotFound
-
-			_, _, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
-			if errResolve != nil {
-				status = http.StatusInternalServerError
-
-				if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
-					status = http.StatusBadRequest
-				}
-
-				err = errResolve
-			}
 		}
 
 		writeFailure(logger, w, r, status, fmt.Errorf("finding compiled release: %v", err))

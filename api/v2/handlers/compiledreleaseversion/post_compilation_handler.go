@@ -55,26 +55,33 @@ func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	reqDataRef := compiledreleaseversion.Reference{
+	ref := compiledreleaseversion.Reference{
 		ReleaseVersion: releaseVersionRef,
 		OSVersion:      osVersionRef,
 	}
 
-	_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
-	if err == datastore.MissingErr {
-		releaseVersion, osVersion, err := h.compiledReleaseVersionManager.Resolve(reqDataRef)
-		if err != nil {
-			status := http.StatusInternalServerError
+	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
+	if errResolve != nil {
+		status := http.StatusInternalServerError
 
-			if err == releaseversiondatastore.MissingErr || err == osversiondatastore.MissingErr {
-				status = http.StatusBadRequest
-			}
-
-			writeFailure(logger, w, r, status, fmt.Errorf("resolving reference: %v", err))
-
-			return
+		if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
+			status = http.StatusBadRequest
 		}
 
+		err = errResolve
+
+		writeFailure(logger, w, r, status, fmt.Errorf("resolving ref: %v", err))
+
+		return
+	}
+
+	ref = compiledreleaseversion.Reference{
+		ReleaseVersion: releaseVersion.Reference,
+		OSVersion:      osVersion.Reference,
+	}
+
+	_, err = h.compiledReleaseVersionIndex.Find(ref)
+	if err == datastore.MissingErr {
 		task := compilation.New(releaseVersion, osVersion)
 
 		// check existing status
@@ -107,7 +114,7 @@ func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.compiledReleaseVersionIndex.Find(reqDataRef)
+		_, err = h.compiledReleaseVersionIndex.Find(ref)
 		if err == datastore.MissingErr {
 			status = scheduler.StatusFinishing
 		} else {
