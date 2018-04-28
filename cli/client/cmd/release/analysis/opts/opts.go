@@ -7,6 +7,6 @@ import (
 type Opts struct {
 	Analyzer string `long:"analyzer" description:"The analyzer name"`
 
-	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
-	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
+	NoWait      bool          `long:"no-wait" description:"Do not request and wait for analysis if not already available"`
+	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }

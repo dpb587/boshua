@@ -16,15 +16,15 @@ type Opts struct {
 	ReleaseChecksum args.Checksum `long:"release-checksum" description:"The release checksum"`
 	OS              args.OS       `long:"os" description:"The OS and version"`
 
-	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
-	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
+	NoWait      bool          `long:"no-wait" description:"Do not request and wait for compilation if not already available"`
+	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }
 
 func (o *Opts) GetCompiledReleaseVersion(api *client.Client) (*compiledreleaseversion.GETCompilationResponse, error) {
-	var get func(releaseversion.Reference, osversion.Reference) (*compiledreleaseversion.GETCompilationResponse, error) = api.GetCompiledReleaseVersionCompilation
+	var get func(releaseversion.Reference, osversion.Reference) (*compiledreleaseversion.GETCompilationResponse, error) = api.RequireCompiledReleaseVersionCompilation
 
-	if o.RequestAndWait {
-		get = api.RequireCompiledReleaseVersionCompilation
+	if o.NoWait {
+		get = api.GetCompiledReleaseVersionCompilation
 	}
 
 	return get(

@@ -9,10 +9,10 @@ import (
 func (o *CmdOpts) getAnalysis() (*analysis.GETAnalysisResponse, error) {
 	client := o.AppOpts.GetClient()
 
-	var get func(releaseversion.Reference, string) (*analysis.GETAnalysisResponse, error) = client.GetReleaseVersionAnalysis
+	var get func(releaseversion.Reference, string) (*analysis.GETAnalysisResponse, error) = client.RequireReleaseVersionAnalysis
 
-	if o.AnalysisOpts.RequestAndWait {
-		get = client.RequireReleaseVersionAnalysis
+	if o.AnalysisOpts.NoWait {
+		get = client.GetReleaseVersionAnalysis
 	}
 
 	return get(

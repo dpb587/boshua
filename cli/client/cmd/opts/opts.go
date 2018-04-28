@@ -12,7 +12,7 @@ import (
 type Opts struct {
 	Server      string   `long:"server" description:"API server address" default:"https://boshua.io/" env:"BOSHUA_SERVER"`
 	ServerToken string   `long:"server-token" description:"API server authentication token" env:"BOSHUA_SERVER_TOKEN"`
-	CACert      []string `long:"ca-cert" description:"Specific CA certificate(s) to trust" env:"BOSHUA_CA_CERT"`
+	CACert      []string `long:"ca-cert" description:"Specific CA certificate(s) to trust" env:"BOSHUA_CA_CERT" default:"system"`
 
 	Quiet    bool          `long:"quiet" description:"Suppress informational output"`
 	LogLevel args.LogLevel `long:"log-level" description:"Show additional levels of log messages" default:"FATAL" env:"BOSHUA_LOG_LEVEL"`
