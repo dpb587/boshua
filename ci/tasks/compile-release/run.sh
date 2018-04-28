@@ -36,7 +36,7 @@ bosh-director/bosh export-release "$release_name/$release_version" "$stemcell_os
 
 bosh-director/bosh task --event 4 > compiled-release/events.json
 
-version=$( 1.$( date -u +%Y%m%d%H%M%S ).0 )
+version=1.$( date -u +%Y%m%d%H%M%S ).0
 
 echo -n "$version" > compiled-release/version
 
