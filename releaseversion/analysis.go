@@ -4,7 +4,7 @@ import "github.com/dpb587/boshua/analysis"
 
 var _ analysis.Subject = &Artifact{}
 
-func (Artifact) SupportedAnalyzers() []string {
+func (Reference) SupportedAnalyzers() []string {
 	return []string{
 		"releaseartifactchecksums.v1",
 		"releaseartifactfilestat.v1",

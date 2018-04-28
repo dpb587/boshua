@@ -25,7 +25,7 @@ func New(logger logrus.FieldLogger, releaseVersionsIndex releaseversiondatastore
 }
 
 func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
-	logger := f.logger.WithField("datastore", "dpb587/openvpn-bosh-release")
+	logger := f.logger.WithField("datastore", fmt.Sprintf("compiledreleaseversion:%s[%s]", provider, name))
 
 	switch provider {
 	case "presentbcr":

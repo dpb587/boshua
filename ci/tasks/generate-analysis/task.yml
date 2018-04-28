@@ -5,7 +5,7 @@ image_resource:
     repository: dpb587/bosh-compiled-releases-v2
     tag: latest
 inputs:
-- name: compiled-release
+- name: artifact
 - name: bosh-compiled-releases
 outputs:
 - name: analysis
@@ -15,6 +15,6 @@ run:
   - -c
   - |
     exec > analysis/results.jsonl
-    boshua analysis --analyzer=$analyzer generate compiled-release/*.tgz
+    boshua analysis --analyzer=$analyzer generate artifact/*.tgz
 params:
   analyzer: ~

@@ -56,7 +56,7 @@ func (h *GETCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		status := http.StatusInternalServerError
 
 		if err == datastore.MissingErr {
-			// differentiate between
+			// differentiate missing compilation vs invalid release/os
 			status = http.StatusNotFound
 
 			_, _, errResolve := h.compiledReleaseVersionManager.Resolve(ref)

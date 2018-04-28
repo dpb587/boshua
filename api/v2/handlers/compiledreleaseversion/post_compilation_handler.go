@@ -34,7 +34,7 @@ func NewPOSTCompilationHandler(
 		logger: logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(POSTCompilationHandler{}).PkgPath(),
 			"api.version":   "v2",
-			"api.handler":   "compiledreleaseversion/request",
+			"api.handler":   "compiledreleaseversion/compilation",
 		}),
 		cc: cc,
 		compiledReleaseVersionManager: compiledReleaseVersionManager,
@@ -43,6 +43,8 @@ func NewPOSTCompilationHandler(
 }
 
 func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var status scheduler.Status
+
 	baseLogger := applyLoggerContext(h.logger, r)
 
 	releaseVersionRef, osVersionRef, logger, err := parseRequest(baseLogger, r)
@@ -51,8 +53,6 @@ func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 		return
 	}
-
-	var status scheduler.Status
 
 	reqDataRef := compiledreleaseversion.Reference{
 		ReleaseVersion: releaseVersionRef,

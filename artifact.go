@@ -7,12 +7,15 @@ import (
 )
 
 type Artifact interface {
-	ArtifactReference() Reference
-
-	ArtifactStorageDir() string
+	ArtifactReference
 
 	ArtifactMetalink() metalink.Metalink
 	ArtifactMetalinkStorage() map[string]interface{}
+}
+
+type ArtifactReference interface {
+	ArtifactReference() Reference
+	ArtifactStorageDir() string
 }
 
 type Reference struct {

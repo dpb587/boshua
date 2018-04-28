@@ -179,6 +179,8 @@ func (c *Runner) runStdin(stdin io.Reader, args ...string) ([]byte, []byte, erro
 			c.needsLogin = true
 		}
 
+		// TODO fly sync "out of sync with the target"
+
 		return outbuf.Bytes(), errbuf.Bytes(), fmt.Errorf("cli: running %#+v: %v", allArgs, err)
 	}
 

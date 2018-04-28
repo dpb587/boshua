@@ -21,7 +21,7 @@ func New(logger logrus.FieldLogger) datastore.Factory {
 }
 
 func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
-	logger := f.logger.WithField("datastore", name)
+	logger := f.logger.WithField("datastore", fmt.Sprintf("osversion:%s[%s]", provider, name))
 
 	switch provider {
 	case "boshio":

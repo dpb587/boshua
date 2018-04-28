@@ -4,6 +4,7 @@ import (
 	"github.com/dpb587/boshua/cli/client/cmd/analysis"
 	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease"
 	"github.com/dpb587/boshua/cli/client/cmd/opts"
+	"github.com/dpb587/boshua/cli/client/cmd/release"
 )
 
 type CmdOpts struct {
@@ -15,6 +16,7 @@ type Cmd struct {
 
 	AnalysisCmd        *analysis.Cmd        `command:"analysis" description:"For analyzing artifacts"`
 	CompiledReleaseCmd *compiledrelease.Cmd `command:"compiled-release" description:"For working with compiled releases"`
+	ReleaseCmd         *release.Cmd         `command:"release" description:"For working with releases"`
 	PatchManifestCmd   PatchManifestCmd     `command:"patch-manifest" description:"For patching a manifest to use compiled releases"`
 }
 
@@ -25,6 +27,7 @@ func New() *Cmd {
 
 	cmd.AnalysisCmd = analysis.New(cmd.Opts)
 	cmd.CompiledReleaseCmd = compiledrelease.New(cmd.Opts)
+	cmd.ReleaseCmd = release.New(cmd.Opts)
 
 	cmdOpts := &CmdOpts{
 		AppOpts: cmd.Opts,

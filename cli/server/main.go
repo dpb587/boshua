@@ -6,18 +6,21 @@ import (
 	"net/http"
 	"os"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	analysisaggregate "github.com/dpb587/boshua/analysis/datastore/aggregate"
+	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
 	handlersv2 "github.com/dpb587/boshua/api/v2/handlers"
 	"github.com/dpb587/boshua/api/v2/middleware"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	compiledreleaseversionsaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
-	compiledreleaseversionsfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
+	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
+	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
-	osversionsaggregate "github.com/dpb587/boshua/osversion/datastore/aggregate"
-	osversionsfactory "github.com/dpb587/boshua/osversion/datastore/factory"
+	osversionaggregate "github.com/dpb587/boshua/osversion/datastore/aggregate"
+	osversionfactory "github.com/dpb587/boshua/osversion/datastore/factory"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	releaseversionsaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
-	releaseversionsfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
+	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
+	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/server/config"
 	"github.com/gorilla/mux"
@@ -56,7 +59,7 @@ func main() {
 
 	{
 		var all []releaseversiondatastore.Index
-		factory := releaseversionsfactory.New(logger)
+		factory := releaseversionfactory.New(logger)
 
 		for _, cfg := range serverConfig.Releases {
 			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
@@ -67,14 +70,14 @@ func main() {
 			all = append(all, idx)
 		}
 
-		rv = releaseversionsaggregate.New(all...)
+		rv = releaseversionaggregate.New(all...)
 	}
 
 	var sv osversiondatastore.Index
 
 	{
 		var all []osversiondatastore.Index
-		factory := osversionsfactory.New(logger)
+		factory := osversionfactory.New(logger)
 
 		for _, cfg := range serverConfig.Stemcells {
 			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
@@ -85,14 +88,14 @@ func main() {
 			all = append(all, idx)
 		}
 
-		sv = osversionsaggregate.New(all...)
+		sv = osversionaggregate.New(all...)
 	}
 
 	var crv compiledreleaseversiondatastore.Index
 
 	{
 		var all []compiledreleaseversiondatastore.Index
-		factory := compiledreleaseversionsfactory.New(logger, rv)
+		factory := compiledreleaseversionfactory.New(logger, rv)
 
 		for _, cfg := range serverConfig.CompiledReleases {
 			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
@@ -103,11 +106,29 @@ func main() {
 			all = append(all, idx)
 		}
 
-		crv = compiledreleaseversionsaggregate.New(all...)
+		crv = compiledreleaseversionaggregate.New(all...)
+	}
+
+	var analysis analysisdatastore.Index
+
+	{
+		var all []analysisdatastore.Index
+		factory := analysisfactory.New(logger, rv)
+
+		for _, cfg := range serverConfig.Analysis {
+			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+			if err != nil {
+				log.Panicf("creating analysis: %v", err)
+			}
+
+			all = append(all, idx)
+		}
+
+		analysis = analysisaggregate.New(all...)
 	}
 
 	r := mux.NewRouter()
-	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, sv)
+	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, sv, analysis)
 
 	loggingRouter := middleware.NewLogging(logger, r)
 	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)

@@ -5,6 +5,7 @@ type Config struct {
 	Stemcells        []DatastoreConfig `yaml:"stemcell_versions"`
 	Releases         []DatastoreConfig `yaml:"release_versions"`
 	CompiledReleases []DatastoreConfig `yaml:"compiled_release_versions"`
+	Analysis         []DatastoreConfig `yaml:"analysis"`
 }
 
 type DatastoreConfig struct {

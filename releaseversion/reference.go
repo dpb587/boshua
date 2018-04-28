@@ -15,11 +15,25 @@ type Reference struct {
 	Checksums checksum.ImmutableChecksums
 }
 
+var _ boshua.ArtifactReference = &Reference{}
+
 func (r Reference) ArtifactReference() boshua.Reference {
 	return boshua.Reference{
 		Context: "releaseversion",
 		ID:      r.id(),
 	}
+}
+
+func (r Reference) ArtifactStorageDir() string {
+	ref := r.ArtifactReference()
+
+	return fmt.Sprintf(
+		"%s/%s/%s/%s",
+		ref.Context,
+		ref.ID[0:2],
+		ref.ID[2:4],
+		ref.ID[4:],
+	)
 }
 
 func (r Reference) id() string {

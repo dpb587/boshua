@@ -95,9 +95,8 @@ func (t Task) Config() (atc.Config, error) {
 						TaskConfigPath: "bosh-compiled-releases/ci/tasks/publish-analysis/task.yml",
 						Params: atc.Params{
 							"storage": fmt.Sprintf(
-								"%s/%s/%s",
-								t.subject.ArtifactReference().Context,
-								t.subject.ArtifactReference().ID,
+								"%s/analysis/%s",
+								t.subject.ArtifactStorageDir(),
 								t.analyzer,
 							),
 							"analyzer":      t.analyzer,
