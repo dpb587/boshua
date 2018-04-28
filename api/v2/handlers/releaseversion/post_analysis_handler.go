@@ -9,6 +9,7 @@ import (
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/analysis/task"
 	api "github.com/dpb587/boshua/api/v2/models/analysis"
+	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler"
 	"github.com/dpb587/boshua/scheduler/concourse"
@@ -132,7 +133,9 @@ func (h *POSTAnalysisHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	writeResponse(logger, w, r, api.POSTAnalysisResponse{
-		Status:   string(status),
-		Complete: complete,
+		Data: schedulerapi.TaskStatus{
+			Status:   string(status),
+			Complete: complete,
+		},
 	})
 }

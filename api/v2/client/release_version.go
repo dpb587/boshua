@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 
 	api "github.com/dpb587/boshua/api/v2/models/analysis"
+	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/api/v2/urlutil"
 	"github.com/dpb587/boshua/releaseversion"
 )
@@ -84,12 +84,12 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 	return res, nil
 }
 
-func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*api.GETAnalysisResponse, error) {
+func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*api.GETAnalysisResponse, error) {
 	resInfo, err := c.GetReleaseVersionAnalysis(releaseVersion, analyzer)
 	if err != nil {
 		return nil, fmt.Errorf("finding analysis: %v", err)
 	} else if resInfo == nil {
-		priorStatus := "unknown"
+		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestReleaseVersionAnalysis(releaseVersion, analyzer)
@@ -99,12 +99,17 @@ func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 				return nil, fmt.Errorf("unsupported analysis")
 			}
 
-			if res.Status != priorStatus {
-				fmt.Fprintf(os.Stderr, "analysis status: %s\n", res.Status) // TODO
-				priorStatus = res.Status
+			currentStatus := res.Data
+
+			if currentStatus != priorStatus {
+				if taskStatusWatcher != nil {
+					taskStatusWatcher(currentStatus)
+				}
+
+				priorStatus = currentStatus
 			}
 
-			if res.Complete {
+			if currentStatus.Complete {
 				break
 			}
 

@@ -16,7 +16,7 @@ type MetalinkCmd struct {
 func (c *MetalinkCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("compiled-release/metalink")
 
-	resInfo, err := c.CompiledReleaseOpts.GetCompiledReleaseVersion(c.AppOpts.GetClient())
+	resInfo, err := c.getCompiledRelease()
 	if err != nil {
 		log.Fatalf("requesting compiled version info: %v", err)
 	} else if resInfo == nil {

@@ -6,7 +6,7 @@ type parseManifest struct {
 	InstanceGroups []parseManifestInstanceGroup `yaml:"instance_groups"`
 	Jobs           []parseManifestInstanceGroup `yaml:"jobs"`
 
-	Stemcell *parseManifestStemcell `yaml:"stemcell"`
+	Stemcells []parseManifestStemcell `yaml:"stemcells"`
 
 	// init
 	ResourcePools []parseManifestResourcePool `yaml:"resource_pools"`

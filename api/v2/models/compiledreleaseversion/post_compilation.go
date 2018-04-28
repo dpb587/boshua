@@ -1,6 +1,7 @@
 package compiledreleaseversion
 
+import "github.com/dpb587/boshua/api/v2/models/scheduler"
+
 type POSTCompilationResponse struct {
-	Complete bool   `json:"complete"`
-	Status   string `json:"status"`
+	Data scheduler.TaskStatus `json:"data"`
 }

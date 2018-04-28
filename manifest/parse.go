@@ -30,8 +30,8 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 
 	var stemcell parseManifestStemcell
 
-	if parsed.Stemcell != nil {
-		stemcell = *parsed.Stemcell
+	if len(parsed.Stemcells) == 1 {
+		stemcell = parsed.Stemcells[0]
 	} else if len(parsed.ResourcePools) == 1 && parsed.ResourcePools[0].Stemcell != nil {
 		stemcell = *parsed.ResourcePools[0].Stemcell
 	} else {

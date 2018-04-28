@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dpb587/boshua/api/v2/middleware"
+	"github.com/dpb587/boshua/api/logging"
 	"github.com/dpb587/boshua/api/v2/urlutil"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
@@ -55,7 +55,7 @@ func writeResponse(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Req
 }
 
 func applyLoggerContext(logger logrus.FieldLogger, r *http.Request) logrus.FieldLogger {
-	if context := r.Context().Value(middleware.LoggerContext); context != nil {
+	if context := r.Context().Value(logging.LoggerContext); context != nil {
 		logger = logger.WithFields(context.(logrus.Fields))
 	}
 

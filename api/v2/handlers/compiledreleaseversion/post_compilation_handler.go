@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	api "github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
+	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
@@ -118,7 +119,9 @@ func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 
 	writeResponse(logger, w, r, api.POSTCompilationResponse{
-		Status:   string(status),
-		Complete: complete,
+		Data: schedulerapi.TaskStatus{
+			Status:   string(status),
+			Complete: complete,
+		},
 	})
 }

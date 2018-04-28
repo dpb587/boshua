@@ -1,4 +1,4 @@
-package cmd
+package deployment
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
@@ -23,13 +24,13 @@ type PatchManifestCmd struct {
 
 	LocalOS args.OS `long:"local-os" description:"Explicit local OS and version (used for bootstrap manifests)"`
 
-	Parallel       int           `long:"parallel" description:"Maximum number of parallel operations"`
-	RequestAndWait bool          `long:"request-and-wait" description:"Request and wait for compilations to finish"`
-	WaitTimeout    time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
+	Parallel    int           `long:"parallel" description:"Maximum number of parallel operations"`
+	NoWait      bool          `long:"no-wait" description:"Do not request and wait for compilation if not already available"`
+	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }
 
 func (c *PatchManifestCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("patch-manifest")
+	c.AppOpts.ConfigureLogger("deployment/patch-manifest")
 
 	localStemcell := osversion.Reference{
 		Name:    c.LocalOS.Name,
@@ -79,44 +80,34 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 		if err != nil {
 			log.Fatalf("finding compiled release: %v", err)
 		} else if resInfo == nil {
-			if !c.RequestAndWait {
+			if c.NoWait {
+				if !c.AppOpts.Quiet {
+					fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: unavailable\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
+				}
+
 				continue
 			}
 
-			priorStatus := "unknown"
+			// TODO this currently causes a duplicate GET for the sake of reusing code
+			resInfo, err = apiclient.RequireCompiledReleaseVersionCompilation(
+				releaseVersionRef,
+				osVersionRef,
+				func(task scheduler.TaskStatus) {
+					if !c.AppOpts.Quiet {
+						fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: compilation %s\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug(), task.Status)
+					}
+				},
+			)
 
-			for {
-				res, err := apiclient.RequestCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
-				if err != nil {
-					log.Fatalf("requesting compiled release: %v", err)
-				} else if res == nil {
-					fmt.Fprintf(os.Stderr, "[%s %s] unsupported compilation\n", rel.Stemcell.Slug(), rel.Slug())
-
-					break
-				}
-
-				if res.Status != priorStatus {
-					fmt.Fprintf(os.Stderr, "[%s %s] compilation status: %s\n", rel.Stemcell.Slug(), rel.Slug(), res.Status)
-					priorStatus = res.Status
-				}
-
-				if res.Complete {
-					break
-				}
-
-				time.Sleep(10 * time.Second)
-			}
-
-			if priorStatus == "unknown" {
-				continue
-			}
-
-			resInfo, err = apiclient.GetCompiledReleaseVersionCompilation(releaseVersionRef, osVersionRef)
 			if err != nil {
 				log.Fatalf("finding compiled release: %v", err)
 			} else if resInfo == nil {
 				log.Fatalf("finding compiled release: unable to verify request")
 			}
+		}
+
+		if !c.AppOpts.Quiet {
+			fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: available\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
 		}
 
 		rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String()

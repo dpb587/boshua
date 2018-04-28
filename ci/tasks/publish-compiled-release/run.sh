@@ -25,7 +25,7 @@ export AWS_SECRET_ACCESS_KEY="$s3_secret_key"
 
 meta4 file-upload --metalink="$metalink_path" --file="$tarball_name" "$tarball_path" "s3://$s3_host/$s3_bucket/compiledreleaseversion/$path1/$path2/$path3"
 
-echo "$context" > "index-out/$storage/compiled-release-version.json"
+echo "$reference" > "index-out/$storage/reference.json"
 
 mv compiled-release/events.json "index-out/$storage/bosh-events.json"
 

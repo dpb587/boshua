@@ -9,8 +9,8 @@ import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisaggregate "github.com/dpb587/boshua/analysis/datastore/aggregate"
 	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
+	"github.com/dpb587/boshua/api/logging"
 	handlersv2 "github.com/dpb587/boshua/api/v2/handlers"
-	"github.com/dpb587/boshua/api/v2/middleware"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
 	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
@@ -130,8 +130,8 @@ func main() {
 	r := mux.NewRouter()
 	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, sv, analysis)
 
-	loggingRouter := middleware.NewLogging(logger, r)
-	loggerContextRouter := middleware.NewLoggerContext(loggingRouter)
+	loggingRouter := logging.NewLogging(logger, r)
+	loggerContextRouter := logging.NewLoggerContext(loggingRouter)
 
 	http.Handle("/", loggerContextRouter)
 	http.ListenAndServe(":8080", nil)

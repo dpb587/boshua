@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 
 	api "github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
+	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/api/v2/urlutil"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
@@ -85,12 +85,12 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 	return res, nil
 }
 
-func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.GETCompilationResponse, error) {
+func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference, taskStatusWatcher TaskStatusWatcher) (*api.GETCompilationResponse, error) {
 	resInfo, err := c.GetCompiledReleaseVersionCompilation(releaseVersion, osVersion)
 	if err != nil {
 		return nil, fmt.Errorf("finding compiled release: %v", err)
 	} else if resInfo == nil {
-		priorStatus := "unknown"
+		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestCompiledReleaseVersionCompilation(releaseVersion, osVersion)
@@ -100,12 +100,17 @@ func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion release
 				return nil, fmt.Errorf("unsupported compilation")
 			}
 
-			if res.Status != priorStatus {
-				fmt.Fprintf(os.Stderr, "compilation status: %s\n", res.Status) // TODO
-				priorStatus = res.Status
+			currentStatus := res.Data
+
+			if currentStatus != priorStatus {
+				if taskStatusWatcher != nil {
+					taskStatusWatcher(currentStatus)
+				}
+
+				priorStatus = currentStatus
 			}
 
-			if res.Complete {
+			if currentStatus.Complete {
 				break
 			}
 

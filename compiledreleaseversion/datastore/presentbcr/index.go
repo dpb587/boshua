@@ -91,7 +91,7 @@ func (i *index) reloader() (bool, error) {
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/compiledreleaseversion/**/**/**/compiled-release-version.json", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/compiledreleaseversion/**/**/**/reference.json", i.localPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
