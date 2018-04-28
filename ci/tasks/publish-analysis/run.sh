@@ -12,7 +12,7 @@ gzip analysis/results.jsonl
 
 tarball_path=$( echo $PWD/analysis/results.jsonl.gz )
 tarball_name="$analyzer.jsonl.gz"
-metalink_path="index-out/$storage/analysis.meta4"
+metalink_path="index-out/$storage/artifact.meta4"
 
 meta4 create --metalink="$metalink_path"
 meta4 set-published --metalink="$metalink_path" "$( date -u +%Y-%m-%dT%H:%M:%SZ )"

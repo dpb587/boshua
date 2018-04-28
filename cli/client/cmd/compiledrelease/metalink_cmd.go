@@ -23,7 +23,12 @@ func (c *MetalinkCmd) Execute(_ []string) error {
 		log.Fatalf("no compiled release available")
 	}
 
-	meta4 := createMetalink(resInfo)
+	meta4 := metalink.Metalink{
+		Files: []metalink.File{
+			resInfo.Data,
+		},
+		Generator: "bosh-compiled-releases/0.0.0",
+	}
 
 	meta4Bytes, err := metalink.Marshal(meta4)
 	if err != nil {

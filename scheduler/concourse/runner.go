@@ -110,7 +110,7 @@ func (c *Runner) Status(t task.Task) (scheduler.Status, error) {
 	if fields[2] == "succeeded" {
 		return scheduler.StatusSucceeded, nil
 	} else if fields[3] == "started" {
-		return scheduler.StatusCompiling, nil
+		return scheduler.StatusRunning, nil
 	} else if fields[2] == "aborted" {
 		return scheduler.StatusFailed, nil
 	} else if fields[2] == "failed" {

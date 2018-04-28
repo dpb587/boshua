@@ -29,15 +29,13 @@ func (c *DownloadCmd) Execute(_ []string) error {
 		log.Fatalf("no compiled release available")
 	}
 
-	meta4 := createMetalink(resInfo)
-
 	logger := boshlog.NewLogger(boshlog.LevelError)
 	fs := boshsys.NewOsFileSystem(logger)
 
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
 
-	file := meta4.Files[0]
+	file := resInfo.Data
 
 	local, err := urlLoader.Load(metalink.URL{URL: file.Name})
 	if err != nil {

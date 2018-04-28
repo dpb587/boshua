@@ -6,7 +6,7 @@ var (
 	StatusUnknown   Status = "unknown"
 	StatusPending   Status = "pending"
 	StatusFailed    Status = "failed"
-	StatusCompiling Status = "compiling"
+	StatusRunning   Status = "running"
 	StatusFinishing Status = "finishing"
 	StatusSucceeded Status = "succeeded"
 )

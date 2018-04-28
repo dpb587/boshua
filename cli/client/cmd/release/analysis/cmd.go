@@ -15,7 +15,8 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the compiled release"`
+	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the analysis"`
+	ResultsCmd  ResultsCmd  `command:"results" description:"For showing the results of an analysis"`
 }
 
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
@@ -30,6 +31,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	}
 
 	cmd.MetalinkCmd.CmdOpts = cmdOpts
+	cmd.ResultsCmd.CmdOpts = cmdOpts
 
 	return cmd
 }
