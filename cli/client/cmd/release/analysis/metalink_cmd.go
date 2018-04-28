@@ -18,7 +18,7 @@ func (c *MetalinkCmd) Execute(_ []string) error {
 
 	resInfo, err := c.getAnalysis()
 	if err != nil {
-		log.Fatalf("requesting compiled version info: %v", err)
+		log.Fatalf("requesting analysis: %v", err)
 	} else if resInfo == nil {
 		log.Fatalf("no analysis available")
 	}

@@ -13,9 +13,10 @@ import (
 )
 
 type Config struct {
-	Repository   string        `yaml:"repository"`
-	LocalPath    string        `yaml:"local_path"`
-	PullInterval time.Duration `yaml:"pull_interval"`
+	Repository    string        `yaml:"repository"`
+	LocalPath     string        `yaml:"local_path"`
+	PullInterval_ Duration      `yaml:"pull_interval"`
+	PullInterval  time.Duration `yaml:"-"`
 }
 
 func (c *Config) Load(options map[string]interface{}) error {
@@ -36,6 +37,8 @@ func (c *Config) Load(options map[string]interface{}) error {
 
 	c.applyDefaults()
 
+	c.PullInterval = time.Duration(c.PullInterval_)
+
 	return nil
 }
 
@@ -54,7 +57,7 @@ func (c *Config) applyDefaults() {
 		c.LocalPath = filepath.Join(os.TempDir(), fmt.Sprintf("boshua-%x", hex.EncodeToString(hasher.Sum(nil))))
 	}
 
-	if c.PullInterval == 0 {
-		c.PullInterval = 5 * time.Minute
+	if c.PullInterval_ == 0 {
+		c.PullInterval_ = Duration(5 * time.Minute)
 	}
 }
