@@ -23,7 +23,8 @@ func (s Artifact) ArtifactMetalink() metalink.Metalink {
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
 	return map[string]interface{}{
-		"uri": fmt.Sprintf("git@github.com:dpb587/bosh-compiled-releases-index.git//%s", s.ArtifactStorageDir()),
+		// TODO hard-coded; MetalinkSource?
+		"uri": fmt.Sprintf("git+ssh://git@github.com:dpb587/bosh-compiled-releases-index.git//%s", s.ArtifactStorageDir()),
 		"options": map[string]string{
 			"private_key": "((index_private_key))",
 		},

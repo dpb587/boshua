@@ -110,6 +110,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 
 		err = json.Unmarshal(bcrBytes, &bcrJson)
 		if err != nil {
+			// TODO warn and continue?
 			return nil, fmt.Errorf("unmarshalling %s: %v", bcrJsonPath, err)
 		}
 
@@ -124,6 +125,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 
 		err = metalink.Unmarshal(meta4Bytes, &meta4)
 		if err != nil {
+			// TODO warn and continue?
 			return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 		}
 
@@ -136,13 +138,16 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 					Checksums: bcrJson.Release.Checksums,
 				},
 				osversion.Reference{
-					Name:    bcrJson.Stemcell.OS,
-					Version: bcrJson.Stemcell.Version,
+					Name:    bcrJson.OS.Name,
+					Version: bcrJson.OS.Version,
 				},
 				meta4.Files[0],
 				map[string]interface{}{
 					"uri":     fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 					"version": bcrJson.Release.Version,
+					"options": map[string]interface{}{
+						"private_key": "((index_private_key))",
+					},
 				},
 			),
 		)

@@ -5,8 +5,8 @@ import (
 )
 
 type Record struct {
-	Release  RecordRelease  `json:"release"`
-	Stemcell RecordStemcell `json:"stemcell"`
+	Release RecordRelease `json:"release"`
+	OS      RecordOS      `json:"os"`
 }
 
 type RecordRelease struct {
@@ -15,7 +15,7 @@ type RecordRelease struct {
 	Checksums checksum.ImmutableChecksums `json:"checksums"`
 }
 
-type RecordStemcell struct {
-	OS      string `json:"os"`
+type RecordOS struct {
+	Name    string `json:"name"`
 	Version string `json:"version"`
 }
