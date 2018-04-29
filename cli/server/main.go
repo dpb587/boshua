@@ -16,13 +16,15 @@ import (
 	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
-	osversionaggregate "github.com/dpb587/boshua/osversion/datastore/aggregate"
 	osversionfactory "github.com/dpb587/boshua/osversion/datastore/factory"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	"github.com/dpb587/boshua/server/config"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
+	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -73,11 +75,11 @@ func main() {
 		rv = releaseversionaggregate.New(all...)
 	}
 
-	var sv osversiondatastore.Index
+	var sv stemcellversiondatastore.Index
 
 	{
-		var all []osversiondatastore.Index
-		factory := osversionfactory.New(logger)
+		var all []stemcellversiondatastore.Index
+		factory := stemcellversionfactory.New(logger)
 
 		for _, cfg := range serverConfig.Stemcells {
 			idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
@@ -88,8 +90,11 @@ func main() {
 			all = append(all, idx)
 		}
 
-		sv = osversionaggregate.New(all...)
+		sv = stemcellversionaggregate.New(all...)
 	}
+
+	var ov osversiondatastore.Index
+	ov = osversionfactory.Create("stemcellversionindex", "stemcellversion", map[string]interface{})
 
 	var crv compiledreleaseversiondatastore.Index
 
@@ -128,7 +133,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, sv, analysis)
+	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, ov, sv, analysis)
 
 	loggingRouter := logging.NewLogging(logger, r)
 	loggerContextRouter := logging.NewLoggerContext(loggingRouter)

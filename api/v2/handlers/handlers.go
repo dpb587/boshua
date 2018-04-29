@@ -13,6 +13,7 @@ import (
 	osversionds "github.com/dpb587/boshua/osversion/datastore"
 	releaseversionds "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler/concourse"
+	stemcellversionds "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -25,6 +26,7 @@ func Mount(
 	compiledReleaseVersionIndex compiledreleaseversionds.Index,
 	releaseVersionIndex releaseversionds.Index,
 	osVersionIndex osversionds.Index,
+	stemcellVersionIndex stemcellversionds.Index,
 	analysisIndex analysisds.Index,
 ) {
 	{

@@ -6,7 +6,7 @@ var _ analysis.Subject = &Artifact{}
 
 func (Reference) SupportedAnalyzers() []string {
 	return []string{
-		"releaseartifactchecksums.v1",
+		"releaseartifactfilechecksums.v1",
 		"releaseartifactfilestat.v1",
 		"releasemanifests.v1",
 	}

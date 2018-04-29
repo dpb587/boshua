@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactchecksums.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfilechecksums.v1/output"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/checksum/algorithm"
 )
