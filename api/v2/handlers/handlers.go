@@ -31,10 +31,18 @@ func Mount(
 	analysisIndex analysisds.Index,
 ) {
 	{
-		handler := releaseversion.NewAnalysisHandler(logger, cc, analysisIndex, releaseVersionIndex)
+		{
+			handler := releaseversion.NewAnalysisHandler(logger, cc, analysisIndex, releaseVersionIndex)
 
-		router.HandleFunc(releaseversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
-		router.HandleFunc(releaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+			router.HandleFunc(releaseversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+			router.HandleFunc(releaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+		}
+
+		{
+			handler := releaseversion.NewInfoHandler(logger, releaseVersionIndex)
+
+			router.HandleFunc(releaseversion.InfoHandlerURI, handler.GET).Methods(http.MethodGet)
+		}
 	}
 
 	{
@@ -51,9 +59,14 @@ func Mount(
 		router.HandleFunc(compiledreleaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
 	}
 
-	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewGETCompilationHandler(logger, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods(http.MethodGet)
+	{
+		handler := compiledreleaseversion.NewCompilationHandler(logger, cc, compiledReleaseVersionIndex, compiledReleaseVersionManager)
+
+		router.HandleFunc(compiledreleaseversion.CompilationHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+		router.HandleFunc(compiledreleaseversion.CompilationHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+	}
+
 	// router.Handle("/compiled-release-version/log", compiledreleaseversion.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
-	router.Handle("/compiled-release-version/compilation", compiledreleaseversion.NewPOSTCompilationHandler(logger, cc, compiledReleaseVersionManager, compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	router.Handle("/release-versions/list", releaseversions.NewListHandler(logger, releaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)

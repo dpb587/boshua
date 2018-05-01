@@ -18,32 +18,91 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type POSTCompilationHandler struct {
+const CompilationHandlerInfoURI = "/compiled-release-version/compilation/info"
+const CompilationHandlerQueueURI = "/compiled-release-version/compilation/queue"
+
+type CompilationHandler struct {
 	logger                        logrus.FieldLogger
 	cc                            *concourse.Runner
-	compiledReleaseVersionManager *manager.Manager
 	compiledReleaseVersionIndex   datastore.Index
+	compiledReleaseVersionManager *manager.Manager
 }
 
-func NewPOSTCompilationHandler(
+func NewCompilationHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
-	compiledReleaseVersionManager *manager.Manager,
 	compiledReleaseVersionIndex datastore.Index,
-) http.Handler {
-	return &POSTCompilationHandler{
+	compiledReleaseVersionManager *manager.Manager,
+) *CompilationHandler {
+	return &CompilationHandler{
 		logger: logger.WithFields(logrus.Fields{
-			"build.package": reflect.TypeOf(POSTCompilationHandler{}).PkgPath(),
+			"build.package": reflect.TypeOf(CompilationHandler{}).PkgPath(),
 			"api.version":   "v2",
-			"api.handler":   "compiledreleaseversion/compilation",
+			"api.handler":   "compiledreleaseversion/info",
 		}),
 		cc: cc,
-		compiledReleaseVersionManager: compiledReleaseVersionManager,
 		compiledReleaseVersionIndex:   compiledReleaseVersionIndex,
+		compiledReleaseVersionManager: compiledReleaseVersionManager,
 	}
 }
 
-func (h *POSTCompilationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
+	baseLogger := applyLoggerContext(h.logger, r)
+
+	releaseVersionRef, osVersionRef, logger, err := parseRequest(baseLogger, r)
+	if err != nil {
+		writeFailure(baseLogger, w, r, http.StatusBadRequest, fmt.Errorf("parsing request: %v", err))
+
+		return
+	}
+
+	ref := compiledreleaseversion.Reference{
+		ReleaseVersion: releaseVersionRef,
+		OSVersion:      osVersionRef,
+	}
+
+	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
+	if errResolve != nil {
+		status := http.StatusInternalServerError
+
+		if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
+			status = http.StatusBadRequest
+		}
+
+		err = errResolve
+
+		writeFailure(logger, w, r, status, fmt.Errorf("resolving ref: %v", err))
+
+		return
+	}
+
+	ref = compiledreleaseversion.Reference{
+		ReleaseVersion: releaseVersion.Reference,
+		OSVersion:      osVersion.Reference,
+	}
+
+	result, err := h.compiledReleaseVersionIndex.Find(ref)
+	if err != nil {
+		status := http.StatusInternalServerError
+
+		if err == datastore.MissingErr {
+			// differentiate missing compilation vs invalid release/os
+			status = http.StatusNotFound
+		}
+
+		writeFailure(logger, w, r, status, fmt.Errorf("finding compiled release: %v", err))
+
+		return
+	}
+
+	logger.Infof("compiled release found")
+
+	writeResponse(logger, w, r, api.GETCompilationResponse{
+		Data: result.MetalinkFile,
+	})
+}
+
+func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	var status scheduler.Status
 
 	baseLogger := applyLoggerContext(h.logger, r)

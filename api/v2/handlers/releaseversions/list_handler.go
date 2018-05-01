@@ -53,9 +53,9 @@ func (h *ListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		res.Data = append(res.Data, api.Reference{
-			Name:     result.Name,
-			Version:  result.Version,
-			Checksum: checksums[0],
+			Name:      result.Name,
+			Version:   result.Version,
+			Checksums: checksums,
 		})
 	}
 
