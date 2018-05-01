@@ -115,8 +115,6 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 			return nil, fmt.Errorf("unmarshaling metalink: %v", err)
 		}
 
-		var meta4File *metalink.File
-
 		for _, file := range meta4.Files {
 			ref := ConvertFileNameToReference(file.Name)
 			if ref == nil {
@@ -128,7 +126,7 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 				inmemory,
 				stemcellversion.New(
 					*ref,
-					*meta4File,
+					file,
 					map[string]interface{}{
 						"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 						"include_files": []string{

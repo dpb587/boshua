@@ -1,4 +1,4 @@
-package releaseversion
+package stemcellversion
 
 import (
 	"fmt"
@@ -10,13 +10,13 @@ import (
 	"github.com/dpb587/boshua/api/v2/handlers/analysisutil"
 	"github.com/dpb587/boshua/api/v2/httputil"
 	"github.com/dpb587/boshua/api/v2/urlutil"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler/concourse"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
-const AnalysisHandlerInfoURI = "/release-version/analysis/info"
-const AnalysisHandlerQueueURI = "/release-version/analysis/queue"
+const AnalysisHandlerInfoURI = "/stemcell-version/analysis/info"
+const AnalysisHandlerQueueURI = "/stemcell-version/analysis/queue"
 
 type pkg struct{}
 
@@ -24,21 +24,21 @@ func NewAnalysisHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
 	analysisIndex datastore.Index,
-	releaseVersionIndex releaseversiondatastore.Index,
+	stemcellVersionIndex stemcellversiondatastore.Index,
 ) *analysisutil.AnalysisHandler {
 	return analysisutil.NewAnalysisHandler(
 		logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(pkg{}).PkgPath(),
 			"api.version":   "v2",
-			"api.handler":   "releaseversion/analysis",
+			"api.handler":   "stemcellversion/analysis",
 		}),
 		cc,
 		analysisIndex,
-		false,
+		true,
 		func(logger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error) {
-			releaseVersionRef, err := urlutil.ReleaseVersionRefFromParam(r)
+			stemcellVersionRef, err := urlutil.StemcellVersionRefFromParam(r)
 			if err != nil {
-				return analysis.Reference{}, nil, fmt.Errorf("parsing release version: %v", err)
+				return analysis.Reference{}, nil, fmt.Errorf("parsing stemcell version: %v", err)
 			}
 
 			analyzer, err := urlutil.AnalysisAnalyzerFromParam(r)
@@ -47,25 +47,26 @@ func NewAnalysisHandler(
 			}
 
 			logger = logger.WithFields(logrus.Fields{
-				"boshua.release.name":      releaseVersionRef.Name,
-				"boshua.release.version":   releaseVersionRef.Version,
-				"boshua.release.checksum":  releaseVersionRef.Checksums[0].String(),
-				"boshua.analysis.analyzer": analyzer,
+				"boshua.stemcell.iaas":       stemcellVersionRef.IaaS,
+				"boshua.stemcell.hypervisor": stemcellVersionRef.Hypervisor,
+				"boshua.stemcell.os":         stemcellVersionRef.OS,
+				"boshua.stemcell.version":    stemcellVersionRef.Version,
+				"boshua.analysis.analyzer":   analyzer,
 			})
 
-			releaseVersion, err := releaseVersionIndex.Find(releaseVersionRef)
+			stemcellVersion, err := stemcellVersionIndex.Find(stemcellVersionRef)
 			if err != nil {
-				httperr := httputil.NewError(err, http.StatusInternalServerError, "release version index failed")
+				httperr := httputil.NewError(err, http.StatusInternalServerError, "stemcell version index failed")
 
-				if err == releaseversiondatastore.MissingErr {
-					httperr = httputil.NewError(err, http.StatusNotFound, "release version not found")
+				if err == stemcellversiondatastore.MissingErr {
+					httperr = httputil.NewError(err, http.StatusNotFound, "stemcell version not found")
 				}
 
 				return analysis.Reference{}, logger, httperr
 			}
 
 			analysisRef := analysis.Reference{
-				Artifact: releaseVersion,
+				Artifact: stemcellVersion,
 				Analyzer: analyzer,
 			}
 

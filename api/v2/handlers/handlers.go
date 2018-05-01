@@ -8,6 +8,7 @@ import (
 	"github.com/dpb587/boshua/api/v2/handlers/osversions"
 	"github.com/dpb587/boshua/api/v2/handlers/releaseversion"
 	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
+	"github.com/dpb587/boshua/api/v2/handlers/stemcellversion"
 	compiledreleaseversionds "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	osversionds "github.com/dpb587/boshua/osversion/datastore"
@@ -34,6 +35,13 @@ func Mount(
 
 		router.HandleFunc(releaseversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
 		router.HandleFunc(releaseversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+	}
+
+	{
+		handler := stemcellversion.NewAnalysisHandler(logger, cc, analysisIndex, stemcellVersionIndex)
+
+		router.HandleFunc(stemcellversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+		router.HandleFunc(stemcellversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
 	}
 
 	{

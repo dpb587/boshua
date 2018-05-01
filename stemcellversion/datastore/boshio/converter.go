@@ -9,14 +9,14 @@ import (
 func ConvertFileNameToReference(name string) *stemcellversion.Reference {
 	ref := &stemcellversion.Reference{}
 
-	nameSplit := strings.Split(name, "-")
+	nameSplit := strings.Split(strings.TrimSuffix(name, ".tgz"), "-")
 
 	if nameSplit[0] == "light" {
 		ref.Light = true
 		nameSplit = nameSplit[1:]
 	}
 
-	if nameSplit[0:1] != []string{"bosh", "stemcell"} {
+	if nameSplit[0] != "bosh" || nameSplit[1] != "stemcell" {
 		// unexpected format
 		return nil
 	}
@@ -24,14 +24,14 @@ func ConvertFileNameToReference(name string) *stemcellversion.Reference {
 	nameSplit = nameSplit[2:]
 
 	ref.Version = nameSplit[0]
-	nameSplit = nameSplit[1]
+	nameSplit = nameSplit[1:]
 
 	ref.IaaS = nameSplit[0]
 	nameSplit = nameSplit[1:]
 
 	ref.Hypervisor = nameSplit[0]
 	nameSplit = nameSplit[1:]
-	if hypervisor == "xen" && nameSplit[0] == "hvm" {
+	if ref.Hypervisor == "xen" && nameSplit[0] == "hvm" {
 		ref.Hypervisor = strings.Join([]string{ref.Hypervisor, nameSplit[0]}, "-")
 		nameSplit = nameSplit[1:]
 	}

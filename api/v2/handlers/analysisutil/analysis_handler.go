@@ -18,23 +18,26 @@ import (
 type AnalysisHandlerRequestParser func(logger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error)
 
 type AnalysisHandler struct {
-	logger        logrus.FieldLogger
-	cc            *concourse.Runner
-	analysisIndex datastore.Index
-	requestParser AnalysisHandlerRequestParser
+	logger          logrus.FieldLogger
+	cc              *concourse.Runner
+	analysisIndex   datastore.Index
+	privilegedTasks bool
+	requestParser   AnalysisHandlerRequestParser
 }
 
 func NewAnalysisHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
 	analysisIndex datastore.Index,
+	privilegedTasks bool,
 	requestParser AnalysisHandlerRequestParser,
 ) *AnalysisHandler {
 	return &AnalysisHandler{
-		logger:        logger,
-		cc:            cc,
-		analysisIndex: analysisIndex,
-		requestParser: requestParser,
+		logger:          logger,
+		cc:              cc,
+		analysisIndex:   analysisIndex,
+		privilegedTasks: privilegedTasks,
+		requestParser:   requestParser,
 	}
 }
 
@@ -90,7 +93,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.analysisIndex.Find(analysisRef)
 	if err == datastore.MissingErr {
-		t := task.New(analysisRef.Artifact.(analysis.Subject), analysisRef.Analyzer)
+		t := task.New(analysisRef.Artifact.(analysis.Subject), analysisRef.Analyzer, h.privilegedTasks)
 
 		// check existing status
 		status, err = h.cc.Status(t)

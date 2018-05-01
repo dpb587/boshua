@@ -35,6 +35,7 @@ func NewAnalysisHandler(
 		}),
 		cc,
 		analysisIndex,
+		false,
 		func(logger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error) {
 			releaseVersionRef, err := urlutil.ReleaseVersionRefFromParam(r)
 			if err != nil {

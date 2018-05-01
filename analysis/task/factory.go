@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 )
 
-func New(subject analysis.Subject, analyzer string) *Task {
+func New(subject analysis.Subject, analyzer string, privileged bool) *Task {
 	var found bool
 
 	for _, expectedAnalyzer := range subject.SupportedAnalyzers() {
@@ -22,7 +22,8 @@ func New(subject analysis.Subject, analyzer string) *Task {
 	}
 
 	return &Task{
-		subject:  subject,
-		analyzer: analyzer,
+		subject:    subject,
+		analyzer:   analyzer,
+		privileged: privileged,
 	}
 }

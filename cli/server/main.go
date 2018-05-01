@@ -16,7 +16,7 @@ import (
 	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
-	osversionfactory "github.com/dpb587/boshua/osversion/datastore/factory"
+	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
@@ -93,8 +93,7 @@ func main() {
 		sv = stemcellversionaggregate.New(all...)
 	}
 
-	var ov osversiondatastore.Index
-	ov = osversionfactory.Create("stemcellversionindex", "stemcellversion", map[string]interface{})
+	var ov osversiondatastore.Index = osversionstemcellversionindex.New(sv, logger)
 
 	var crv compiledreleaseversiondatastore.Index
 
@@ -133,7 +132,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, sv), crv, rv, ov, sv, analysis)
+	handlersv2.Mount(r.PathPrefix("/v2").Subrouter(), logger, cc, manager.NewManager(rv, ov), crv, rv, ov, sv, analysis)
 
 	loggingRouter := logging.NewLogging(logger, r)
 	loggerContextRouter := logging.NewLoggerContext(loggingRouter)

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/dpb587/boshua/analysis"
 )
@@ -17,10 +18,10 @@ func (a Analyzer) HandleRawDisk(results analysis.Writer, imageReader io.Reader) 
 		return fmt.Errorf("making temp file: %v", err)
 	}
 
-	defer os.Remove(image.Name())
+	//	defer os.Remove(image.Name())
 
 	{ // extract
-		cmd := exec.Command("tar", "-xzf", "-", "root.img")
+		cmd := exec.Command("tar", "-xzOf-", "root.img")
 		cmd.Stdin = imageReader
 		cmd.Stdout = image
 		cmd.Stderr = os.Stderr
@@ -36,7 +37,7 @@ func (a Analyzer) HandleRawDisk(results analysis.Writer, imageReader io.Reader) 
 		return fmt.Errorf("making temp dir: %v", err)
 	}
 
-	defer os.RemoveAll(mountDir)
+	//	defer os.RemoveAll(mountDir)
 
 	{ // mount
 		cmd := exec.Command("mount", "-t", "ext4", "-o", "loop,offset=32256,ro", image.Name(), mountDir)
@@ -56,14 +57,14 @@ func (a Analyzer) HandleRawDisk(results analysis.Writer, imageReader io.Reader) 
 			return nil
 		}
 
-		fh, err := os.Open(info.Name())
+		fh, err := os.Open(path)
 		if err != nil {
 			return fmt.Errorf("opening path: %v", err)
 		}
 
 		defer fh.Close()
 
-		return a.checksumFile(results, path, fh)
+		return a.checksumFile(results, strings.TrimPrefix(strings.TrimPrefix(path, mountDir), "/"), fh)
 	})
 	if err != nil {
 		return fmt.Errorf("walking disk: %v", err)

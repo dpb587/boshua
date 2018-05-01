@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/concourse/atc"
 	"github.com/dpb587/boshua"
@@ -10,8 +11,9 @@ import (
 )
 
 type Task struct {
-	subject  analysis.Subject
-	analyzer string
+	subject    analysis.Subject
+	analyzer   string
+	privileged bool
 }
 
 var _ task.Task = &Task{}
@@ -86,8 +88,10 @@ func (t Task) Config() (atc.Config, error) {
 					{
 						Task:           "analyze",
 						TaskConfigPath: "bosh-compiled-releases/ci/tasks/generate-analysis/task.yml",
+						Privileged:     t.privileged,
 						Params: atc.Params{
-							"analyzer": t.analyzer,
+							"analyzer":   t.analyzer,
+							"privileged": strconv.FormatBool(t.privileged),
 						},
 					},
 					{
