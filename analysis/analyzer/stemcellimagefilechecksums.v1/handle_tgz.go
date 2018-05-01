@@ -10,7 +10,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 )
 
-func (a Analyzer) HandleTarballDisk(results analysis.Writer, imageReader io.Reader) error {
+func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) error {
 	gzReader, err := gzip.NewReader(imageReader)
 	if err != nil {
 		return fmt.Errorf("starting gzip: %v", err)
@@ -29,7 +29,7 @@ func (a Analyzer) HandleTarballDisk(results analysis.Writer, imageReader io.Read
 			continue
 		}
 
-		err = a.checksumFile(results, strings.TrimPrefix(header.Name, "./"), tarReader)
+		err = a.createResult(results, fmt.Sprintf("/%s", strings.TrimPrefix(header.Name, "./")), tarReader)
 		if err != nil {
 			return fmt.Errorf("checksum file: %v", err)
 		}

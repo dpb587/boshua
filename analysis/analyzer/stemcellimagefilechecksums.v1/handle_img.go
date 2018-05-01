@@ -7,12 +7,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/dpb587/boshua/analysis"
 )
 
-func (a Analyzer) HandleRawDisk(results analysis.Writer, imageReader io.Reader) error {
+func (a Analyzer) handleIMG(results analysis.Writer, imageReader io.Reader) error {
 	image, err := ioutil.TempFile("", "boshua-image-")
 	if err != nil {
 		return fmt.Errorf("making temp file: %v", err)
@@ -50,22 +49,7 @@ func (a Analyzer) HandleRawDisk(results analysis.Writer, imageReader io.Reader) 
 		}
 	}
 
-	err = filepath.Walk(mountDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		} else if info.IsDir() {
-			return nil
-		}
-
-		fh, err := os.Open(path)
-		if err != nil {
-			return fmt.Errorf("opening path: %v", err)
-		}
-
-		defer fh.Close()
-
-		return a.checksumFile(results, strings.TrimPrefix(strings.TrimPrefix(path, mountDir), "/"), fh)
-	})
+	err = filepath.Walk(mountDir, a.walkFS(results, mountDir))
 	if err != nil {
 		return fmt.Errorf("walking disk: %v", err)
 	}

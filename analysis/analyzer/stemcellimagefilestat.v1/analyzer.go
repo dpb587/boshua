@@ -69,12 +69,7 @@ func (a Analyzer) Analyze(results analysis.Writer) error {
 			}
 
 		} else if path == "image" {
-			if strings.HasPrefix(stemcellMF["name"].(string), "bosh-aws-") {
-				err = a.handleIMG(results, tarReader)
-				if err != nil {
-					return fmt.Errorf("handling raw disk: %v", err)
-				}
-			} else if strings.HasPrefix(stemcellMF["name"].(string), "bosh-warden-") {
+			if strings.HasPrefix(stemcellMF["name"].(string), "bosh-warden-") {
 				err = a.handleTGZ(results, tarReader)
 				if err != nil {
 					return fmt.Errorf("handling raw disk: %v", err)
