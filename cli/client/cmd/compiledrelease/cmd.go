@@ -16,9 +16,10 @@ type Cmd struct {
 
 	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts"`
 
-	DownloadCmd DownloadCmd `command:"download" description:"For downloading a compiled release tarball"`
-	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the compiled release"`
-	OpsFileCmd  OpsFileCmd  `command:"ops-file" description:"For showing a deployment manifest ops file for the compiled release"`
+	DownloadCmd      DownloadCmd      `command:"download" description:"For downloading a compiled release tarball"`
+	MetalinkCmd      MetalinkCmd      `command:"metalink" description:"For showing a metalink of the compiled release"`
+	OpsFileCmd       OpsFileCmd       `command:"ops-file" description:"For showing a deployment manifest ops file for the compiled release"`
+	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the compiled release to BOSH"`
 }
 
 func New(app *cmdopts.Opts) *Cmd {
@@ -36,6 +37,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	cmd.MetalinkCmd.CmdOpts = cmdOpts
 	cmd.DownloadCmd.CmdOpts = cmdOpts
 	cmd.OpsFileCmd.CmdOpts = cmdOpts
+	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

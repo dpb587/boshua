@@ -3,6 +3,7 @@ package compiledrelease
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
@@ -32,11 +33,9 @@ func (o *CmdOpts) getCompiledRelease() (*compiledreleaseversion.GETCompilationRe
 		releaseVersionRef,
 		osVersionRef,
 		func(task scheduler.TaskStatus) {
-			if o.AppOpts.Quiet {
-				return
+			if !o.AppOpts.Quiet {
+				fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s/%s: %s/%s: compilation %s\n", time.Now().Format("15:04:05"), osVersionRef.Name, osVersionRef.Version, releaseVersionRef.Name, releaseVersionRef.Version, task.Status)
 			}
-
-			fmt.Fprintf(os.Stderr, "compilation status: %s\n", task.Status)
 		},
 	)
 }

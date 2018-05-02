@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 RUN true \
   && apt-get update \
-  && apt-get install -y curl git openssl build-essential zlibc zlib1g-dev ruby ruby-dev libxslt1-dev libxml2-dev libssl-dev readline-common libreadline-dev libyaml-dev libsqlite3-dev sqlite3 multipath-tools \
+  && apt-get install -y golang-go curl git openssl build-essential zlibc zlib1g-dev ruby ruby-dev libxslt1-dev libxml2-dev libssl-dev readline-common libreadline-dev libyaml-dev libsqlite3-dev sqlite3 multipath-tools \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN true \
   && curl -fLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64 \

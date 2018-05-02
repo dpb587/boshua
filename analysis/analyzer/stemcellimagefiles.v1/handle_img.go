@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
 )
@@ -49,7 +48,7 @@ func (a Analyzer) handleIMG(results analysis.Writer, imageReader io.Reader) erro
 		}
 	}
 
-	err = filepath.Walk(mountDir, a.walkFS(results, mountDir))
+	//	err = filepath.Walk(mountDir, a.walkFS(results, mountDir))
 	if err != nil {
 		return fmt.Errorf("walking disk: %v", err)
 	}

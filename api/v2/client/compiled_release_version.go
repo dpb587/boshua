@@ -18,7 +18,7 @@ import (
 func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.GETCompilationResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/info")
 
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/compilation", c.endpoint), nil)
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/compilation/info", c.endpoint), nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}
@@ -55,7 +55,7 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.POSTCompilationResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/compilation")
 
-	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/compilation", c.endpoint), nil)
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/compilation/queue", c.endpoint), nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %v", err)
 	}

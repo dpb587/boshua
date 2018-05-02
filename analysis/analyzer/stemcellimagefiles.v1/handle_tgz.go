@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefilestat.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/output"
+	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/checksum/algorithm"
 )
 
 func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) error {
@@ -27,8 +29,6 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 			break
 		} else if err != nil {
 			return fmt.Errorf("advancing tar: %v", err)
-		} else if header.Typeflag == tar.TypeDir {
-			continue
 		}
 
 		result := output.Result{
@@ -37,8 +37,8 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 			Link:    header.Linkname,
 			Size:    header.Size,
 			Mode:    header.Mode,
-			Uid:     header.Uid,
-			Gid:     header.Gid,
+			Uid:     int64(header.Uid),
+			Gid:     int64(header.Gid),
 			Uname:   header.Uname,
 			Gname:   header.Gname,
 			ModTime: header.ModTime,
@@ -54,6 +54,22 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 			if header.AccessTime != unknownTime {
 				result.AccessTime = &header.AccessTime
 			}
+		}
+
+		if header.Typeflag == tar.TypeReg {
+			checksums := checksum.WritableChecksums{
+				checksum.New(algorithm.MustLookupName(algorithm.MD5)),
+				checksum.New(algorithm.MustLookupName(algorithm.SHA1)),
+				checksum.New(algorithm.MustLookupName(algorithm.SHA256)),
+				checksum.New(algorithm.MustLookupName(algorithm.SHA512)),
+			}
+
+			_, err = io.Copy(checksums, tarReader)
+			if err != nil {
+				return fmt.Errorf("creating checksum: %v", err)
+			}
+
+			result.Checksums = checksums.ImmutableChecksums()
 		}
 
 		err = results.Write(result)

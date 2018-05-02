@@ -16,7 +16,8 @@ type Cmd struct {
 
 	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts"`
 
-	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the release"`
+	MetalinkCmd      MetalinkCmd      `command:"metalink" description:"For showing a metalink of the release"`
+	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`
 }
 
 func New(app *cmdopts.Opts) *Cmd {
@@ -32,6 +33,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	}
 
 	cmd.MetalinkCmd.CmdOpts = cmdOpts
+	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

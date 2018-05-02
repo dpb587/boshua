@@ -7,9 +7,10 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfilechecksums.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/output"
 	"github.com/dpb587/boshua/checksum"
 	"github.com/dpb587/boshua/checksum/algorithm"
 )
@@ -88,6 +89,31 @@ func (a Analyzer) analyzeArtifact(results analysis.Writer, artifact string, read
 
 		path := strings.TrimPrefix(header.Name, "./")
 
+		filestat := output.ResultFileStat{
+			Type:    string(header.Typeflag),
+			Path:    path,
+			Link:    header.Linkname,
+			Size:    header.Size,
+			Mode:    header.Mode,
+			Uid:     int64(header.Uid),
+			Gid:     int64(header.Gid),
+			Uname:   header.Uname,
+			Gname:   header.Gname,
+			ModTime: header.ModTime,
+		}
+
+		unknownTime := time.Time{}
+
+		if header.Format == tar.FormatPAX || header.Format == tar.FormatGNU {
+			if header.ChangeTime != unknownTime {
+				filestat.ChangeTime = &header.ChangeTime
+			}
+
+			if header.AccessTime != unknownTime {
+				filestat.AccessTime = &header.AccessTime
+			}
+		}
+
 		checksums := checksum.WritableChecksums{
 			checksum.New(algorithm.MustLookupName(algorithm.MD5)),
 			checksum.New(algorithm.MustLookupName(algorithm.SHA1)),
@@ -100,10 +126,12 @@ func (a Analyzer) analyzeArtifact(results analysis.Writer, artifact string, read
 			return fmt.Errorf("creating checksum: %v", err)
 		}
 
+		filestat.Checksums = checksums.ImmutableChecksums()
+
 		err = results.Write(output.Result{
 			Artifact: artifact,
 			Path:     path,
-			Result:   checksums.ImmutableChecksums(),
+			Result:   filestat,
 		})
 		if err != nil {
 			return fmt.Errorf("writing result: %v", err)
