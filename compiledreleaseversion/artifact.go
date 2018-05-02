@@ -1,32 +1,24 @@
 package compiledreleaseversion
 
 import (
-	"fmt"
-
 	"github.com/dpb587/metalink"
 )
 
 type Artifact struct {
 	Reference
 
-	MetalinkFile   metalink.File
-	MetalinkSource map[string]interface{}
+	metalinkFile   metalink.File
+	metalinkSource map[string]interface{}
 }
 
 func (s Artifact) ArtifactMetalink() metalink.Metalink {
 	return metalink.Metalink{
 		Files: []metalink.File{
-			s.MetalinkFile,
+			s.metalinkFile,
 		},
 	}
 }
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
-	return map[string]interface{}{
-		// TODO hard-coded; MetalinkSource?
-		"uri": fmt.Sprintf("git+ssh://git@github.com:dpb587/bosh-compiled-releases-index.git//%s", s.ArtifactStorageDir()),
-		"options": map[string]string{
-			"private_key": "((index_private_key))",
-		},
-	}
+	return s.metalinkSource
 }

@@ -47,8 +47,8 @@ func (i *index) List() ([]osversion.Artifact, error) {
 
 		matches[ref] = osversion.New(
 			ref,
-			stemcellVersion.MetalinkFile,
-			stemcellVersion.MetalinkSource,
+			stemcellVersion.ArtifactMetalink().Files[0],
+			stemcellVersion.ArtifactMetalinkStorage(),
 		)
 	}
 

@@ -98,7 +98,7 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 	logger.Infof("compiled release found")
 
 	writeResponse(logger, w, r, api.GETCompilationResponse{
-		Data: result.MetalinkFile,
+		Data: result.ArtifactMetalink().Files[0],
 	})
 }
 

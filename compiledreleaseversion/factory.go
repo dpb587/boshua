@@ -12,7 +12,7 @@ func New(releaseVersion releaseversion.Reference, osVersion osversion.Reference,
 			ReleaseVersion: releaseVersion,
 			OSVersion:      osVersion,
 		},
-		MetalinkFile:   meta4File,
-		MetalinkSource: meta4Source,
+		metalinkFile:   meta4File,
+		metalinkSource: meta4Source,
 	}
 }

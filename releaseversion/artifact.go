@@ -10,8 +10,8 @@ import (
 type Artifact struct {
 	Reference
 
-	MetalinkFile   metalink.File
-	MetalinkSource map[string]interface{}
+	metalinkFile   metalink.File
+	metalinkSource map[string]interface{}
 }
 
 var _ boshua.Artifact = &Artifact{}
@@ -19,17 +19,17 @@ var _ boshua.Artifact = &Artifact{}
 func (s Artifact) ArtifactMetalink() metalink.Metalink {
 	return metalink.Metalink{
 		Files: []metalink.File{
-			s.MetalinkFile,
+			s.metalinkFile,
 		},
 	}
 }
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
-	return s.MetalinkSource
+	return s.metalinkSource
 }
 
 func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {
-	for _, hash := range s.MetalinkFile.Hashes {
+	for _, hash := range s.metalinkFile.Hashes {
 		if metalinkutil.HashToChecksum(hash).String() == cs.String() {
 			return true
 		}

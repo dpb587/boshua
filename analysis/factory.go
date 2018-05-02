@@ -11,7 +11,7 @@ func New(artifact boshua.ArtifactReference, analyzer string, meta4File metalink.
 			Artifact: artifact,
 			Analyzer: analyzer,
 		},
-		MetalinkFile:   meta4File,
-		MetalinkSource: meta4Source,
+		metalinkFile:   meta4File,
+		metalinkSource: meta4Source,
 	}
 }

@@ -71,7 +71,7 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 	logger.Infof("analysis found")
 
 	httputil.WriteResponse(logger, w, r, api.GETAnalysisResponse{
-		Data: result.MetalinkFile,
+		Data: result.ArtifactMetalink().Files[0],
 	})
 }
 
