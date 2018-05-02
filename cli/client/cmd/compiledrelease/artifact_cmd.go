@@ -7,13 +7,13 @@ import (
 	"github.com/dpb587/metalink"
 )
 
-type MetalinkCmd struct {
+type ArtifactCmd struct {
 	*CmdOpts `no-flag:"true"`
 
 	Format string `long:"format" description:"Output format for metalink"`
 }
 
-func (c *MetalinkCmd) Execute(_ []string) error {
+func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("compiled-release/metalink")
 
 	resInfo, err := c.getCompiledRelease()

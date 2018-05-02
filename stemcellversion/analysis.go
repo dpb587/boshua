@@ -15,8 +15,7 @@ func (s Artifact) SupportedAnalyzers() []string {
 
 	if !strings.HasPrefix(s.OS, "windows") {
 		analyzers = append(analyzers,
-			"stemcellimagefilechecksums.v1",
-			"stemcellimagefilestat.v1",
+			"stemcellimagefiles.v1",
 			"stemcellpackages.v1",
 		)
 	}

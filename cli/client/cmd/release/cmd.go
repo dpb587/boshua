@@ -14,10 +14,14 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts"`
+	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the release artifact"`
 
-	MetalinkCmd      MetalinkCmd      `command:"metalink" description:"For showing a metalink of the release"`
+	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`
+}
+
+func (c *Cmd) Execute(extra []string) error {
+	return c.ArtifactCmd.Execute(extra)
 }
 
 func New(app *cmdopts.Opts) *Cmd {
@@ -32,7 +36,7 @@ func New(app *cmdopts.Opts) *Cmd {
 		ReleaseOpts: cmd.Opts,
 	}
 
-	cmd.MetalinkCmd.CmdOpts = cmdOpts
+	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
 
 	return cmd

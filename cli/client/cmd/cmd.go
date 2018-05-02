@@ -17,10 +17,10 @@ type Cmd struct {
 	*opts.Opts
 
 	AnalysisCmd        *analysis.Cmd        `command:"analysis" description:"For analyzing artifacts"`
-	CompiledReleaseCmd *compiledrelease.Cmd `command:"compiled-release" description:"For working with compiled releases"`
-	ReleaseCmd         *release.Cmd         `command:"release" description:"For working with releases"`
+	CompiledReleaseCmd *compiledrelease.Cmd `command:"compiled-release" description:"For working with compiled releases" subcommands-optional:"true"`
+	ReleaseCmd         *release.Cmd         `command:"release" description:"For working with releases" subcommands-optional:"true"`
 	DeploymentCmd      *deployment.Cmd      `command:"deployment" description:"For working with deployments"`
-	StemcellCmd        *stemcell.Cmd        `command:"stemcell" description:"For working with stemcells"`
+	StemcellCmd        *stemcell.Cmd        `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 }
 
 func New() *Cmd {

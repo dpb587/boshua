@@ -14,9 +14,13 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts"`
+	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the stemcell artifact"`
 
-	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the stemcell"`
+	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the stemcell artifact"`
+}
+
+func (c *Cmd) Execute(extra []string) error {
+	return c.ArtifactCmd.Execute(extra)
 }
 
 func New(app *cmdopts.Opts) *Cmd {
@@ -31,7 +35,7 @@ func New(app *cmdopts.Opts) *Cmd {
 		StemcellOpts: cmd.Opts,
 	}
 
-	cmd.MetalinkCmd.CmdOpts = cmdOpts
+	cmd.ArtifactCmd.CmdOpts = cmdOpts
 
 	return cmd
 }
