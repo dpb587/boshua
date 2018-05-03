@@ -70,8 +70,10 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	logger.Infof("analysis found")
 
-	httputil.WriteResponse(logger, w, r, api.GETAnalysisResponse{
-		Data: result.ArtifactMetalink().Files[0],
+	httputil.WriteResponse(logger, w, r, api.GETInfoResponse{
+		Data: api.GETInfoResponseData{
+			Artifact: result.ArtifactMetalink().Files[0],
+		},
 	})
 }
 
@@ -137,7 +139,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		complete = true
 	}
 
-	httputil.WriteResponse(logger, w, r, api.POSTAnalysisResponse{
+	httputil.WriteResponse(logger, w, r, api.POSTQueueResponse{
 		Data: schedulerapi.TaskStatus{
 			Status:   string(status),
 			Complete: complete,

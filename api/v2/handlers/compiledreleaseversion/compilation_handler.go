@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/dpb587/boshua/api/v2/httputil"
 	api "github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
 	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/compiledreleaseversion"
@@ -47,57 +48,49 @@ func NewCompilationHandler(
 }
 
 func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
-	baseLogger := applyLoggerContext(h.logger, r)
+	baseLogger := httputil.ApplyLoggerContext(h.logger, r)
 
-	releaseVersionRef, osVersionRef, logger, err := parseRequest(baseLogger, r)
+	compiledReleaseVersionRef, logger, err := parseRequest(baseLogger, r)
 	if err != nil {
-		writeFailure(baseLogger, w, r, http.StatusBadRequest, fmt.Errorf("parsing request: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("parsing request: %v", err), http.StatusBadRequest, "parsing request failed"))
 
 		return
 	}
 
-	ref := compiledreleaseversion.Reference{
-		ReleaseVersion: releaseVersionRef,
-		OSVersion:      osVersionRef,
-	}
-
-	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
+	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(compiledReleaseVersionRef)
 	if errResolve != nil {
-		status := http.StatusInternalServerError
+		httperr := httputil.NewError(err, http.StatusInternalServerError, "resolving reference failed")
 
-		if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
-			status = http.StatusBadRequest
+		if errResolve == releaseversiondatastore.MissingErr {
+			httperr = httputil.NewError(err, http.StatusBadRequest, "release version not found")
+		} else if errResolve == osversiondatastore.MissingErr {
+			httperr = httputil.NewError(err, http.StatusBadRequest, "os version not found")
 		}
 
-		err = errResolve
-
-		writeFailure(logger, w, r, status, fmt.Errorf("resolving ref: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httperr)
 
 		return
 	}
 
-	ref = compiledreleaseversion.Reference{
+	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
 		ReleaseVersion: releaseVersion.Reference,
 		OSVersion:      osVersion.Reference,
-	}
-
-	result, err := h.compiledReleaseVersionIndex.Find(ref)
+	})
 	if err != nil {
-		status := http.StatusInternalServerError
+		httperr := httputil.NewError(err, http.StatusInternalServerError, "compiled release index failed")
 
 		if err == datastore.MissingErr {
-			// differentiate missing compilation vs invalid release/os
-			status = http.StatusNotFound
+			httperr = httputil.NewError(err, http.StatusNotFound, "compiled release version not found")
 		}
 
-		writeFailure(logger, w, r, status, fmt.Errorf("finding compiled release: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httperr)
 
 		return
 	}
 
 	logger.Infof("compiled release found")
 
-	writeResponse(logger, w, r, api.GETCompilationResponse{
+	httputil.WriteResponse(logger, w, r, api.GETCompilationResponse{
 		Data: result.ArtifactMetalink().Files[0],
 	})
 }
@@ -105,54 +98,49 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	var status scheduler.Status
 
-	baseLogger := applyLoggerContext(h.logger, r)
+	baseLogger := httputil.ApplyLoggerContext(h.logger, r)
 
-	releaseVersionRef, osVersionRef, logger, err := parseRequest(baseLogger, r)
+	compiledReleaseVersionRef, logger, err := parseRequest(baseLogger, r)
 	if err != nil {
-		writeFailure(baseLogger, w, r, http.StatusBadRequest, fmt.Errorf("parsing request: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("parsing request: %v", err), http.StatusBadRequest, "parsing request failed"))
 
 		return
 	}
 
-	ref := compiledreleaseversion.Reference{
-		ReleaseVersion: releaseVersionRef,
-		OSVersion:      osVersionRef,
-	}
-
-	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(ref)
+	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(compiledReleaseVersionRef)
 	if errResolve != nil {
-		status := http.StatusInternalServerError
+		httperr := httputil.NewError(err, http.StatusInternalServerError, "resolving reference failed")
 
-		if errResolve == releaseversiondatastore.MissingErr || errResolve == osversiondatastore.MissingErr {
-			status = http.StatusBadRequest
+		if errResolve == releaseversiondatastore.MissingErr {
+			httperr = httputil.NewError(err, http.StatusBadRequest, "release version not found")
+		} else if errResolve == osversiondatastore.MissingErr {
+			httperr = httputil.NewError(err, http.StatusBadRequest, "os version not found")
 		}
 
-		err = errResolve
-
-		writeFailure(logger, w, r, status, fmt.Errorf("resolving ref: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httperr)
 
 		return
 	}
 
-	ref = compiledreleaseversion.Reference{
+	compiledReleaseVersionRef = compiledreleaseversion.Reference{
 		ReleaseVersion: releaseVersion.Reference,
 		OSVersion:      osVersion.Reference,
 	}
 
-	_, err = h.compiledReleaseVersionIndex.Find(ref)
+	_, err = h.compiledReleaseVersionIndex.Find(compiledReleaseVersionRef)
 	if err == datastore.MissingErr {
 		task := compilation.New(releaseVersion, osVersion)
 
 		// check existing status
 		status, err = h.cc.Status(task)
 		if err != nil {
-			writeFailure(logger, w, r, http.StatusInternalServerError, fmt.Errorf("checking task status: %v", err))
+			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("checking task status: %v", err), http.StatusInternalServerError, "checking task status failed"))
 
 			return
 		} else if status == scheduler.StatusUnknown {
 			err = h.cc.Schedule(task)
 			if err != nil {
-				writeFailure(logger, w, r, http.StatusInternalServerError, fmt.Errorf("scheduling task: %v", err))
+				httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("scheduling task: %v", err), http.StatusInternalServerError, "scheduling task failed"))
 
 				return
 			}
@@ -162,7 +150,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 			status = scheduler.StatusPending
 		}
 	} else if err != nil {
-		writeFailure(logger, w, r, http.StatusInternalServerError, fmt.Errorf("finding compiled release: %v", err))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("finding compiled release: %v", err), http.StatusInternalServerError, "compiled release index failed"))
 
 		return
 	} else {
@@ -173,8 +161,9 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.compiledReleaseVersionIndex.Find(ref)
+		_, err = h.compiledReleaseVersionIndex.Find(compiledReleaseVersionRef)
 		if err == datastore.MissingErr {
+			// propagation delay
 			status = scheduler.StatusFinishing
 		} else {
 			// TODO handle other errors?
@@ -184,7 +173,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		complete = true
 	}
 
-	writeResponse(logger, w, r, api.POSTCompilationResponse{
+	httputil.WriteResponse(logger, w, r, api.POSTCompilationResponse{
 		Data: schedulerapi.TaskStatus{
 			Status:   string(status),
 			Complete: complete,
