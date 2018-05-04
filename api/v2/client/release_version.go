@@ -50,7 +50,7 @@ func (c *Client) GetReleaseVersion(releaseVersion releaseversion.Reference) (*ap
 	return res, nil
 }
 
-func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*analysisapi.GETAnalysisResponse, error) {
+func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*analysisapi.GETInfoResponse, error) {
 	logger := c.logger.WithField("api.handler", "releaseversion/analysis")
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/release-version/analysis/info", c.endpoint), nil)
@@ -77,7 +77,7 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *analysisapi.GETAnalysisResponse
+	var res *analysisapi.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 	return res, nil
 }
 
-func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*analysisapi.POSTAnalysisResponse, error) {
+func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string) (*analysisapi.POSTQueueResponse, error) {
 	logger := c.logger.WithField("api.handler", "releaseversion/analysis")
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/release-version/analysis/queue", c.endpoint), nil)
@@ -111,7 +111,7 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *analysisapi.POSTAnalysisResponse
+	var res *analysisapi.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -121,7 +121,7 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 	return res, nil
 }
 
-func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETAnalysisResponse, error) {
+func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETInfoResponse, error) {
 	resInfo, err := c.GetReleaseVersionAnalysis(releaseVersion, analyzer)
 	if err != nil {
 		return nil, fmt.Errorf("finding analysis: %v", err)

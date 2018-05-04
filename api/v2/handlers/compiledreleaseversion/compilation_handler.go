@@ -90,8 +90,10 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	logger.Infof("compiled release found")
 
-	httputil.WriteResponse(logger, w, r, api.GETCompilationResponse{
-		Data: result.ArtifactMetalink().Files[0],
+	httputil.WriteResponse(logger, w, r, api.GETCompilationInfoResponse{
+		Data: api.GETCompilationInfoResponseData{
+			Artifact: result.ArtifactMetalink().Files[0],
+		},
 	})
 }
 
@@ -173,7 +175,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		complete = true
 	}
 
-	httputil.WriteResponse(logger, w, r, api.POSTCompilationResponse{
+	httputil.WriteResponse(logger, w, r, api.POSTCompilationQueueResponse{
 		Data: schedulerapi.TaskStatus{
 			Status:   string(status),
 			Complete: complete,

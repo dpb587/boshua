@@ -118,8 +118,8 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 				fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: available\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
 			}
 
-			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String()
-			rel.Compiled.URL = resInfo.Data.URLs[0].URL
+			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String()
+			rel.Compiled.URL = resInfo.Data.Artifact.URLs[0].URL
 
 			err = man.UpdateRelease(rel)
 			if err != nil {

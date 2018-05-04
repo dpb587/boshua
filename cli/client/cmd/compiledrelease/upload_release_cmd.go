@@ -29,7 +29,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 
 	var sha1 checksum.Checksum
 
-	for _, cs := range metalinkutil.HashesToChecksums(resInfo.Data.Hashes) {
+	for _, cs := range metalinkutil.HashesToChecksums(resInfo.Data.Artifact.Hashes) {
 		if cs.Algorithm().Name() == "sha1" {
 			sha1 = &cs
 
@@ -39,7 +39,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 
 	if c.Cmd {
 		fmt.Printf("bosh upload-release --name=%s --version=%s \\\n", c.CompiledReleaseOpts.Release.Name, c.CompiledReleaseOpts.Release.Version)
-		fmt.Printf("  %s \\\n", resInfo.Data.URLs[0].URL)
+		fmt.Printf("  %s \\\n", resInfo.Data.Artifact.URLs[0].URL)
 		fmt.Printf("  --sha1=%s \\\n", strings.TrimPrefix(sha1.String(), "sha1:"))
 		fmt.Printf("  --stemcell=%s/%s\n", c.CompiledReleaseOpts.OS.Name, c.CompiledReleaseOpts.OS.Version)
 
@@ -51,7 +51,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 		"upload-release",
 		fmt.Sprintf("--name=%s", c.CompiledReleaseOpts.Release.Name),
 		fmt.Sprintf("--version=%s", c.CompiledReleaseOpts.Release.Version),
-		resInfo.Data.URLs[0].URL,
+		resInfo.Data.Artifact.URLs[0].URL,
 		fmt.Sprintf("--sha1=%s \\\n", strings.TrimPrefix(sha1.String(), "sha1:")),
 		fmt.Sprintf("--stemcell=%s/%s\n", c.CompiledReleaseOpts.OS.Name, c.CompiledReleaseOpts.OS.Version),
 	)

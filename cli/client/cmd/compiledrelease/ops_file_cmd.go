@@ -30,8 +30,8 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 			"value": map[string]interface{}{
 				"name":    c.CompiledReleaseOpts.Release.Name,
 				"version": c.CompiledReleaseOpts.Release.Version,
-				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
-				"url":     resInfo.Data.URLs[0].URL,
+				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
+				"url":     resInfo.Data.Artifact.URLs[0].URL,
 				"stemcell": map[string]string{
 					"os":      c.CompiledReleaseOpts.OS.Name,
 					"version": c.CompiledReleaseOpts.OS.Version,

@@ -35,7 +35,7 @@ func (c *DownloadCmd) Execute(_ []string) error {
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
 
-	file := resInfo.Data
+	file := resInfo.Data.Artifact
 
 	local, err := urlLoader.Load(metalink.URL{URL: file.Name})
 	if err != nil {

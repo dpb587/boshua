@@ -15,7 +15,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion"
 )
 
-func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.GETCompilationResponse, error) {
+func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.GETCompilationInfoResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/info")
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/compilation/info", c.endpoint), nil)
@@ -42,7 +42,7 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *api.GETCompilationResponse
+	var res *api.GETCompilationInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 	return res, nil
 }
 
-func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.POSTCompilationResponse, error) {
+func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference) (*api.POSTCompilationQueueResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/compilation")
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/compilation/queue", c.endpoint), nil)
@@ -76,7 +76,7 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *api.POSTCompilationResponse
+	var res *api.POSTCompilationQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -86,7 +86,7 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 	return res, nil
 }
 
-func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference, taskStatusWatcher TaskStatusWatcher) (*api.GETCompilationResponse, error) {
+func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference, taskStatusWatcher TaskStatusWatcher) (*api.GETCompilationInfoResponse, error) {
 	resInfo, err := c.GetCompiledReleaseVersionCompilation(releaseVersion, osVersion)
 	if err != nil {
 		return nil, fmt.Errorf("finding compiled release: %v", err)
@@ -129,7 +129,7 @@ func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion release
 	return resInfo, nil
 }
 
-func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string) (*analysisapi.GETAnalysisResponse, error) {
+func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string) (*analysisapi.GETInfoResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/analysis")
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/analysis/info", c.endpoint), nil)
@@ -157,7 +157,7 @@ func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *analysisapi.GETAnalysisResponse
+	var res *analysisapi.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -167,7 +167,7 @@ func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion
 	return res, nil
 }
 
-func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string) (*analysisapi.POSTAnalysisResponse, error) {
+func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string) (*analysisapi.POSTQueueResponse, error) {
 	logger := c.logger.WithField("api.handler", "compiledreleaseversion/analysis")
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/analysis/queue", c.endpoint), nil)
@@ -192,7 +192,7 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *analysisapi.POSTAnalysisResponse
+	var res *analysisapi.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -202,7 +202,7 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 	return res, nil
 }
 
-func (c *Client) RequireCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETAnalysisResponse, error) {
+func (c *Client) RequireCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETInfoResponse, error) {
 	resInfo, err := c.GetCompiledReleaseVersionAnalysis(releaseVersion, osVersion, analyzer)
 	if err != nil {
 		return nil, fmt.Errorf("finding analysis: %v", err)

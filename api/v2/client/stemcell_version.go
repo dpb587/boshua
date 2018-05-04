@@ -13,7 +13,7 @@ import (
 	"github.com/dpb587/boshua/stemcellversion"
 )
 
-func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string) (*api.GETAnalysisResponse, error) {
+func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string) (*api.GETInfoResponse, error) {
 	logger := c.logger.WithField("api.handler", "stemcellversion/analysis")
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/stemcell-version/analysis/info", c.endpoint), nil)
@@ -40,7 +40,7 @@ func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Refe
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *api.GETAnalysisResponse
+	var res *api.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Refe
 	return res, nil
 }
 
-func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string) (*api.POSTAnalysisResponse, error) {
+func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string) (*api.POSTQueueResponse, error) {
 	logger := c.logger.WithField("api.handler", "stemcellversion/analysis")
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/stemcell-version/analysis/queue", c.endpoint), nil)
@@ -74,7 +74,7 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 		return nil, fmt.Errorf("reading response body: %v", err)
 	}
 
-	var res *api.POSTAnalysisResponse
+	var res *api.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 	return res, nil
 }
 
-func (c *Client) RequireStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*api.GETAnalysisResponse, error) {
+func (c *Client) RequireStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*api.GETInfoResponse, error) {
 	resInfo, err := c.GetStemcellVersionAnalysis(stemcellVersion, analyzer)
 	if err != nil {
 		return nil, fmt.Errorf("finding analysis: %v", err)

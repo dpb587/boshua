@@ -27,7 +27,7 @@ type CmdOpts struct {
 	AnalysisOpts        *opts.Opts
 }
 
-func (o *CmdOpts) getAnalysis() (*analysis.GETAnalysisResponse, error) {
+func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 	client := o.AppOpts.GetClient()
 
 	releaseVersionRef := releaseversion.Reference{

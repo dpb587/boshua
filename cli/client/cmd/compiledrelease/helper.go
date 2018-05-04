@@ -12,7 +12,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion"
 )
 
-func (o *CmdOpts) getCompiledRelease() (*compiledreleaseversion.GETCompilationResponse, error) {
+func (o *CmdOpts) getCompiledRelease() (*compiledreleaseversion.GETCompilationInfoResponse, error) {
 	client := o.AppOpts.GetClient()
 
 	releaseVersionRef := releaseversion.Reference{

@@ -41,7 +41,7 @@ func (c *ResultsCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
 
-	file := resInfo.Data
+	file := resInfo.Data.Artifact
 
 	local, err := urlLoader.Load(metalink.URL{URL: tempfile.Name()})
 	if err != nil {

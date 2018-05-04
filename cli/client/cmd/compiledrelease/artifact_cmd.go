@@ -25,7 +25,7 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 
 	meta4 := metalink.Metalink{
 		Files: []metalink.File{
-			resInfo.Data,
+			resInfo.Data.Artifact,
 		},
 		Generator: "bosh-compiled-releases/0.0.0",
 	}
