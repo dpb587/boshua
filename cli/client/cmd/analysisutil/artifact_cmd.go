@@ -1,4 +1,4 @@
-package compiledrelease
+package analysisutil
 
 import (
 	"log"
@@ -9,19 +9,15 @@ import (
 
 type ArtifactCmd struct {
 	artifactutil.ArtifactCmd
-
-	*CmdOpts `no-flag:"true"`
 }
 
-func (c *ArtifactCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/artifact")
-
+func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		resInfo, err := c.getCompiledRelease()
+		resInfo, err := loader()
 		if err != nil {
-			log.Fatalf("requesting compiled version info: %v", err)
+			log.Fatal(err)
 		} else if resInfo == nil {
-			log.Fatalf("no compiled release available")
+			log.Fatalf("no analysis available")
 		}
 
 		return resInfo.Data.Artifact, nil

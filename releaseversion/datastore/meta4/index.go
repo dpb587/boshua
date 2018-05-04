@@ -126,7 +126,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 				ref,
 				meta4File,
 				map[string]interface{}{
-					"uri":     fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+					"uri":     fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 					"version": ref.Version,
 				},
 			),

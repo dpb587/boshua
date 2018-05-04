@@ -143,7 +143,7 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 				},
 				meta4.Files[0],
 				map[string]interface{}{
-					"uri":     fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+					"uri":     fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 					"version": bcrJson.Release.Version,
 					"options": map[string]interface{}{
 						"private_key": "((index_private_key))",

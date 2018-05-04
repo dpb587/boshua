@@ -17,8 +17,12 @@ import (
 type Cmd struct {
 	*opts.Opts
 
-	MetalinkCmd MetalinkCmd `command:"metalink" description:"For showing a metalink of the analysis"`
+	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the analysis artifact"`
 	ResultsCmd  ResultsCmd  `command:"results" description:"For showing the results of an analysis"`
+}
+
+func (c *Cmd) Execute(extra []string) error {
+	return c.ArtifactCmd.Execute(extra)
 }
 
 type CmdOpts struct {
@@ -70,7 +74,7 @@ func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
 		AnalysisOpts:        cmd.Opts,
 	}
 
-	cmd.MetalinkCmd.CmdOpts = cmdOpts
+	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.ResultsCmd.CmdOpts = cmdOpts
 
 	return cmd

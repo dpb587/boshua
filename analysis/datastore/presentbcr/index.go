@@ -72,7 +72,7 @@ func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
 		ref.Analyzer,
 		meta4.Files[0],
 		map[string]interface{}{
-			"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+			"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 		},
 	), nil
 }

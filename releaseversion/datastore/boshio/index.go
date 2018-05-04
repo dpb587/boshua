@@ -102,7 +102,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 
 	for _, meta4Path := range paths {
 		meta4Source := map[string]interface{}{
-			"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+			"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 		}
 
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)

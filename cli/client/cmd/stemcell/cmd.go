@@ -14,7 +14,7 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the stemcell artifact"`
+	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the stemcell artifact" subcommands-optional:"true"`
 
 	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the stemcell artifact"`
 }

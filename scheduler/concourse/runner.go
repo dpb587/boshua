@@ -199,13 +199,19 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 			err = fmt.Errorf("%v - %s", err, string(errbuf.Bytes()))
 		}
 
+		var retryable bool
+
 		if strings.Contains(string(errbuf.Bytes()), "not authorized.") {
 			c.needsLogin = true
+			retryable = true
 		} else if strings.Contains(string(errbuf.Bytes()), "out of sync with the target") {
 			c.needsSync = true
+			retryable = true
 		}
 
-		if !c.isPrepareCommand(command) {
+		retryable = retryable && !c.isPrepareCommand(command)
+
+		if retryable {
 			return c.runStdin(bytes.NewBuffer(stdinAll), command, args...)
 		}
 

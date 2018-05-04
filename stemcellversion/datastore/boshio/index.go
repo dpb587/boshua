@@ -128,7 +128,7 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 					*ref,
 					file,
 					map[string]interface{}{
-						"uri": fmt.Sprintf("%s%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+						"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
 						"include_files": []string{
 							file.Name,
 						},

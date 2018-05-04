@@ -16,7 +16,7 @@ type Cmd struct {
 
 	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the release artifact"`
 
-	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact"`
+	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`
 }
 
