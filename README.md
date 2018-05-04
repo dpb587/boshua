@@ -3,17 +3,30 @@
 For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 
 
-## Example Usage
+## Usage
+
+
+
+See the following for some specific examples of usage.
 
 
 ### Deployment Manifests
 
-Using
+Convert a manifest referencing release sources to compiled releases...
+
+    $ bosh deployment use-compiled-releases < manifest.yml
+    TODO sample
 
 
 ### Releases
 
-Referencing
+Showing the tarball of a release...
+
+    $ boshua release --release=openvpn/5.0.0 --release-checksum=0b08f569dc18b042845897a0490d541f96f96951
+    file    openvpn-5.0.0.tgz
+    url     https://s3-external-1.amazonaws.com/bosh-hub-release-tarballs/7f98eb62-f111-461f-71a1-70853052d90c
+    sha1    0b08f569dc18b042845897a0490d541f96f96951
+    ...
 
 
 ### Stemcells
@@ -58,6 +71,10 @@ Show the packages of a stemcell...
 ## Limitations
 
  * TODO security
+ * when patching deployment manifests to use compiled releases...
+    * releases must already specify expected tarball checksums
+    * explicit versions (not `latest`) must be used for `releases` and `stemcells`
+    * multiple stemcells must not be used
 
 
 ## Futures
