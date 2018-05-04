@@ -36,9 +36,9 @@ func NewAnalysisHandler(
 		analysisIndex,
 		false,
 		func(logger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error) {
-			releaseVersionRef, err := urlutil.ReleaseVersionRefFromParam(r)
+			subject, logger, err := parseRequest(logger, r, releaseVersionIndex)
 			if err != nil {
-				return analysis.Reference{}, nil, fmt.Errorf("parsing release version: %v", err)
+				return analysis.Reference{}, nil, httputil.NewError(err, http.StatusBadRequest, "parsing request")
 			}
 
 			analyzer, err := urlutil.AnalysisAnalyzerFromParam(r)
@@ -46,26 +46,10 @@ func NewAnalysisHandler(
 				return analysis.Reference{}, nil, fmt.Errorf("parsing analyzer: %v", err)
 			}
 
-			logger = logger.WithFields(logrus.Fields{
-				"boshua.release.name":      releaseVersionRef.Name,
-				"boshua.release.version":   releaseVersionRef.Version,
-				"boshua.release.checksum":  releaseVersionRef.Checksums[0].String(),
-				"boshua.analysis.analyzer": analyzer,
-			})
-
-			releaseVersion, err := releaseVersionIndex.Find(releaseVersionRef)
-			if err != nil {
-				httperr := httputil.NewError(err, http.StatusInternalServerError, "release version index failed")
-
-				if err == releaseversiondatastore.MissingErr {
-					httperr = httputil.NewError(err, http.StatusNotFound, "release version not found")
-				}
-
-				return analysis.Reference{}, logger, httperr
-			}
+			logger = logger.WithField("boshua.analysis.analyzer", analyzer)
 
 			analysisRef := analysis.Reference{
-				Artifact: releaseVersion,
+				Artifact: subject,
 				Analyzer: analyzer,
 			}
 

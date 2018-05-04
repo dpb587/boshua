@@ -46,10 +46,18 @@ func Mount(
 	}
 
 	{
-		handler := stemcellversion.NewAnalysisHandler(logger, cc, analysisIndex, stemcellVersionIndex)
+		{
+			handler := stemcellversion.NewAnalysisHandler(logger, cc, analysisIndex, stemcellVersionIndex)
 
-		router.HandleFunc(stemcellversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
-		router.HandleFunc(stemcellversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+			router.HandleFunc(stemcellversion.AnalysisHandlerInfoURI, handler.InfoGET).Methods(http.MethodGet)
+			router.HandleFunc(stemcellversion.AnalysisHandlerQueueURI, handler.QueuePOST).Methods(http.MethodPost)
+		}
+
+		{
+			handler := stemcellversion.NewInfoHandler(logger, stemcellVersionIndex)
+
+			router.HandleFunc(stemcellversion.InfoHandlerURI, handler.GET).Methods(http.MethodGet)
+		}
 	}
 
 	{
