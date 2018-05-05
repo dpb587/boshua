@@ -2,6 +2,7 @@ package formatter
 
 import (
 	stemcellimagefilesv1 "github.com/dpb587/boshua/cli/client/cmd/analysis/formatter/stemcellimagefiles.v1"
+	stemcellmanifestv1 "github.com/dpb587/boshua/cli/client/cmd/analysis/formatter/stemcellmanifest.v1"
 	stemcellpackagesv1 "github.com/dpb587/boshua/cli/client/cmd/analysis/formatter/stemcellpackages.v1"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 )
@@ -9,6 +10,7 @@ import (
 type Cmd struct {
 	StemcellimagefilesV1 *stemcellimagefilesv1.Cmd `command:"stemcellimagefiles.v1" subcommands-optional:"true"`
 	StemcellpackagesV1   *stemcellpackagesv1.Cmd   `command:"stemcellpackages.v1" subcommands-optional:"true"`
+	StemcellmanifestV1   *stemcellmanifestv1.Cmd   `command:"stemcellmanifest.v1" subcommands-optional:"true"`
 }
 
 type CmdOpts struct {
@@ -19,6 +21,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	cmd := &Cmd{
 		StemcellimagefilesV1: stemcellimagefilesv1.New(app),
 		StemcellpackagesV1:   stemcellpackagesv1.New(app),
+		StemcellmanifestV1:   stemcellmanifestv1.New(app),
 	}
 
 	return cmd
