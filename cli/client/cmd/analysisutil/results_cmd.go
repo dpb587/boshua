@@ -3,6 +3,8 @@ package analysisutil
 import (
 	"compress/gzip"
 	"io"
+	"os/exec"
+	// "io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,9 +20,11 @@ import (
 	"github.com/dpb587/metalink/verification/hash"
 )
 
-type ResultsCmd struct{}
+type ResultsCmd struct {
+	Raw bool `long:"raw" description:"Show raw, unformatted analysis results"`
+}
 
-func (c *ResultsCmd) ExecuteAnalysis(loader AnalysisLoader) error {
+func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, args []string) error {
 	resInfo, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -61,10 +65,20 @@ func (c *ResultsCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 		log.Fatalf("starting gzip: %v", err)
 	}
 
-	_, err = io.Copy(os.Stdout, gzReader)
-	if err != nil {
-		log.Fatalf("piping results: %v", err)
+	if c.Raw {
+		_, err = io.Copy(os.Stdout, gzReader)
+		if err != nil {
+			log.Fatalf("piping results: %v", err)
+		}
+
+		return nil
 	}
 
-	return nil
+	formatterArgs := append([]string{"analysis", "formatter", analyzer}, args...)
+	formatterCmd := exec.Command(os.Args[0], formatterArgs...)
+	formatterCmd.Stdin = gzReader
+	formatterCmd.Stdout = os.Stdout
+	formatterCmd.Stderr = os.Stderr
+
+	return formatterCmd.Run()
 }

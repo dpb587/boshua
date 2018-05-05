@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 GOOS=linux GOARCH=amd64 go build -o "$DIR/boshua" $DIR/../../../cli/client/main.go

@@ -90,7 +90,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			} else if resInfo == nil {
 				if c.NoWait {
 					if !c.AppOpts.Quiet {
-						fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: unavailable\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
+						fmt.Fprintf(os.Stderr, "boshua | %s | requesting compiled release: %s: %s: unavailable\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
 					}
 
 					return
@@ -102,7 +102,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 					osVersionRef,
 					func(task scheduler.TaskStatus) {
 						if !c.AppOpts.Quiet {
-							fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: compilation %s\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug(), task.Status)
+							fmt.Fprintf(os.Stderr, "boshua | %s | requesting compiled release: %s: %s: task is %s\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug(), task.Status)
 						}
 					},
 				)
@@ -115,7 +115,7 @@ func (c *PatchManifestCmd) Execute(_ []string) error {
 			}
 
 			if !c.AppOpts.Quiet {
-				fmt.Fprintf(os.Stderr, "boshua | %s | fetching compiled release: %s: %s: available\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
+				fmt.Fprintf(os.Stderr, "boshua | %s | requesting compiled release: %s: %s: task is complete\n", time.Now().Format("15:04:05"), rel.Stemcell.Slug(), rel.Slug())
 			}
 
 			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String()

@@ -1,3 +1,6 @@
 package output
 
-type Result interface{}
+type Result struct {
+	Raw    string      `json:"raw"`
+	Parsed interface{} `json:"parsed"`
+}

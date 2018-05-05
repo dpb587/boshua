@@ -3,6 +3,7 @@ package analysis
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/dpb587/boshua/api/v2/models/analysis"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
@@ -58,7 +59,7 @@ func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 				return
 			}
 
-			fmt.Fprintf(os.Stderr, "analysis status: %s\n", task.Status)
+			fmt.Fprintf(os.Stderr, "boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n", time.Now().Format("15:04:05"), osVersionRef.Name, osVersionRef.Version, releaseVersionRef.Name, releaseVersionRef.Version, analyzer, task.Status)
 		},
 	)
 }

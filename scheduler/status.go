@@ -8,5 +8,5 @@ var (
 	StatusFailed    Status = "failed"
 	StatusRunning   Status = "running"
 	StatusFinishing Status = "finishing"
-	StatusSucceeded Status = "succeeded"
+	StatusSucceeded Status = "finished"
 )

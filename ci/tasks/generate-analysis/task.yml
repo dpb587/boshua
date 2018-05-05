@@ -52,7 +52,7 @@ run:
     fi
 
     exec > analysis/results.jsonl
-    boshua analysis --analyzer=$analyzer generate artifact/*.tgz
+    boshua analysis generate --analyzer=$analyzer artifact/*.tgz
 params:
   analyzer: ~
   privileged: false

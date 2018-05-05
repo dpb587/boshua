@@ -11,6 +11,8 @@ import (
 type GenerateCmd struct {
 	*CmdOpts `no-flag:"true"`
 
+	Analyzer string `long:"analyzer" description:"The analyzer to use"`
+
 	Args GenerateArgs `positional-args:"true"`
 }
 
@@ -21,9 +23,9 @@ type GenerateArgs struct {
 func (c *GenerateCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("analysis/generate")
 
-	analyzer, err := factory.Factory{}.Create(c.AnalysisOpts.Analyzer, c.Args.Artifact)
+	analyzer, err := factory.Factory{}.Create(c.Analyzer, c.Args.Artifact)
 	if err != nil {
-		return fmt.Errorf("finding analyzer: %s", c.AnalysisOpts.Analyzer)
+		return fmt.Errorf("finding analyzer: %s", c.Analyzer)
 	}
 
 	return analyzer.Analyze(analysis.NewJSONWriter(os.Stdout))

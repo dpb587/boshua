@@ -41,16 +41,16 @@ Showing the tarball of a stemcell...
 
 Show the filesystem of a stemcell...
 
-    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 analysis --analyzer=stemcellimagefiles.v1
-    drwxr-xr-x 2 root root       0 Apr  6 18:43 /bin
-    -rwxr-xr-x 1 root root 1021112 May 16  2017 /bin/bash
-    -rwxr-xr-x 3 root root   31152 Oct 21  2013 /bin/bunzip2
-    -rwxr-xr-x 3 root root   31152 Oct 21  2013 /bin/bzcat
-    lrwxrwxrwx 1 root root       6 Oct 21  2013 /bin/bzcmp -> bzdiff
-    -rwxr-xr-x 1 root root    2140 Oct 21  2013 /bin/bzdiff
-    lrwxrwxrwx 1 root root       6 Oct 21  2013 /bin/bzegrep -> bzgrep
-    -rwxr-xr-x 1 root root    4877 Oct 21  2013 /bin/bzexe
-    lrwxrwxrwx 1 root root       6 Oct 21  2013 /bin/bzfgrep -> bzgrep
+    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 analysis --analyzer=stemcellimagefiles.v1 -- ls
+    drwxr-xr-x - root root       0 Apr  6 18:43 /bin
+    -rwxr-xr-x - root root 1021112 May 16  2017 /bin/bash
+    -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bunzip2
+    -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bzcat
+    lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzcmp -> bzdiff
+    -rwxr-xr-x - root root    2140 Oct 21  2013 /bin/bzdiff
+    lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzegrep -> bzgrep
+    -rwxr-xr-x - root root    4877 Oct 21  2013 /bin/bzexe
+    lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzfgrep -> bzgrep
     ...
 
 Show the packages of a stemcell...

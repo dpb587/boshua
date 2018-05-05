@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
+	"github.com/dpb587/boshua/analysis/analyzer/stemcellmanifest.v1/output"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -80,7 +81,10 @@ func (a Analyzer) analyzeManifest(results analysis.Writer, artifact string, read
 		return fmt.Errorf("parsing release.MF: %v", err)
 	}
 
-	err = results.Write(safejson(spec))
+	err = results.Write(output.Result{
+		Raw:    string(marshalBytes),
+		Parsed: safejson(spec),
+	})
 	if err != nil {
 		return fmt.Errorf("writing result: %v", err)
 	}
