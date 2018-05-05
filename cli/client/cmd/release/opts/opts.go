@@ -5,6 +5,6 @@ import (
 )
 
 type Opts struct {
-	Release         args.Release  `long:"release" description:"The release name and version"`
-	ReleaseChecksum args.Checksum `long:"release-checksum" description:"The release checksum"`
+	Release         args.Release   `long:"release" description:"The release name and version"`
+	ReleaseChecksum *args.Checksum `long:"release-checksum" description:"The release checksum"`
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	"github.com/dpb587/boshua/metalink/file/metaurl/boshrelease"
 	"github.com/dpb587/boshua/util/metalinkutil"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
@@ -36,6 +37,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 
 		urlLoader := urldefaultloader.New(fs)
 		metaurlLoader := metaurl.NewLoaderFactory()
+		metaurlLoader.Add(boshrelease.Loader{})
 
 		target := *c.Download
 
@@ -84,7 +86,15 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 		fmt.Printf("%s\n", meta4Bytes)
 	} else if c.Format == "tsv" {
 		fmt.Printf("file\t%s\n", artifact.Name)
-		fmt.Printf("url\t%s\n", artifact.URLs[0].URL)
+
+		for _, url := range artifact.URLs {
+			fmt.Printf("url\t%s\n", url.URL)
+		}
+
+		for _, url := range artifact.MetaURLs {
+			fmt.Printf("metaurl\t%s\t%s\n", url.URL, url.MediaType)
+		}
+
 		for _, cs := range metalinkutil.HashesToChecksums(artifact.Hashes) {
 			fmt.Printf("%s\n", strings.Replace(cs.String(), ":", "\t", 1))
 		}

@@ -56,8 +56,6 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
 
-	i.logger.Infof("found %d entries", len(paths))
-
 	var inmemory = []stemcellversion.Artifact{}
 
 	for _, meta4Path := range paths {
@@ -95,6 +93,8 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 			)
 		}
 	}
+
+	i.logger.Infof("found %d entries", len(inmemory))
 
 	return inmemory, nil
 }

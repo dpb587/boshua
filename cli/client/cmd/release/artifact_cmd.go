@@ -21,11 +21,16 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
 		client := c.AppOpts.GetClient()
 
-		res, err := client.GetReleaseVersion(releaseversion.Reference{
-			Name:      c.ReleaseOpts.Release.Name,
-			Version:   c.ReleaseOpts.Release.Version,
-			Checksums: checksum.ImmutableChecksums{c.ReleaseOpts.ReleaseChecksum.ImmutableChecksum},
-		})
+		ref := releaseversion.Reference{
+			Name:    c.ReleaseOpts.Release.Name,
+			Version: c.ReleaseOpts.Release.Version,
+		}
+
+		if c.ReleaseOpts.ReleaseChecksum != nil {
+			ref.Checksums = checksum.ImmutableChecksums{c.ReleaseOpts.ReleaseChecksum.ImmutableChecksum}
+		}
+
+		res, err := client.GetReleaseVersion(ref)
 		if err != nil {
 			return metalink.File{}, fmt.Errorf("fetching: %v", err)
 		}

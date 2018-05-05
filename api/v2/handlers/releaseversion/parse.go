@@ -18,10 +18,13 @@ func parseRequest(baseLogger logrus.FieldLogger, r *http.Request, ds datastore.I
 	}
 
 	logger := baseLogger.WithFields(logrus.Fields{
-		"boshua.release.name":     releaseVersionRef.Name,
-		"boshua.release.version":  releaseVersionRef.Version,
-		"boshua.release.checksum": releaseVersionRef.Checksums[0].String(),
+		"boshua.release.name":    releaseVersionRef.Name,
+		"boshua.release.version": releaseVersionRef.Version,
 	})
+
+	if len(releaseVersionRef.Checksums) > 0 {
+		logger = logger.WithField("boshua.release.checksum", releaseVersionRef.Checksums[0].String())
+	}
 
 	releaseVersion, err := ds.Find(releaseVersionRef)
 	if err != nil {

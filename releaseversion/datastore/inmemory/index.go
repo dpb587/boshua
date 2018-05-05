@@ -63,6 +63,10 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 			continue
 		}
 
+		if len(ref.Checksums) == 0 {
+			return artifact, nil
+		}
+
 		for _, cs := range ref.Checksums.Prioritized() {
 			if artifact.MatchesChecksum(&cs) {
 				return artifact, nil

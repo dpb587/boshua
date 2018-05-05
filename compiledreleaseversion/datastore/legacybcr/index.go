@@ -60,8 +60,6 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
 
-	i.logger.Infof("found %d entries", len(paths))
-
 	var inmemory = []compiledreleaseversion.Artifact{}
 
 	for _, bcrPath := range paths {
@@ -116,6 +114,8 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 			))
 		}
 	}
+
+	i.logger.Infof("found %d entries", len(inmemory))
 
 	return inmemory, nil
 }
