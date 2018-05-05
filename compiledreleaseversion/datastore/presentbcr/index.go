@@ -1,20 +1,18 @@
 package presentbcr
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
+	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
@@ -25,10 +23,7 @@ type index struct {
 	logger             logrus.FieldLogger
 	metalinkRepository string
 	localPath          string
-	pullInterval       time.Duration
-
-	inmemory   datastore.Index
-	lastLoaded time.Time
+	inmemory           datastore.Index
 }
 
 var _ datastore.Index = &index{}
@@ -38,10 +33,11 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		metalinkRepository: config.Repository,
 		localPath:          config.LocalPath,
-		pullInterval:       config.PullInterval,
 	}
 
-	idx.inmemory = inmemory.New(idx.loader, idx.reloader)
+	reloader := git.NewReloader(logger, config.Repository, config.LocalPath, config.PullInterval)
+
+	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
 
 	return idx
 }
@@ -52,42 +48,6 @@ func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
 
 func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return i.inmemory.Find(ref)
-}
-
-func (i *index) reloader() (bool, error) {
-	if time.Now().Sub(i.lastLoaded) < i.pullInterval {
-		return false, nil
-	} else if !strings.HasPrefix(i.metalinkRepository, "git+") {
-		return false, nil
-	}
-
-	i.lastLoaded = time.Now()
-
-	cmd := exec.Command("git", "pull", "--ff-only")
-	cmd.Dir = i.localPath
-
-	outbuf := bytes.NewBuffer(nil)
-	errbuf := bytes.NewBuffer(nil)
-
-	cmd.Stdout = outbuf
-	cmd.Stderr = errbuf
-
-	err := cmd.Run()
-	if err != nil {
-		i.logger.WithField("error", err).Errorf("pulling repository")
-
-		return false, fmt.Errorf("pulling repository: %v", err)
-	}
-
-	if strings.Contains(outbuf.String(), "Already up to date.") {
-		i.logger.Debugf("repository already up to date")
-
-		return false, nil
-	}
-
-	i.logger.Debugf("repository updated")
-
-	return true, nil
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
