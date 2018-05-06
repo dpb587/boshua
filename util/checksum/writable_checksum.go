@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"hash"
 
-	"github.com/dpb587/boshua/checksum/algorithm"
+	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
 type WritableChecksum struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/releaseversion"
 )
 

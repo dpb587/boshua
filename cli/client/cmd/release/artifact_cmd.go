@@ -3,7 +3,7 @@ package release
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/cmd/artifactutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"

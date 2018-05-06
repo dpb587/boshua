@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 )
 

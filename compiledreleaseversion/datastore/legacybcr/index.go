@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"

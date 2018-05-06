@@ -7,7 +7,7 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 )

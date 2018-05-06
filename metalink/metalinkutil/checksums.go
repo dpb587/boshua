@@ -3,7 +3,7 @@ package metalinkutil
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
 )
 

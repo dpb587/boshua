@@ -11,8 +11,8 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/output"
-	"github.com/dpb587/boshua/checksum"
-	"github.com/dpb587/boshua/checksum/algorithm"
+	"github.com/dpb587/boshua/util/checksum"
+	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
 type Analyzer struct {

@@ -1,7 +1,7 @@
 package presentbcr
 
 import (
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 )
 
 type Record struct {

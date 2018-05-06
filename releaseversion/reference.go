@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua"
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 )
 
 type Reference struct {

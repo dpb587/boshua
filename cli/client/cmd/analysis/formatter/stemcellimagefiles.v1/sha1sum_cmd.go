@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/formatter"
-	"github.com/dpb587/boshua/checksum/algorithm"
+	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
 type Sha1sumCmd struct {

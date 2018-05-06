@@ -7,7 +7,7 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/models/analysis"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/cmd/analysisutil/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/cli/client/cmd/compiledrelease/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"

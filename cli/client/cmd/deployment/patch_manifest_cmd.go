@@ -9,7 +9,7 @@ import (
 
 	"code.cloudfoundry.org/workpool"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/manifest"
 	"github.com/dpb587/boshua/osversion"

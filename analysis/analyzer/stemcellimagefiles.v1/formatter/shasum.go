@@ -7,7 +7,7 @@ import (
 	"io"
 
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/output"
-	"github.com/dpb587/boshua/checksum/algorithm"
+	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
 type Shasum struct {

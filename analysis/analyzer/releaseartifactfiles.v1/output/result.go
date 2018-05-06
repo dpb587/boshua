@@ -3,7 +3,7 @@ package output
 import (
 	"time"
 
-	"github.com/dpb587/boshua/checksum"
+	"github.com/dpb587/boshua/util/checksum"
 )
 
 type Result struct {

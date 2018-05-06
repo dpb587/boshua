@@ -1,6 +1,6 @@
 package legacybcr
 
-import "github.com/dpb587/boshua/checksum"
+import "github.com/dpb587/boshua/util/checksum"
 
 type Record struct {
 	Name     string         `json:"name"`
