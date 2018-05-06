@@ -48,6 +48,10 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 	return i.inmemory.Filter(ref)
 }
 
+func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
+	return i.inmemory.Find(ref)
+}
+
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.config.RepositoryConfig.LocalPath))
 	if err != nil {

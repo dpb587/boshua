@@ -8,6 +8,9 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/client"
 	"github.com/dpb587/boshua/cli/client/args"
+	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
+	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
 	"github.com/dpb587/boshua/config"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
@@ -64,13 +67,43 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 	for _, cfg := range config.Releases {
 		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
-			return nil, fmt.Errorf("creating release version: %v", err)
+			return nil, fmt.Errorf("creating release version datastore: %v", err)
 		}
 
 		all = append(all, idx)
 	}
 
 	return releaseversionaggregate.New(all...), nil
+}
+
+func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatastore.Index, error) {
+	if name != "default" {
+		panic("TODO")
+	}
+
+	config, err := o.getParsedConfig()
+	if err != nil {
+		return nil, fmt.Errorf("loading config: %v", err)
+	}
+
+	releaseIndex, err := o.GetReleaseIndex("default")
+	if err != nil {
+		return nil, fmt.Errorf("loading release index: %v", err)
+	}
+
+	var all []compiledreleaseversiondatastore.Index
+	factory := compiledreleaseversionfactory.New(o.GetLogger(), releaseIndex)
+
+	for _, cfg := range config.CompiledReleases {
+		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		if err != nil {
+			return nil, fmt.Errorf("creating compiled release version datastore: %v", err)
+		}
+
+		all = append(all, idx)
+	}
+
+	return compiledreleaseversionaggregate.New(all...), nil
 }
 
 func (o *Opts) GetClient() *client.Client {

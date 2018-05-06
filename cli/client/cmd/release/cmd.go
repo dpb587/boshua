@@ -16,7 +16,7 @@ type Cmd struct {
 	*opts.Opts
 
 	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the release artifact"`
-	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with datastores"`
+	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with release datastores"`
 
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`

@@ -7,12 +7,9 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/models/analysis"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/cmd/analysisutil/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/cli/client/cmd/compiledrelease/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
-	"github.com/dpb587/boshua/osversion"
-	"github.com/dpb587/boshua/releaseversion"
 )
 
 type Cmd struct {
@@ -35,31 +32,33 @@ type CmdOpts struct {
 func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 	client := o.AppOpts.GetClient()
 
-	releaseVersionRef := releaseversion.Reference{
-		Name:      o.CompiledReleaseOpts.Release.Name,
-		Version:   o.CompiledReleaseOpts.Release.Version,
-		Checksums: checksum.ImmutableChecksums{o.CompiledReleaseOpts.ReleaseChecksum.ImmutableChecksum},
-	}
-	osVersionRef := osversion.Reference{
-		Name:    o.CompiledReleaseOpts.OS.Name,
-		Version: o.CompiledReleaseOpts.OS.Version,
-	}
+	ref := o.CompiledReleaseOpts.Reference()
 	analyzer := o.AnalysisOpts.Analyzer
 
 	if o.AnalysisOpts.NoWait {
-		return client.GetCompiledReleaseVersionAnalysis(releaseVersionRef, osVersionRef, analyzer)
+		return client.GetCompiledReleaseVersionAnalysis(ref.ReleaseVersion, ref.OSVersion, analyzer)
 	}
 
 	return client.RequireCompiledReleaseVersionAnalysis(
-		releaseVersionRef,
-		osVersionRef,
+		ref.ReleaseVersion,
+		ref.OSVersion,
 		analyzer,
 		func(task scheduler.TaskStatus) {
 			if o.AppOpts.Quiet {
 				return
 			}
 
-			fmt.Fprintf(os.Stderr, "boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n", time.Now().Format("15:04:05"), osVersionRef.Name, osVersionRef.Version, releaseVersionRef.Name, releaseVersionRef.Version, analyzer, task.Status)
+			fmt.Fprintf(
+				os.Stderr,
+				"boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n",
+				time.Now().Format("15:04:05"),
+				ref.OSVersion.Name,
+				ref.OSVersion.Version,
+				ref.ReleaseVersion.Name,
+				ref.ReleaseVersion.Version,
+				analyzer,
+				task.Status,
+			)
 		},
 	)
 }

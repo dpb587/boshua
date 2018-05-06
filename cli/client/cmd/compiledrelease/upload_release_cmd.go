@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/util/checksum"
 )
 
 type UploadReleaseCmd struct {

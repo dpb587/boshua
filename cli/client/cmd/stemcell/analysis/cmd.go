@@ -10,7 +10,6 @@ import (
 	"github.com/dpb587/boshua/cli/client/cmd/analysisutil/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 	stemcellopts "github.com/dpb587/boshua/cli/client/cmd/stemcell/opts"
-	"github.com/dpb587/boshua/stemcellversion"
 )
 
 type Cmd struct {
@@ -26,19 +25,14 @@ func (c *Cmd) Execute(extra []string) error {
 
 type CmdOpts struct {
 	AppOpts      *cmdopts.Opts `no-flag:"true"`
-	stemcellOpts *stemcellopts.Opts
+	StemcellOpts *stemcellopts.Opts
 	AnalysisOpts *opts.Opts
 }
 
 func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 	client := o.AppOpts.GetClient()
 
-	ref := stemcellversion.Reference{
-		IaaS:       o.stemcellOpts.Stemcell.IaaS,
-		Hypervisor: o.stemcellOpts.Stemcell.Hypervisor,
-		OS:         o.stemcellOpts.Stemcell.OS,
-		Version:    o.stemcellOpts.Stemcell.Version,
-	}
+	ref := o.StemcellOpts.Reference()
 	analyzer := o.AnalysisOpts.Analyzer
 
 	if o.AnalysisOpts.NoWait {
@@ -53,7 +47,15 @@ func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 				return
 			}
 
-			fmt.Fprintf(os.Stderr, "boshua | %s | requesting stemcell analysis: %s/%s: %s: task is %s\n", time.Now().Format("15:04:05"), ref.Name(), ref.Version, analyzer, task.Status)
+			fmt.Fprintf(
+				os.Stderr,
+				"boshua | %s | requesting stemcell analysis: %s/%s: %s: task is %s\n",
+				time.Now().Format("15:04:05"),
+				ref.Name(),
+				ref.Version,
+				analyzer,
+				task.Status,
+			)
 		},
 	)
 }
@@ -65,7 +67,7 @@ func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {
 
 	cmdOpts := &CmdOpts{
 		AppOpts:      app,
-		stemcellOpts: stemcell,
+		StemcellOpts: stemcell,
 		AnalysisOpts: cmd.Opts,
 	}
 

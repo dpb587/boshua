@@ -16,13 +16,13 @@ func (c *FilterCmd) Execute(_ []string) error {
 		return fmt.Errorf("loading datastore: %v", err)
 	}
 
-	results, err := index.Filter(c.ReleaseOpts.Reference())
+	results, err := index.Filter(c.CompiledReleaseOpts.Reference())
 	if err != nil {
 		return fmt.Errorf("filtering: %v", err)
 	}
 
 	for _, result := range results {
-		fmt.Printf("%s\t%s\n", result.Name, result.Version)
+		fmt.Printf("%s\t%s\n", result.ReleaseVersion.Name, result.ReleaseVersion.Version)
 	}
 
 	return nil

@@ -7,11 +7,9 @@ import (
 
 	"github.com/dpb587/boshua/api/v2/models/analysis"
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/cmd/analysisutil/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/cli/client/cmd/release/opts"
-	"github.com/dpb587/boshua/releaseversion"
 )
 
 type Cmd struct {
@@ -34,11 +32,7 @@ type CmdOpts struct {
 func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 	client := o.AppOpts.GetClient()
 
-	ref := releaseversion.Reference{
-		Name:      o.ReleaseOpts.Release.Name,
-		Version:   o.ReleaseOpts.Release.Version,
-		Checksums: checksum.ImmutableChecksums{o.ReleaseOpts.ReleaseChecksum.ImmutableChecksum},
-	}
+	ref := o.ReleaseOpts.Reference()
 	analyzer := o.AnalysisOpts.Analyzer
 
 	if o.AnalysisOpts.NoWait {
@@ -53,7 +47,15 @@ func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
 				return
 			}
 
-			fmt.Fprintf(os.Stderr, "boshua | %s | requesting release analysis: %s/%s: %s: task is %s\n", time.Now().Format("15:04:05"), ref.Name, ref.Version, analyzer, task.Status)
+			fmt.Fprintf(
+				os.Stderr,
+				"boshua | %s | requesting release analysis: %s/%s: %s: task is %s\n",
+				time.Now().Format("15:04:05"),
+				ref.Name,
+				ref.Version,
+				analyzer,
+				task.Status,
+			)
 		},
 	)
 }

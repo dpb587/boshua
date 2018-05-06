@@ -2,6 +2,7 @@ package compiledrelease
 
 import (
 	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease/analysis"
+	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease/datastore"
 	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease/opts"
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 )
@@ -14,7 +15,8 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing artifacts" subcommands-optional:"true"`
+	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing artifacts" subcommands-optional:"true"`
+	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with compiled release datastores"`
 
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the compiled release artifact"`
 	OpsFileCmd       OpsFileCmd       `command:"ops-file" description:"For showing a deployment manifest ops file for the compiled release"`
@@ -31,6 +33,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	}
 
 	cmd.AnalysisCmd = analysis.New(app, cmd.Opts)
+	cmd.DatastoreCmd = datastore.New(app, cmd.Opts)
 
 	cmdOpts := &CmdOpts{
 		AppOpts:             app,
