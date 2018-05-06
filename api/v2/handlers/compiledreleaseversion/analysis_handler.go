@@ -48,19 +48,17 @@ func NewAnalysisHandler(
 
 			logger = logger.WithField("boshua.analysis.analyzer", analyzer)
 
-			compiledReleaseVersion, err := compiledReleaseVersionIndex.Find(compiledReleaseVersionRef)
+			compiledReleaseVersions, err := compiledReleaseVersionIndex.Filter(compiledReleaseVersionRef)
 			if err != nil {
-				httperr := httputil.NewError(err, http.StatusInternalServerError, "compiled release version index failed")
-
-				if err == compiledreleaseversiondatastore.MissingErr {
-					httperr = httputil.NewError(err, http.StatusNotFound, "compiled release version not found")
-				}
-
-				return analysis.Reference{}, logger, httperr
+				return analysis.Reference{}, logger, httputil.NewError(err, http.StatusInternalServerError, "compiled release version index failed")
+			} else if len(compiledReleaseVersions) == 0 {
+				return analysis.Reference{}, logger, httputil.NewError(datastore.NoMatchErr, http.StatusNotFound, "compiled release version not found")
+			} else if len(compiledReleaseVersions) > 1 {
+				return analysis.Reference{}, logger, httputil.NewError(datastore.MultipleMatchErr, http.StatusBadRequest, "multiple compiled release versions found")
 			}
 
 			analysisRef := analysis.Reference{
-				Artifact: compiledReleaseVersion,
+				Artifact: compiledReleaseVersions[0],
 				Analyzer: analyzer,
 			}
 

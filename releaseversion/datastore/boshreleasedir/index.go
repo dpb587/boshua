@@ -39,12 +39,8 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return idx
 }
 
-func (i *index) List() ([]releaseversion.Artifact, error) {
-	return i.inmemory.List()
-}
-
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
-	return i.inmemory.Find(ref)
+func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact, error) {
+	return i.inmemory.Filter(ref)
 }
 
 func (i *index) loader() ([]releaseversion.Artifact, error) {

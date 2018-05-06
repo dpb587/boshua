@@ -24,15 +24,27 @@ func NewManager(
 }
 
 func (rsr *Manager) Resolve(ref compiledreleaseversion.Reference) (releaseversion.Artifact, osversion.Artifact, error) {
-	release, err := rsr.releaseVersionIndex.Find(ref.ReleaseVersion)
+	releases, err := rsr.releaseVersionIndex.Filter(ref.ReleaseVersion)
 	if err != nil {
 		return releaseversion.Artifact{}, osversion.Artifact{}, err
+	} else if len(releases) == 0 {
+		return releaseversion.Artifact{}, osversion.Artifact{}, releaseversiondatastore.NoMatchErr
+	} else if len(releases) > 1 {
+		return releaseversion.Artifact{}, osversion.Artifact{}, releaseversiondatastore.MultipleMatchErr
 	}
 
-	os, err := rsr.osVersionIndex.Find(ref.OSVersion)
+	release := releases[0]
+
+	oses, err := rsr.osVersionIndex.Filter(ref.OSVersion)
 	if err != nil {
 		return releaseversion.Artifact{}, osversion.Artifact{}, err
+	} else if len(oses) == 0 {
+		return releaseversion.Artifact{}, osversion.Artifact{}, osversiondatastore.NoMatchErr
+	} else if len(oses) > 1 {
+		return releaseversion.Artifact{}, osversion.Artifact{}, osversiondatastore.MultipleMatchErr
 	}
+
+	os := oses[0]
 
 	return release, os, nil
 }

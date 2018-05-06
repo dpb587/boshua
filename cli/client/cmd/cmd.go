@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"github.com/dpb587/boshua/cli/client/args"
 	"github.com/dpb587/boshua/cli/client/cmd/analysis"
 	"github.com/dpb587/boshua/cli/client/cmd/compiledrelease"
 	"github.com/dpb587/boshua/cli/client/cmd/deployment"
 	"github.com/dpb587/boshua/cli/client/cmd/opts"
 	"github.com/dpb587/boshua/cli/client/cmd/release"
 	"github.com/dpb587/boshua/cli/client/cmd/stemcell"
+	"github.com/sirupsen/logrus"
 )
 
 type CmdOpts struct {
@@ -21,18 +23,28 @@ type Cmd struct {
 	ReleaseCmd         *release.Cmd         `command:"release" description:"For working with releases" subcommands-optional:"true"`
 	DeploymentCmd      *deployment.Cmd      `command:"deployment" description:"For working with deployments"`
 	StemcellCmd        *stemcell.Cmd        `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
+
+	DownloadMetalinkCmd DownloadMetalinkCmd `command:"download-metalink" description:"Internal. Download resources in a metalink."`
 }
 
 func New() *Cmd {
-	cmd := &Cmd{
-		Opts: &opts.Opts{},
+	app := &Cmd{
+		Opts: &opts.Opts{
+			LogLevel: args.LogLevel(logrus.FatalLevel),
+		},
 	}
 
-	cmd.AnalysisCmd = analysis.New(cmd.Opts)
-	cmd.CompiledReleaseCmd = compiledrelease.New(cmd.Opts)
-	cmd.ReleaseCmd = release.New(cmd.Opts)
-	cmd.DeploymentCmd = deployment.New(cmd.Opts)
-	cmd.StemcellCmd = stemcell.New(cmd.Opts)
+	app.AnalysisCmd = analysis.New(app.Opts)
+	app.CompiledReleaseCmd = compiledrelease.New(app.Opts)
+	app.ReleaseCmd = release.New(app.Opts)
+	app.DeploymentCmd = deployment.New(app.Opts)
+	app.StemcellCmd = stemcell.New(app.Opts)
 
-	return cmd
+	cmdOpts := &CmdOpts{
+		AppOpts: app.Opts,
+	}
+
+	app.DownloadMetalinkCmd.CmdOpts = cmdOpts
+
+	return app
 }

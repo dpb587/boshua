@@ -26,16 +26,14 @@ func parseRequest(baseLogger logrus.FieldLogger, r *http.Request, ds datastore.I
 		logger = logger.WithField("boshua.release.checksum", releaseVersionRef.Checksums[0].String())
 	}
 
-	releaseVersion, err := ds.Find(releaseVersionRef)
+	releaseVersions, err := ds.Filter(releaseVersionRef)
 	if err != nil {
-		httperr := httputil.NewError(err, http.StatusInternalServerError, "release version index failed")
-
-		if err == datastore.MissingErr {
-			httperr = httputil.NewError(err, http.StatusNotFound, "release version not found")
-		}
-
-		return releaseversion.Artifact{}, logger, httperr
+		return releaseversion.Artifact{}, logger, httputil.NewError(err, http.StatusInternalServerError, "release version index failed")
+	} else if len(releaseVersions) == 0 {
+		return releaseversion.Artifact{}, logger, httputil.NewError(err, http.StatusNotFound, "release version not found")
+	} else if len(releaseVersions) > 1 {
+		return releaseversion.Artifact{}, logger, httputil.NewError(err, http.StatusBadRequest, "multiple release versions found")
 	}
 
-	return releaseVersion, logger, nil
+	return releaseVersions[0], logger, nil
 }

@@ -19,32 +19,17 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]analysis.Artifact, error) {
-	var result []analysis.Artifact
+func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
+	var results []analysis.Artifact
 
 	for idxIdx, idx := range i.aggregated {
-		listed, err := idx.List()
+		found, err := idx.Filter(ref)
 		if err != nil {
 			return nil, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
-		result = append(result, listed...)
+		results = append(results, found...)
 	}
 
-	return result, nil
-}
-
-func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
-	for idxIdx, idx := range i.aggregated {
-		found, err := idx.Find(ref)
-		if err == datastore.MissingErr {
-			continue
-		} else if err != nil {
-			return analysis.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
-		}
-
-		return found, nil
-	}
-
-	return analysis.Artifact{}, datastore.MissingErr
+	return results, nil
 }

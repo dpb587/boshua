@@ -13,6 +13,7 @@ type Reference struct {
 	Name      string
 	Version   string
 	Checksums checksum.ImmutableChecksums
+	URLs      []string
 }
 
 var _ boshua.ArtifactReference = &Reference{}

@@ -3,7 +3,7 @@ package releaseversion
 import (
 	"github.com/dpb587/boshua"
 	"github.com/dpb587/boshua/checksum"
-	"github.com/dpb587/boshua/util/metalinkutil"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/metalink"
 )
 

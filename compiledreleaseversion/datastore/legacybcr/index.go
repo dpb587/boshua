@@ -46,12 +46,8 @@ func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logge
 	return idx
 }
 
-func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
-	return i.inmemory.List()
-}
-
-func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
-	return i.inmemory.Find(ref)
+func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleaseversion.Artifact, error) {
+	return i.inmemory.Filter(ref)
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
@@ -98,10 +94,13 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 				Checksums: checksum.ImmutableChecksums{record.Source.Digest},
 			}
 
-			releaseArtifact, err := i.releaseVersionIndex.Find(releaseRef)
-			if err == nil {
-				releaseRef = releaseArtifact.Reference
+			releaseArtifacts, err := i.releaseVersionIndex.Filter(releaseRef)
+			if err != nil || len(releaseArtifacts) != 1 {
+				// TODO log?
+				continue
 			}
+
+			releaseRef = releaseArtifacts[0].Reference
 
 			inmemory = append(inmemory, compiledreleaseversion.New(
 				releaseRef,

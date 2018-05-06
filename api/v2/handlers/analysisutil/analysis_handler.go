@@ -55,15 +55,17 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.analysisIndex.Find(analysisRef)
+	results, err := h.analysisIndex.Filter(analysisRef)
 	if err != nil {
-		httperr := httputil.NewError(err, http.StatusInternalServerError, "analysis index failed")
+		httputil.WriteFailure(logger, w, r, httputil.NewError(err, http.StatusInternalServerError, "analysis index failed"))
 
-		if err == datastore.MissingErr {
-			httperr = httputil.NewError(err, http.StatusNotFound, "analysis not found")
-		}
+		return
+	} else if len(results) == 0 {
+		httputil.WriteFailure(logger, w, r, httputil.NewError(datastore.NoMatchErr, http.StatusNotFound, datastore.NoMatchErr.Error()))
 
-		httputil.WriteFailure(logger, w, r, httperr)
+		return
+	} else if len(results) > 1 {
+		httputil.WriteFailure(logger, w, r, httputil.NewError(datastore.MultipleMatchErr, http.StatusBadRequest, datastore.MultipleMatchErr.Error()))
 
 		return
 	}
@@ -72,7 +74,7 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	httputil.WriteResponse(logger, w, r, api.GETInfoResponse{
 		Data: api.GETInfoResponseData{
-			Artifact: result.ArtifactMetalink().Files[0],
+			Artifact: results[0].ArtifactMetalink().Files[0],
 		},
 	})
 }
@@ -93,8 +95,12 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.analysisIndex.Find(analysisRef)
-	if err == datastore.MissingErr {
+	analyses, err := h.analysisIndex.Filter(analysisRef)
+	if err != nil {
+		httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "analysis index failed"))
+
+		return
+	} else if len(analyses) == 0 {
 		t := task.New(analysisRef.Artifact.(analysis.Subject), analysisRef.Analyzer, h.privilegedTasks)
 
 		// check existing status
@@ -127,8 +133,12 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.analysisIndex.Find(analysisRef)
-		if err == datastore.MissingErr {
+		analyses, err = h.analysisIndex.Filter(analysisRef)
+		if err != nil {
+			httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "analysis index failed"))
+
+			return
+		} else if len(analyses) == 0 {
 			// haven't reloaded it yet; delay them
 			status = scheduler.StatusFinishing
 		} else {

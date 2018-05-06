@@ -50,38 +50,41 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
+func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
-		return releaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return nil, fmt.Errorf("reloading: %v", err)
 	}
+
+	var results []releaseversion.Artifact
 
 	for _, artifact := range i.inmemory {
 		if artifact.Reference.Name != ref.Name {
+			continue
+		}
+
+		if ref.Version == "*" {
+			results = append(results, artifact)
+
 			continue
 		} else if artifact.Reference.Version != ref.Version {
 			continue
 		}
 
 		if len(ref.Checksums) == 0 {
-			return artifact, nil
+			results = append(results, artifact)
+
+			continue
 		}
 
 		for _, cs := range ref.Checksums.Prioritized() {
 			if artifact.MatchesChecksum(&cs) {
-				return artifact, nil
+				results = append(results, artifact)
+
+				break
 			}
 		}
 	}
 
-	return releaseversion.Artifact{}, datastore.MissingErr
-}
-
-func (i *index) List() ([]releaseversion.Artifact, error) {
-	err := i.load()
-	if err != nil {
-		return []releaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
-	}
-
-	return i.inmemory, nil
+	return results, nil
 }

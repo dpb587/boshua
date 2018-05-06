@@ -2,4 +2,5 @@ package datastore
 
 import "errors"
 
-var MissingErr = errors.New("analysis not found")
+var NoMatchErr = errors.New("analysis not found")
+var MultipleMatchErr = errors.New("multiple analyses found")

@@ -42,12 +42,8 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return idx
 }
 
-func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
-	return i.inmemory.List()
-}
-
-func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
-	return i.inmemory.Find(ref)
+func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleaseversion.Artifact, error) {
+	return i.inmemory.Filter(ref)
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
@@ -58,21 +54,21 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 
 	var inmemory = []compiledreleaseversion.Artifact{}
 
-	for _, bcrJsonPath := range paths {
-		bcrBytes, err := ioutil.ReadFile(bcrJsonPath)
+	for _, bcrPath := range paths {
+		bcrBytes, err := ioutil.ReadFile(bcrPath)
 		if err != nil {
-			return nil, fmt.Errorf("reading %s: %v", bcrJsonPath, err)
+			return nil, fmt.Errorf("reading %s: %v", bcrPath, err)
 		}
 
-		var bcrJson Record
+		var bcrJSON Record
 
-		err = json.Unmarshal(bcrBytes, &bcrJson)
+		err = json.Unmarshal(bcrBytes, &bcrJSON)
 		if err != nil {
 			// TODO warn and continue?
-			return nil, fmt.Errorf("unmarshalling %s: %v", bcrJsonPath, err)
+			return nil, fmt.Errorf("unmarshalling %s: %v", bcrPath, err)
 		}
 
-		meta4Path := path.Join(path.Dir(bcrJsonPath), "artifact.meta4")
+		meta4Path := path.Join(path.Dir(bcrPath), "artifact.meta4")
 
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {
@@ -91,13 +87,13 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 			inmemory,
 			compiledreleaseversion.New(
 				releaseversion.Reference{
-					Name:      bcrJson.Release.Name,
-					Version:   bcrJson.Release.Version,
-					Checksums: bcrJson.Release.Checksums,
+					Name:      bcrJSON.Release.Name,
+					Version:   bcrJSON.Release.Version,
+					Checksums: bcrJSON.Release.Checksums,
 				},
 				osversion.Reference{
-					Name:    bcrJson.OS.Name,
-					Version: bcrJson.OS.Version,
+					Name:    bcrJSON.OS.Name,
+					Version: bcrJSON.OS.Version,
 				},
 				meta4.Files[0],
 				map[string]interface{}{

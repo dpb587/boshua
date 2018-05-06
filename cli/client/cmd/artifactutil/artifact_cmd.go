@@ -12,7 +12,7 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshrelease"
-	"github.com/dpb587/boshua/util/metalinkutil"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"

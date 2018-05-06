@@ -59,12 +59,14 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	releaseVersion, osVersion, errResolve := h.compiledReleaseVersionManager.Resolve(compiledReleaseVersionRef)
 	if errResolve != nil {
-		httperr := httputil.NewError(err, http.StatusInternalServerError, "resolving reference failed")
+		httperr := httputil.NewError(errResolve, http.StatusInternalServerError, "resolving reference failed")
 
-		if errResolve == releaseversiondatastore.MissingErr {
-			httperr = httputil.NewError(err, http.StatusBadRequest, "release version not found")
-		} else if errResolve == osversiondatastore.MissingErr {
-			httperr = httputil.NewError(err, http.StatusBadRequest, "os version not found")
+		switch errResolve {
+		case osversiondatastore.MultipleMatchErr:
+		case osversiondatastore.NoMatchErr:
+		case releaseversiondatastore.MultipleMatchErr:
+		case releaseversiondatastore.NoMatchErr:
+			httperr = httputil.NewError(errResolve, http.StatusBadRequest, errResolve.Error())
 		}
 
 		httputil.WriteFailure(baseLogger, w, r, httperr)
@@ -72,21 +74,25 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.compiledReleaseVersionIndex.Find(compiledreleaseversion.Reference{
+	results, err := h.compiledReleaseVersionIndex.Filter(compiledreleaseversion.Reference{
 		ReleaseVersion: releaseVersion.Reference,
 		OSVersion:      osVersion.Reference,
 	})
 	if err != nil {
-		httperr := httputil.NewError(err, http.StatusInternalServerError, "compiled release index failed")
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(err, http.StatusInternalServerError, "compiled release index failed"))
 
-		if err == datastore.MissingErr {
-			httperr = httputil.NewError(err, http.StatusNotFound, "compiled release version not found")
-		}
+		return
+	} else if len(results) == 0 {
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(datastore.NoMatchErr, http.StatusNotFound, datastore.NoMatchErr.Error()))
 
-		httputil.WriteFailure(baseLogger, w, r, httperr)
+		return
+	} else if len(results) > 1 {
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(datastore.MultipleMatchErr, http.StatusBadRequest, datastore.MultipleMatchErr.Error()))
 
 		return
 	}
+
+	result := results[0]
 
 	logger.Infof("compiled release found")
 
@@ -113,9 +119,9 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	if errResolve != nil {
 		httperr := httputil.NewError(err, http.StatusInternalServerError, "resolving reference failed")
 
-		if errResolve == releaseversiondatastore.MissingErr {
+		if errResolve == releaseversiondatastore.NoMatchErr {
 			httperr = httputil.NewError(err, http.StatusBadRequest, "release version not found")
-		} else if errResolve == osversiondatastore.MissingErr {
+		} else if errResolve == osversiondatastore.NoMatchErr {
 			httperr = httputil.NewError(err, http.StatusBadRequest, "os version not found")
 		}
 
@@ -129,8 +135,12 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		OSVersion:      osVersion.Reference,
 	}
 
-	_, err = h.compiledReleaseVersionIndex.Find(compiledReleaseVersionRef)
-	if err == datastore.MissingErr {
+	results, err := h.compiledReleaseVersionIndex.Filter(compiledReleaseVersionRef)
+	if err != nil {
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("finding compiled release: %v", err), http.StatusInternalServerError, "compiled release index failed"))
+
+		return
+	} else if len(results) == 0 {
 		task := compilation.New(releaseVersion, osVersion)
 
 		// check existing status
@@ -151,10 +161,6 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 			status = scheduler.StatusPending
 		}
-	} else if err != nil {
-		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("finding compiled release: %v", err), http.StatusInternalServerError, "compiled release index failed"))
-
-		return
 	} else {
 		status = scheduler.StatusSucceeded
 	}
@@ -163,8 +169,14 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	switch status {
 	case scheduler.StatusSucceeded:
-		_, err = h.compiledReleaseVersionIndex.Find(compiledReleaseVersionRef)
-		if err == datastore.MissingErr {
+		results, err = h.compiledReleaseVersionIndex.Filter(compiledReleaseVersionRef)
+		if err != nil {
+			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "compiled release index failed"))
+
+			return
+		}
+
+		if len(results) == 0 {
 			// propagation delay
 			status = scheduler.StatusFinishing
 		} else {

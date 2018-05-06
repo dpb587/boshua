@@ -14,7 +14,7 @@ import (
 	"github.com/dpb587/boshua/manifest"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
-	"github.com/dpb587/boshua/util/metalinkutil"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 )
 
 type PatchManifestCmd struct {

@@ -2,4 +2,5 @@ package datastore
 
 import "errors"
 
-var MissingErr = errors.New("os version not found")
+var NoMatchErr = errors.New("os version not found")
+var MultipleMatchErr = errors.New("multiple os versions found")

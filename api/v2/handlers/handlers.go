@@ -5,9 +5,7 @@ import (
 
 	analysisds "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/api/v2/handlers/compiledreleaseversion"
-	"github.com/dpb587/boshua/api/v2/handlers/osversions"
 	"github.com/dpb587/boshua/api/v2/handlers/releaseversion"
-	"github.com/dpb587/boshua/api/v2/handlers/releaseversions"
 	"github.com/dpb587/boshua/api/v2/handlers/stemcellversion"
 	compiledreleaseversionds "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/manager"
@@ -75,10 +73,10 @@ func Mount(
 	}
 
 	// router.Handle("/compiled-release-version/log", compiledreleaseversion.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
-	router.Handle("/release-versions/list", releaseversions.NewListHandler(logger, releaseVersionIndex)).Methods(http.MethodPost)
+	// router.Handle("/release-versions/list", releaseversions.NewListHandler(logger, releaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/info", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/release-version/list-compiled-stemcells", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
-	router.Handle("/stemcell-versions/list", osversions.NewListHandler(logger, osVersionIndex)).Methods(http.MethodPost)
+	// router.Handle("/stemcell-versions/list", osversions.NewListHandler(logger, osVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/stemcell-version/info", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 	// router.Handle("/stemcell-version/list-compiled-releases", handlers.NewCRVInfoHandler(compiledReleaseVersionIndex)).Methods(http.MethodPost)
 }

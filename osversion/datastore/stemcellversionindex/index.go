@@ -25,7 +25,28 @@ func New(stemcellVersionIndex stemcellversiondatastore.Index, logger logrus.Fiel
 	}
 }
 
-func (i *index) List() ([]osversion.Artifact, error) {
+func (i *index) Filter(ref osversion.Reference) ([]osversion.Artifact, error) {
+	artifacts, err := i.list()
+	if err != nil {
+		return nil, fmt.Errorf("listing versions: %v", err)
+	}
+
+	var results []osversion.Artifact
+
+	for _, artifact := range artifacts {
+		if artifact.Name != ref.Name {
+			continue
+		} else if artifact.Version != ref.Version {
+			continue
+		}
+
+		results = append(results, artifact)
+	}
+
+	return results, nil
+}
+
+func (i *index) list() ([]osversion.Artifact, error) {
 	matches := map[osversion.Reference]osversion.Artifact{}
 
 	stemcells, err := i.stemcellVersionIndex.List()
@@ -59,23 +80,4 @@ func (i *index) List() ([]osversion.Artifact, error) {
 	}
 
 	return results, nil
-}
-
-func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
-	artifacts, err := i.List()
-	if err != nil {
-		return osversion.Artifact{}, fmt.Errorf("listing versions: %v", err)
-	}
-
-	for _, artifact := range artifacts {
-		if artifact.Name != ref.Name {
-			continue
-		} else if artifact.Version != ref.Version {
-			continue
-		}
-
-		return artifact, nil
-	}
-
-	return osversion.Artifact{}, datastore.MissingErr
 }

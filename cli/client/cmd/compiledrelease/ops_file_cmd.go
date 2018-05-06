@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/dpb587/boshua/util/metalinkutil"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	yaml "gopkg.in/yaml.v2"
 )
 

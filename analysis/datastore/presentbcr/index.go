@@ -39,14 +39,10 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]analysis.Artifact, error) {
-	return []analysis.Artifact{}, nil
-}
-
-func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
+func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	_, err := i.reloader()
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return nil, fmt.Errorf("reloading: %v", err)
 	}
 
 	meta4Path := filepath.Join(i.localPath, ref.ArtifactStorageDir(), "artifact.meta4")
@@ -54,27 +50,29 @@ func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
 	meta4Bytes, err := ioutil.ReadFile(meta4Path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return analysis.Artifact{}, datastore.MissingErr
+			return []analysis.Artifact{}, nil
 		}
 
-		return analysis.Artifact{}, fmt.Errorf("reading %s: %v", meta4Path, err)
+		return nil, fmt.Errorf("reading %s: %v", meta4Path, err)
 	}
 
 	var meta4 metalink.Metalink
 
 	err = metalink.Unmarshal(meta4Bytes, &meta4)
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
+		return nil, fmt.Errorf("unmarshalling %s: %v", meta4Path, err)
 	}
 
-	return analysis.New(
-		ref.Artifact,
-		ref.Analyzer,
-		meta4.Files[0],
-		map[string]interface{}{
-			"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
-		},
-	), nil
+	return []analysis.Artifact{
+		analysis.New(
+			ref.Artifact,
+			ref.Analyzer,
+			meta4.Files[0],
+			map[string]interface{}{
+				"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+			},
+		),
+	}, nil
 }
 
 func (i *index) reloader() (bool, error) {

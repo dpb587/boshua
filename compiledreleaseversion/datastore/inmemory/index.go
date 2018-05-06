@@ -50,10 +50,12 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
+func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleaseversion.Artifact, error) {
+	var results []compiledreleaseversion.Artifact
+
 	err := i.load()
 	if err != nil {
-		return compiledreleaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return nil, fmt.Errorf("reloading: %v", err)
 	}
 
 	for _, artifact := range i.inmemory {
@@ -69,19 +71,12 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 
 		for _, cs := range ref.ReleaseVersion.Checksums {
 			if artifact.ReleaseVersion.Checksums.Contains(&cs) {
-				return artifact, nil
+				results = append(results, artifact)
+
+				break
 			}
 		}
 	}
 
-	return compiledreleaseversion.Artifact{}, datastore.MissingErr
-}
-
-func (i *index) List() ([]compiledreleaseversion.Artifact, error) {
-	err := i.load()
-	if err != nil {
-		return []compiledreleaseversion.Artifact{}, fmt.Errorf("reloading: %v", err)
-	}
-
-	return i.inmemory, nil
+	return results, nil
 }
