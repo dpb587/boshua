@@ -3,11 +3,11 @@ package stemcellversion
 import "fmt"
 
 type Reference struct {
-	IaaS       string
-	Hypervisor string
-	OS         string
-	Version    string
-	Light      bool
+	IaaS       string `json:"iaas"`
+	Hypervisor string `json:"hypervisor"`
+	OS         string `json:"os"`
+	Version    string `json:"version"`
+	Light      bool   `json:"light"`
 	// DiskFormat string
 }
 

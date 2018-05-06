@@ -18,22 +18,22 @@ import (
 )
 
 type index struct {
-	logger   logrus.FieldLogger
-	config   Config
-	inmemory datastore.Index
+	logger     logrus.FieldLogger
+	config     Config
+	repository *git.Repository
+	inmemory   datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		config: config,
+		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config:     config,
+		repository: git.NewRepository(logger, config.RepositoryConfig),
 	}
 
-	reloader := git.NewReloader(logger, config.RepositoryConfig)
-
-	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
+	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
 
 	return idx
 }
@@ -55,7 +55,6 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 	var inmemory = []releaseversion.Artifact{}
 
 	for _, meta4Path := range paths {
-
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {
 			return nil, fmt.Errorf("reading %s: %v", meta4Path, err)
@@ -71,7 +70,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 		meta4File := meta4.Files[0]
 
 		ref := releaseversion.Reference{
-			Name:      path.Base(path.Dir(meta4Path)),
+			Name:      i.config.Release,
 			Version:   meta4File.Version,
 			Checksums: metalinkutil.HashesToChecksums(meta4File.Hashes),
 		}

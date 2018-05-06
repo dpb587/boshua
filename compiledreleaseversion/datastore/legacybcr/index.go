@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -24,6 +25,7 @@ import (
 type index struct {
 	logger              logrus.FieldLogger
 	config              Config
+	repository          *git.Repository
 	releaseVersionIndex releaseversiondatastore.Index
 	inmemory            datastore.Index
 }
@@ -34,12 +36,11 @@ func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logge
 	idx := &index{
 		logger:              logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:              config,
+		repository:          git.NewRepository(logger, config.RepositoryConfig),
 		releaseVersionIndex: releaseVersionIndex,
 	}
 
-	reloader := git.NewReloader(logger, config.RepositoryConfig)
-
-	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
+	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
 
 	return idx
 }
@@ -50,6 +51,10 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 
 func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return i.inmemory.Find(ref)
+}
+
+func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
+	return errors.New("TODO")
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {

@@ -1,6 +1,6 @@
 package osversion
 
 type Reference struct {
-	Name    string
-	Version string
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }

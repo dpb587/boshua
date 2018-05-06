@@ -20,18 +20,18 @@ func New(aggregated ...datastore.Index) datastore.Index {
 }
 
 func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact, error) {
-	var result []releaseversion.Artifact
+	var results []releaseversion.Artifact
 
 	for idxIdx, idx := range i.aggregated {
-		listed, err := idx.Filter(ref)
+		found, err := idx.Filter(ref)
 		if err != nil {
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 
-		result = append(result, listed...)
+		results = append(results, found...)
 	}
 
-	return result, nil
+	return results, nil
 }
 
 func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {

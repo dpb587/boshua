@@ -19,6 +19,7 @@ type RepositoryConfig struct {
 	PullInterval_ marshaltypes.Duration `yaml:"pull_interval"`
 	PullInterval  time.Duration         `yaml:"-"`
 	SkipPull      bool                  `yaml:"skip_pull"`
+	SkipPush      bool                  `yaml:"skip_push"`
 }
 
 func (c *RepositoryConfig) Load(options map[string]interface{}) error {
@@ -40,6 +41,9 @@ func (c *RepositoryConfig) Load(options map[string]interface{}) error {
 	c.applyDefaults()
 
 	c.PullInterval = time.Duration(c.PullInterval_)
+
+	// TODO forceful dev
+	c.SkipPush = true
 
 	return nil
 }

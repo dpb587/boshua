@@ -36,6 +36,8 @@ func (i *index) Filter(ref osversion.Reference) ([]osversion.Artifact, error) {
 	for _, artifact := range artifacts {
 		if artifact.Name != ref.Name {
 			continue
+		} else if ref.Version == "*" {
+			// okay
 		} else if artifact.Version != ref.Version {
 			continue
 		}

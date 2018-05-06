@@ -12,9 +12,14 @@ import (
 	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
 	compiledreleaseversionfactory "github.com/dpb587/boshua/compiledreleaseversion/datastore/factory"
 	"github.com/dpb587/boshua/config"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
+	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
+	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -27,8 +32,11 @@ type Opts struct {
 
 	logger logrus.FieldLogger
 
-	parsedConfig *config.Config
-	releaseIndex releaseversiondatastore.Index
+	parsedConfig         *config.Config
+	releaseIndex         releaseversiondatastore.Index
+	compiledReleaseIndex compiledreleaseversiondatastore.Index
+	stemcellIndex        stemcellversiondatastore.Index
+	osIndex              osversiondatastore.Index
 }
 
 func (o *Opts) getParsedConfig() (config.Config, error) {
@@ -76,6 +84,15 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 	return releaseversionaggregate.New(all...), nil
 }
 
+// func (o *Opts) GetCompiledReleaseManager() (*manager.Manager, error) {
+// 	rvi, err := o.GetReleaseIndex(name)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("loading release index: %v", err)
+// 	}
+//
+// 	return manager.NewManager(rv, ov)
+// }
+
 func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatastore.Index, error) {
 	if name != "default" {
 		panic("TODO")
@@ -106,7 +123,46 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 	return compiledreleaseversionaggregate.New(all...), nil
 }
 
+func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, error) {
+	if name != "default" {
+		panic("TODO")
+	}
+
+	config, err := o.getParsedConfig()
+	if err != nil {
+		return nil, fmt.Errorf("loading config: %v", err)
+	}
+
+	var all []stemcellversiondatastore.Index
+	factory := stemcellversionfactory.New(o.GetLogger())
+
+	for _, cfg := range config.Stemcells {
+		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		if err != nil {
+			return nil, fmt.Errorf("creating stemcell version datastore: %v", err)
+		}
+
+		all = append(all, idx)
+	}
+
+	return stemcellversionaggregate.New(all...), nil
+}
+
+func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
+	if name != "default" {
+		panic("TODO")
+	}
+
+	stemcellVersionIndex, err := o.GetStemcellIndex("default")
+	if err != nil {
+		return nil, fmt.Errorf("loading stemcell index: %v", err)
+	}
+
+	return osversionstemcellversionindex.New(stemcellVersionIndex, o.GetLogger()), nil
+}
+
 func (o *Opts) GetClient() *client.Client {
+	panic("TODO")
 	// return client.New(http.DefaultClient, o.Server, o.GetLogger())
 	return nil
 }

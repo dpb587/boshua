@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
@@ -61,21 +62,33 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 	for _, artifact := range i.inmemory {
 		if artifact.ReleaseVersion.Name != ref.ReleaseVersion.Name {
 			continue
+		} else if artifact.ReleaseVersion.Version == "*" {
+			// okay
 		} else if artifact.ReleaseVersion.Version != ref.ReleaseVersion.Version {
 			continue
 		} else if artifact.OSVersion.Name != ref.OSVersion.Name {
 			continue
+		} else if artifact.OSVersion.Version == "*" {
+			// okay
 		} else if artifact.OSVersion.Version != ref.OSVersion.Version {
 			continue
 		}
 
-		for _, cs := range ref.ReleaseVersion.Checksums {
-			if artifact.ReleaseVersion.Checksums.Contains(&cs) {
-				results = append(results, artifact)
+		if len(ref.ReleaseVersion.Checksums) != 0 {
+			var match int
 
-				break
+			for _, cs := range ref.ReleaseVersion.Checksums {
+				if artifact.ReleaseVersion.Checksums.Contains(&cs) {
+					match += 1
+				}
+			}
+
+			if match != len(ref.ReleaseVersion.Checksums) {
+				continue
 			}
 		}
+
+		results = append(results, artifact)
 	}
 
 	return results, nil
@@ -83,4 +96,8 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 
 func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return datastore.FilterForOne(i, ref)
+}
+
+func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
+	return errors.New("unsupported")
 }

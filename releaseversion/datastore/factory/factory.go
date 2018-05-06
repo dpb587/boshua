@@ -3,6 +3,7 @@ package factory
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/boshio"
 	"github.com/dpb587/boshua/releaseversion/datastore/boshreleasedir"
@@ -27,29 +28,29 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 
 	switch provider {
 	case "boshio":
-		config := boshio.Config{}
-		err := config.Load(options)
+		cfg := boshio.Config{}
+		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, fmt.Errorf("loading options: %v", err)
 		}
 
-		return boshio.New(config, logger), nil
+		return boshio.New(cfg, logger), nil
 	case "boshreleasedir":
-		config := boshreleasedir.Config{}
-		err := config.Load(options)
+		cfg := boshreleasedir.Config{}
+		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, fmt.Errorf("loading options: %v", err)
 		}
 
-		return boshreleasedir.New(config, logger), nil
+		return boshreleasedir.New(cfg, logger), nil
 	case "meta4":
-		config := meta4.Config{}
-		err := config.Load(options)
+		cfg := meta4.Config{}
+		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, fmt.Errorf("loading options: %v", err)
 		}
 
-		return meta4.New(config, logger), nil
+		return meta4.New(cfg, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

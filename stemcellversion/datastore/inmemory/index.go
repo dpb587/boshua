@@ -50,10 +50,12 @@ func (i *index) reload() error {
 	return nil
 }
 
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+func (i *index) Filter(ref stemcellversion.Reference) ([]stemcellversion.Artifact, error) {
+	var results []stemcellversion.Artifact
+
 	err := i.load()
 	if err != nil {
-		return stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
+		return nil, fmt.Errorf("reloading: %v", err)
 	}
 
 	for _, stemcellversion := range i.inmemory {
@@ -63,23 +65,26 @@ func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, e
 			continue
 		} else if stemcellversion.Reference.OS != ref.OS {
 			continue
-		} else if stemcellversion.Reference.Version != ref.Version {
-			continue
 		} else if stemcellversion.Reference.Light != ref.Light {
 			continue
 		}
 
-		return stemcellversion, nil
+		if ref.Version == "*" {
+			// okay
+		} else if stemcellversion.Reference.Version != ref.Version {
+			continue
+		}
+
+		results = append(results, stemcellversion)
 	}
 
-	return stemcellversion.Artifact{}, datastore.MissingErr
+	return results, nil
+}
+
+func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
 }
 
 func (i *index) List() ([]stemcellversion.Artifact, error) {
-	err := i.load()
-	if err != nil {
-		return []stemcellversion.Artifact{}, fmt.Errorf("reloading: %v", err)
-	}
-
 	return i.inmemory, nil
 }

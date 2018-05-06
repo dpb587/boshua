@@ -10,8 +10,8 @@ import (
 )
 
 type Reference struct {
-	ReleaseVersion releaseversion.Reference
-	OSVersion      osversion.Reference
+	ReleaseVersion releaseversion.Reference `json:"release"`
+	OSVersion      osversion.Reference      `json:"os"`
 }
 
 var _ boshua.ArtifactReference = &Reference{}

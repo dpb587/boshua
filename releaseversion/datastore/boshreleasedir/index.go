@@ -18,22 +18,22 @@ import (
 )
 
 type index struct {
-	logger   logrus.FieldLogger
-	config   Config
-	inmemory datastore.Index
+	logger     logrus.FieldLogger
+	config     Config
+	repository *git.Repository
+	inmemory   datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		config: config,
+		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config:     config,
+		repository: git.NewRepository(logger, config.RepositoryConfig),
 	}
 
-	reloader := git.NewReloader(logger, config.RepositoryConfig)
-
-	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
+	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
 
 	return idx
 }

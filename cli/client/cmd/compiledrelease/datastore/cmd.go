@@ -11,6 +11,7 @@ type Cmd struct {
 	*opts.Opts
 
 	FilterCmd FilterCmd `command:"filter" description:"For filtering results"`
+	StoreCmd  StoreCmd  `command:"store" description:"For storing an artifact"`
 }
 
 type CmdOpts struct {
@@ -35,6 +36,7 @@ func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
 	}
 
 	cmd.FilterCmd.CmdOpts = cmdOpts
+	cmd.StoreCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

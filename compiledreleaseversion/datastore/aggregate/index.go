@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
@@ -36,4 +37,8 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 
 func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversion.Artifact, error) {
 	return datastore.FilterForOne(i, ref)
+}
+
+func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
+	return errors.New("TODO")
 }

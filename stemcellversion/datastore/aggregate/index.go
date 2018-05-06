@@ -19,32 +19,36 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) List() ([]stemcellversion.Artifact, error) {
-	var result []stemcellversion.Artifact
+func (i *index) Filter(ref stemcellversion.Reference) ([]stemcellversion.Artifact, error) {
+	var results []stemcellversion.Artifact
 
 	for idxIdx, idx := range i.aggregated {
-		listed, err := idx.List()
+		found, err := idx.Filter(ref)
 		if err != nil {
-			return nil, fmt.Errorf("listing %d: %v", idxIdx, err)
+			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 
-		result = append(result, listed...)
+		results = append(results, found...)
 	}
 
-	return result, nil
+	return results, nil
 }
 
 func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
+
+func (i *index) List() ([]stemcellversion.Artifact, error) {
+	var results []stemcellversion.Artifact
+
 	for idxIdx, idx := range i.aggregated {
-		found, err := idx.Find(ref)
-		if err == datastore.MissingErr {
-			continue
-		} else if err != nil {
-			return stemcellversion.Artifact{}, fmt.Errorf("listing %d: %v", idxIdx, err)
+		found, err := idx.List()
+		if err != nil {
+			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 
-		return found, nil
+		results = append(results, found...)
 	}
 
-	return stemcellversion.Artifact{}, datastore.MissingErr
+	return results, nil
 }

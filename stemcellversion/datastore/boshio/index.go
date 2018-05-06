@@ -20,32 +20,36 @@ import (
 const compileMatch = "bosh-stemcell-*-warden-boshlite-ubuntu-trusty-go_agent.tgz"
 
 type index struct {
-	logger   logrus.FieldLogger
-	config   Config
-	inmemory datastore.Index
+	logger     logrus.FieldLogger
+	config     Config
+	repository *git.Repository
+	inmemory   datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		config: config,
+		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config:     config,
+		repository: git.NewRepository(logger, config.RepositoryConfig),
 	}
 
-	reloader := git.NewReloader(logger, config.RepositoryConfig)
-
-	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
+	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
 
 	return idx
 }
 
-func (i *index) List() ([]stemcellversion.Artifact, error) {
-	return i.inmemory.List()
-}
-
 func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
 	return i.inmemory.Find(ref)
+}
+
+func (i *index) Filter(ref stemcellversion.Reference) ([]stemcellversion.Artifact, error) {
+	return i.inmemory.Filter(ref)
+}
+
+func (i *index) List() ([]stemcellversion.Artifact, error) {
+	return i.inmemory.List()
 }
 
 func (i *index) loader() ([]stemcellversion.Artifact, error) {

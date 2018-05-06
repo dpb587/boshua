@@ -3,6 +3,7 @@ package stemcell
 import (
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 	"github.com/dpb587/boshua/cli/client/cmd/stemcell/analysis"
+	"github.com/dpb587/boshua/cli/client/cmd/stemcell/datastore"
 	"github.com/dpb587/boshua/cli/client/cmd/stemcell/opts"
 )
 
@@ -14,7 +15,8 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd *analysis.Cmd `command:"analysis" description:"For analyzing the stemcell artifact" subcommands-optional:"true"`
+	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the stemcell artifact" subcommands-optional:"true"`
+	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with release datastores"`
 
 	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the stemcell artifact"`
 }
@@ -29,6 +31,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	}
 
 	cmd.AnalysisCmd = analysis.New(app, cmd.Opts)
+	cmd.DatastoreCmd = datastore.New(app, cmd.Opts)
 
 	cmdOpts := &CmdOpts{
 		AppOpts:      app,

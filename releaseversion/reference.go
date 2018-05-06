@@ -10,10 +10,10 @@ import (
 )
 
 type Reference struct {
-	Name      string
-	Version   string
-	Checksums checksum.ImmutableChecksums
-	URLs      []string
+	Name      string                      `json:"name"`
+	Version   string                      `json:"version"`
+	Checksums checksum.ImmutableChecksums `json:"checksums"`
+	URLs      []string                    `json:"urls"`
 }
 
 var _ boshua.ArtifactReference = &Reference{}
