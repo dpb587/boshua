@@ -1,4 +1,4 @@
-package config
+package git
 
 import (
 	"crypto/sha1"
@@ -9,17 +9,18 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/dpb587/boshua/util/marshaltypes"
 	yaml "gopkg.in/yaml.v2"
 )
 
-type Config struct {
-	Repository    string        `yaml:"repository"`
-	LocalPath     string        `yaml:"local_path"`
-	PullInterval_ Duration      `yaml:"pull_interval"`
-	PullInterval  time.Duration `yaml:"-"`
+type RepositoryConfig struct {
+	Repository    string                `yaml:"repository"`
+	LocalPath     string                `yaml:"local_path"`
+	PullInterval_ marshaltypes.Duration `yaml:"pull_interval"`
+	PullInterval  time.Duration         `yaml:"-"`
 }
 
-func (c *Config) Load(options map[string]interface{}) error {
+func (c *RepositoryConfig) Load(options map[string]interface{}) error {
 	optionsBytes, err := yaml.Marshal(options)
 	if err != nil {
 		return fmt.Errorf("remarshaling: %v", err)
@@ -42,7 +43,7 @@ func (c *Config) Load(options map[string]interface{}) error {
 	return nil
 }
 
-func (c *Config) validate() error {
+func (c *RepositoryConfig) validate() error {
 	if c.Repository == "" {
 		return errors.New("repository must not be empty")
 	}
@@ -50,7 +51,7 @@ func (c *Config) validate() error {
 	return nil
 }
 
-func (c *Config) applyDefaults() {
+func (c *RepositoryConfig) applyDefaults() {
 	if c.LocalPath == "" {
 		hasher := sha1.New()
 		hasher.Write([]byte(c.Repository))
@@ -58,6 +59,6 @@ func (c *Config) applyDefaults() {
 	}
 
 	if c.PullInterval_ == 0 {
-		c.PullInterval_ = Duration(5 * time.Minute)
+		c.PullInterval_ = marshaltypes.Duration(5 * time.Minute)
 	}
 }

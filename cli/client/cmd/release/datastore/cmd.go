@@ -6,9 +6,9 @@ import (
 	cmdopts "github.com/dpb587/boshua/cli/client/cmd/opts"
 	"github.com/dpb587/boshua/cli/client/cmd/release/datastore/opts"
 	releaseopts "github.com/dpb587/boshua/cli/client/cmd/release/opts"
+	"github.com/dpb587/boshua/datastore/git"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/boshreleasedir"
-	"github.com/dpb587/boshua/util/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,7 +28,7 @@ func (o *CmdOpts) getDatastore() (releaseversiondatastore.Index, error) {
 	// client := o.AppOpts.GetClient()
 
 	return boshreleasedir.New(boshreleasedir.Config{
-		Config: config.Config{
+		RepositoryConfig: git.RepositoryConfig{
 			Repository:   "git+https://github.com/dpb587/ssoca-bosh-release.git",
 			LocalPath:    "/Users/dpb587/Projects/src/github.com/dpb587/ssoca-bosh-release",
 			PullInterval: 30 * time.Minute,

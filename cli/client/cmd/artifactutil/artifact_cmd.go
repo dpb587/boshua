@@ -11,7 +11,7 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
-	"github.com/dpb587/boshua/metalink/file/metaurl/boshrelease"
+	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
@@ -37,7 +37,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 
 		urlLoader := urldefaultloader.New(fs)
 		metaurlLoader := metaurl.NewLoaderFactory()
-		metaurlLoader.Add(boshrelease.Loader{})
+		metaurlLoader.Add(boshreleasesource.Loader{})
 
 		target := *c.Download
 

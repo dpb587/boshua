@@ -9,7 +9,7 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
-	"github.com/dpb587/boshua/metalink/file/metaurl/boshrelease"
+	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
@@ -36,7 +36,7 @@ func (c *DownloadMetalinkCmd) Execute(_ []string) error {
 
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
-	metaurlLoader.Add(boshrelease.Loader{})
+	metaurlLoader.Add(boshreleasesource.Loader{})
 
 	meta4Bytes, err := ioutil.ReadFile(c.Args.Metalink)
 	if err != nil {

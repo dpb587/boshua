@@ -1,7 +1,7 @@
 package legacybcr
 
-import "github.com/dpb587/boshua/util/config"
+import "github.com/dpb587/boshua/datastore/git"
 
 type Config struct {
-	config.Config
+	git.RepositoryConfig
 }

@@ -8,6 +8,7 @@ import (
 	"reflect"
 
 	"github.com/dpb587/boshua/datastore/git"
+	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
@@ -93,7 +94,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 					MetaURLs: []metalink.MetaURL{
 						{
 							URL:       fmt.Sprintf("%s//%s", i.repository, releaseSubPath),
-							MediaType: "application/vnd.bosh.release",
+							MediaType: boshreleasesource.DefaultMediaType,
 						},
 					},
 				},

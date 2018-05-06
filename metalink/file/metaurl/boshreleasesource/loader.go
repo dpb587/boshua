@@ -1,4 +1,4 @@
-package boshrelease
+package boshreleasesource
 
 import (
 	"github.com/dpb587/metalink"
@@ -12,7 +12,7 @@ var _ metaurl.Loader = &Loader{}
 
 func (f Loader) MediaTypes() []string {
 	return []string{
-		"application/vnd.bosh.release",
+		DefaultMediaType,
 	}
 }
 

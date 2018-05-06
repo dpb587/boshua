@@ -1,4 +1,4 @@
-package config
+package marshaltypes
 
 import (
 	"time"

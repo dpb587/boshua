@@ -1,4 +1,4 @@
-package boshrelease
+package boshreleasesource
 
 import (
 	"bytes"
