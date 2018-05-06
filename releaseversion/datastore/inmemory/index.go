@@ -50,6 +50,10 @@ func (i *index) reload() error {
 	return nil
 }
 
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
+
 func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact, error) {
 	err := i.load()
 	if err != nil {
@@ -64,26 +68,26 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 		}
 
 		if ref.Version == "*" {
-			results = append(results, artifact)
-
-			continue
+			// okay
 		} else if artifact.Reference.Version != ref.Version {
 			continue
 		}
 
-		if len(ref.Checksums) == 0 {
-			results = append(results, artifact)
+		if len(ref.Checksums) != 0 {
+			var match int
 
-			continue
-		}
+			for _, cs := range ref.Checksums.Prioritized() {
+				if artifact.MatchesChecksum(&cs) {
+					match += 1
+				}
+			}
 
-		for _, cs := range ref.Checksums.Prioritized() {
-			if artifact.MatchesChecksum(&cs) {
-				results = append(results, artifact)
-
-				break
+			if match != len(ref.Checksums) {
+				continue
 			}
 		}
+
+		results = append(results, artifact)
 	}
 
 	return results, nil

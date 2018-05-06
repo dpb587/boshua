@@ -11,12 +11,8 @@ type Artifact struct {
 	metalinkSource map[string]interface{}
 }
 
-func (s Artifact) ArtifactMetalink() metalink.Metalink {
-	return metalink.Metalink{
-		Files: []metalink.File{
-			s.metalinkFile,
-		},
-	}
+func (s Artifact) ArtifactMetalinkFile() metalink.File {
+	return s.metalinkFile
 }
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {

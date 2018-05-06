@@ -11,7 +11,7 @@ import (
 	"github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/cli/client/args"
-	"github.com/dpb587/boshua/manifest"
+	"github.com/dpb587/boshua/deployment/manifest"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/metalink/metalinkutil"

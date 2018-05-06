@@ -9,7 +9,7 @@ import (
 type Artifact interface {
 	ArtifactReference
 
-	ArtifactMetalink() metalink.Metalink
+	ArtifactMetalinkFile() metalink.File
 	ArtifactMetalinkStorage() map[string]interface{}
 }
 

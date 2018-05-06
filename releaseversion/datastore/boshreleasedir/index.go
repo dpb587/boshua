@@ -18,22 +18,20 @@ import (
 )
 
 type index struct {
-	logger     logrus.FieldLogger
-	repository string
-	localPath  string
-	inmemory   datastore.Index
+	logger   logrus.FieldLogger
+	config   Config
+	inmemory datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		repository: config.Repository,
-		localPath:  config.LocalPath,
+		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config: config,
 	}
 
-	reloader := git.NewReloader(logger, config.Repository, config.LocalPath, config.PullInterval)
+	reloader := git.NewReloader(logger, config.RepositoryConfig)
 
 	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
 
@@ -44,8 +42,12 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 	return i.inmemory.Filter(ref)
 }
 
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
+	return i.inmemory.Find(ref)
+}
+
 func (i *index) loader() ([]releaseversion.Artifact, error) {
-	indices, err := filepath.Glob(fmt.Sprintf("%s/releases/**/index.yml", i.localPath))
+	indices, err := filepath.Glob(fmt.Sprintf("%s/releases/**/index.yml", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
@@ -70,7 +72,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 
 			releaseName := path.Base(path.Dir(indexPath))
 			releaseSubPath := fmt.Sprintf("releases/%s/%s-%s.yml", releaseName, releaseName, build.Version)
-			releasePath := filepath.Join(i.localPath, releaseSubPath)
+			releasePath := filepath.Join(i.config.RepositoryConfig.LocalPath, releaseSubPath)
 
 			releaseBytes, err := ioutil.ReadFile(releasePath)
 			if err != nil {
@@ -93,7 +95,7 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 					Name: fmt.Sprintf("%s-%s.tgz", ref.Name, ref.Version),
 					MetaURLs: []metalink.MetaURL{
 						{
-							URL:       fmt.Sprintf("%s//%s", i.repository, releaseSubPath),
+							URL:       fmt.Sprintf("%s//%s", i.config.RepositoryConfig.Repository, releaseSubPath),
 							MediaType: boshreleasesource.DefaultMediaType,
 						},
 					},

@@ -46,6 +46,10 @@ func (i *index) Filter(ref osversion.Reference) ([]osversion.Artifact, error) {
 	return results, nil
 }
 
+func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
+
 func (i *index) list() ([]osversion.Artifact, error) {
 	matches := map[osversion.Reference]osversion.Artifact{}
 
@@ -68,7 +72,7 @@ func (i *index) list() ([]osversion.Artifact, error) {
 
 		matches[ref] = osversion.New(
 			ref,
-			stemcellVersion.ArtifactMetalink().Files[0],
+			stemcellVersion.ArtifactMetalinkFile(),
 			stemcellVersion.ArtifactMetalinkStorage(),
 		)
 	}

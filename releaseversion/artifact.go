@@ -2,8 +2,8 @@ package releaseversion
 
 import (
 	"github.com/dpb587/boshua"
-	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
 )
 
@@ -16,12 +16,8 @@ type Artifact struct {
 
 var _ boshua.Artifact = &Artifact{}
 
-func (s Artifact) ArtifactMetalink() metalink.Metalink {
-	return metalink.Metalink{
-		Files: []metalink.File{
-			s.metalinkFile,
-		},
-	}
+func (s Artifact) ArtifactMetalinkFile() metalink.File {
+	return s.metalinkFile
 }
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {

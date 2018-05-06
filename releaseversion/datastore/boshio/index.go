@@ -20,22 +20,20 @@ import (
 )
 
 type index struct {
-	logger             logrus.FieldLogger
-	metalinkRepository string
-	localPath          string
-	inmemory           datastore.Index
+	logger   logrus.FieldLogger
+	config   Config
+	inmemory datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
 func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger:             logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository: config.Repository,
-		localPath:          config.LocalPath,
+		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config: config,
 	}
 
-	reloader := git.NewReloader(logger, config.Repository, config.LocalPath, config.PullInterval)
+	reloader := git.NewReloader(logger, config.RepositoryConfig)
 
 	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
 
@@ -46,8 +44,12 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 	return i.inmemory.Filter(ref)
 }
 
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
+	return i.inmemory.Find(ref)
+}
+
 func (i *index) loader() ([]releaseversion.Artifact, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}
@@ -56,7 +58,11 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 
 	for _, meta4Path := range paths {
 		meta4Source := map[string]interface{}{
-			"uri": fmt.Sprintf("%s//%s", i.metalinkRepository, strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.localPath)), "/")),
+			"uri": fmt.Sprintf(
+				"%s//%s",
+				i.config.RepositoryConfig.Repository,
+				strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.config.RepositoryConfig.LocalPath)), "/"),
+			),
 		}
 
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)

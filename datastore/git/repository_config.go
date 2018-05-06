@@ -18,6 +18,7 @@ type RepositoryConfig struct {
 	LocalPath     string                `yaml:"local_path"`
 	PullInterval_ marshaltypes.Duration `yaml:"pull_interval"`
 	PullInterval  time.Duration         `yaml:"-"`
+	SkipPull      bool                  `yaml:"skip_pull"`
 }
 
 func (c *RepositoryConfig) Load(options map[string]interface{}) error {

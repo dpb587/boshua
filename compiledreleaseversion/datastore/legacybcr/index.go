@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
@@ -17,14 +16,14 @@ import (
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
 
 type index struct {
 	logger              logrus.FieldLogger
-	metalinkRepository  string
-	localPath           string
+	config              Config
 	releaseVersionIndex releaseversiondatastore.Index
 	inmemory            datastore.Index
 }
@@ -34,12 +33,11 @@ var _ datastore.Index = &index{}
 func New(config Config, releaseVersionIndex releaseversiondatastore.Index, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
 		logger:              logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		metalinkRepository:  config.Repository,
-		localPath:           config.LocalPath,
+		config:              config,
 		releaseVersionIndex: releaseVersionIndex,
 	}
 
-	reloader := git.NewReloader(logger, config.Repository, config.LocalPath, config.PullInterval)
+	reloader := git.NewReloader(logger, config.RepositoryConfig)
 
 	idx.inmemory = inmemory.New(idx.loader, reloader.Reload)
 
@@ -51,7 +49,7 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
-	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.localPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
 		return nil, fmt.Errorf("globbing: %v", err)
 	}

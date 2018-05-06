@@ -37,12 +37,8 @@ func (s Artifact) ArtifactStorageDir() string {
 	)
 }
 
-func (s Artifact) ArtifactMetalink() metalink.Metalink {
-	return metalink.Metalink{
-		Files: []metalink.File{
-			s.metalinkFile,
-		},
-	}
+func (s Artifact) ArtifactMetalinkFile() metalink.File {
+	return s.metalinkFile
 }
 
 func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {

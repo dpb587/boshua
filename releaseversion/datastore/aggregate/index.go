@@ -33,3 +33,7 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 
 	return result, nil
 }
+
+func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
