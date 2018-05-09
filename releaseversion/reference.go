@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dpb587/boshua"
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/util/checksum"
 )
 
@@ -16,10 +16,10 @@ type Reference struct {
 	URLs      []string                    `json:"urls"`
 }
 
-var _ boshua.ArtifactReference = &Reference{}
+var _ artifact.ArtifactReference = &Reference{}
 
-func (r Reference) ArtifactReference() boshua.Reference {
-	return boshua.Reference{
+func (r Reference) ArtifactReference() artifact.Reference {
+	return artifact.Reference{
 		Context: "releaseversion",
 		ID:      r.id(),
 	}

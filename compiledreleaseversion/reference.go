@@ -4,7 +4,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 
-	"github.com/dpb587/boshua"
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 )
@@ -14,10 +14,10 @@ type Reference struct {
 	OSVersion      osversion.Reference      `json:"os"`
 }
 
-var _ boshua.ArtifactReference = &Reference{}
+var _ artifact.ArtifactReference = &Reference{}
 
-func (r Reference) ArtifactReference() boshua.Reference {
-	return boshua.Reference{
+func (r Reference) ArtifactReference() artifact.Reference {
+	return artifact.Reference{
 		Context: "compiledreleaseversion",
 		ID:      r.id(),
 	}

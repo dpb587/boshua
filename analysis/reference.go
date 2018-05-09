@@ -4,18 +4,18 @@ import (
 	"crypto/sha1"
 	"fmt"
 
-	"github.com/dpb587/boshua"
+	"github.com/dpb587/boshua/artifact"
 )
 
 type Reference struct {
-	Artifact boshua.ArtifactReference
+	Artifact artifact.ArtifactReference
 	Analyzer string
 }
 
-var _ boshua.ArtifactReference = &Reference{}
+var _ artifact.ArtifactReference = &Reference{}
 
-func (r Reference) ArtifactReference() boshua.Reference {
-	return boshua.Reference{
+func (r Reference) ArtifactReference() artifact.Reference {
+	return artifact.Reference{
 		Context: "analysis",
 		ID:      r.id(),
 	}

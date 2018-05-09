@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dpb587/boshua"
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/metalink"
 )
 
@@ -16,10 +16,10 @@ type Artifact struct {
 	metalinkSource map[string]interface{}
 }
 
-var _ boshua.Artifact = &Artifact{}
+var _ artifact.Artifact = &Artifact{}
 
-func (s Artifact) ArtifactReference() boshua.Reference {
-	return boshua.Reference{
+func (s Artifact) ArtifactReference() artifact.Reference {
+	return artifact.Reference{
 		Context: "osversion",
 		ID:      s.id(),
 	}
