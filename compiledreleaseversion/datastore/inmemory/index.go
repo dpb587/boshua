@@ -1,7 +1,6 @@
 package inmemory
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
@@ -99,5 +98,5 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 }
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
-	return errors.New("unsupported")
+	return datastore.UnsupportedOperationErr
 }

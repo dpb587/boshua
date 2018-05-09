@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -54,7 +53,7 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 }
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
-	return errors.New("TODO")
+	return datastore.UnsupportedOperationErr
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {

@@ -86,5 +86,10 @@ func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, e
 }
 
 func (i *index) List() ([]stemcellversion.Artifact, error) {
+	err := i.load()
+	if err != nil {
+		return nil, fmt.Errorf("reloading: %v", err)
+	}
+
 	return i.inmemory, nil
 }

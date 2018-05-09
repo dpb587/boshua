@@ -1,7 +1,6 @@
 package boshreleasedpb
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -50,7 +49,33 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 }
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
-	return errors.New("TODO")
+	path := filepath.Join(
+		"compiled-release",
+		i.config.Channel,
+		artifact.OSVersion.Name,
+		artifact.OSVersion.Version,
+		fmt.Sprintf("%s.meta4", artifact.ReleaseVersion.Version),
+	)
+
+	meta4 := metalink.Metalink{
+		Files:     []metalink.File{artifact.ArtifactMetalinkFile()},
+		Generator: "boshua/boshreleasedpb",
+	}
+
+	meta4Bytes, err := metalink.Marshal(meta4)
+	if err != nil {
+		return fmt.Errorf("marshalling metalink: %v", err)
+	}
+
+	return i.repository.Commit(
+		map[string][]byte{path: meta4Bytes},
+		fmt.Sprintf(
+			"Compiling v%s for %s/%s",
+			artifact.ReleaseVersion.Version,
+			artifact.OSVersion.Name,
+			artifact.OSVersion.Version,
+		),
+	)
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {

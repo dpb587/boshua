@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -65,9 +66,14 @@ func (i *Repository) Reload() (bool, error) {
 	return true, nil
 }
 
-func (i *Repository) Commit(files map[string]string, message string) error {
+func (i *Repository) Commit(files map[string][]byte, message string) error {
 	for path, data := range files {
-		err := ioutil.WriteFile(filepath.Join(i.config.LocalPath, path), []byte(data), 0644)
+		err := os.MkdirAll(filepath.Dir(filepath.Join(i.config.LocalPath, path)), 0644)
+		if err != nil {
+			return fmt.Errorf("mkdir file dir: %v", err)
+		}
+
+		err = ioutil.WriteFile(filepath.Join(i.config.LocalPath, path), data, 0644)
 		if err != nil {
 			return fmt.Errorf("writing file %s: %v", path, err)
 		}

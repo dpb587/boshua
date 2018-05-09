@@ -1,7 +1,6 @@
 package aggregate
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
@@ -40,5 +39,16 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 }
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
-	return errors.New("TODO")
+	for idxIdx, idx := range i.aggregated {
+		err := idx.Store(artifact)
+		if err == datastore.UnsupportedOperationErr {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("storing %d: %v", idxIdx, err)
+		}
+
+		return nil
+	}
+
+	return datastore.UnsupportedOperationErr
 }
