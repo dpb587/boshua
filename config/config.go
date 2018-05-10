@@ -6,7 +6,7 @@ type Config struct {
 	Stemcells        []AbstractComponentConfig `yaml:"stemcell_versions"`
 	Releases         []AbstractComponentConfig `yaml:"release_versions"`
 	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"`
-	Analysis         []AbstractComponentConfig `yaml:"analysis"`
+	Analyses         []AbstractComponentConfig `yaml:"analyses"`
 	Server           ServerConfig              `yaml:"server"`
 }
 

@@ -17,13 +17,11 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("stemcell/artifact")
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		client := c.AppOpts.GetClient()
-
-		res, err := client.GetStemcellVersion(c.StemcellOpts.Reference())
+		artifact, err := c.getStemcell()
 		if err != nil {
-			return metalink.File{}, fmt.Errorf("fetching: %v", err)
+			return metalink.File{}, fmt.Errorf("finding stemcell: %v", err)
 		}
 
-		return res.Data.Artifact, nil
+		return artifact.ArtifactMetalinkFile(), nil
 	})
 }

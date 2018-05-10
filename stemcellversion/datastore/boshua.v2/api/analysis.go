@@ -1,4 +1,4 @@
-package releaseversion
+package api
 
 import (
 	"fmt"
@@ -10,13 +10,13 @@ import (
 	"github.com/dpb587/boshua/api/v2/handlers/analysisutil"
 	"github.com/dpb587/boshua/api/v2/httputil"
 	"github.com/dpb587/boshua/api/v2/urlutil"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/scheduler/concourse"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
-const AnalysisHandlerInfoURI = "/release-version/analysis/info"
-const AnalysisHandlerQueueURI = "/release-version/analysis/queue"
+const AnalysisHandlerInfoURI = "/stemcell-version/analysis/info"
+const AnalysisHandlerQueueURI = "/stemcell-version/analysis/queue"
 
 type pkg struct{}
 
@@ -24,19 +24,19 @@ func NewAnalysisHandler(
 	logger logrus.FieldLogger,
 	cc *concourse.Runner,
 	analysisIndex datastore.Index,
-	releaseVersionIndex releaseversiondatastore.Index,
+	stemcellVersionIndex stemcellversiondatastore.Index,
 ) *analysisutil.AnalysisHandler {
 	return analysisutil.NewAnalysisHandler(
 		logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(pkg{}).PkgPath(),
 			"api.version":   "v2",
-			"api.handler":   "releaseversion/analysis",
+			"api.handler":   "stemcellversion/analysis",
 		}),
 		cc,
 		analysisIndex,
-		false,
+		true,
 		func(logger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error) {
-			subject, logger, err := parseRequest(logger, r, releaseVersionIndex)
+			subject, logger, err := parseRequest(logger, r, stemcellVersionIndex)
 			if err != nil {
 				return analysis.Reference{}, nil, httputil.NewError(err, http.StatusBadRequest, "parsing request")
 			}

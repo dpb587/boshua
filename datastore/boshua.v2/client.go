@@ -1,6 +1,9 @@
-package client
+package boshuav2
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"time"
@@ -10,15 +13,15 @@ import (
 )
 
 type Client struct {
-	client   *http.Client
-	endpoint string
-	logger   logrus.FieldLogger
+	client *http.Client
+	config BoshuaConfig
+	logger logrus.FieldLogger
 }
 
-func New(client *http.Client, endpoint string, logger logrus.FieldLogger) *Client {
+func NewClient(client *http.Client, config BoshuaConfig, logger logrus.FieldLogger) *Client {
 	return &Client{
-		client:   client,
-		endpoint: endpoint,
+		client: client,
+		config: config,
 		logger: logger.WithFields(logrus.Fields{
 			"build.package": reflect.TypeOf(Client{}).PkgPath(),
 			"api.version":   "v2",
@@ -26,7 +29,31 @@ func New(client *http.Client, endpoint string, logger logrus.FieldLogger) *Clien
 	}
 }
 
-func (c *Client) doRequest(logger logrus.FieldLogger, request *http.Request) (*http.Response, error) {
+func (c *Client) Execute(request *http.Request, responseData interface{}) error {
+	// TODO prefix endpoint
+
+	response, err := c.doRequest(request)
+	if err != nil {
+		return fmt.Errorf("executing request: %v", err)
+	} else if response.StatusCode != http.StatusOK {
+		bodyBytes, _ := ioutil.ReadAll(response.Body)
+		return fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
+	}
+
+	resBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return fmt.Errorf("reading response body: %v", err)
+	}
+
+	err = json.Unmarshal(resBytes, responseData)
+	if err != nil {
+		return fmt.Errorf("unmarshalling response body: %v", err)
+	}
+
+	return nil
+}
+
+func (c *Client) doRequest(request *http.Request) (*http.Response, error) {
 	var uuidString string
 
 	uuidResult, err := uuid.NewV4()
@@ -39,7 +66,7 @@ func (c *Client) doRequest(logger logrus.FieldLogger, request *http.Request) (*h
 
 	t0 := time.Now()
 
-	httplogger := logger.WithFields(logrus.Fields{
+	httplogger := c.logger.WithFields(logrus.Fields{
 		"http.request.time":   t0.Format(time.RFC3339),
 		"http.request.id":     uuidString,
 		"http.request.method": request.Method,

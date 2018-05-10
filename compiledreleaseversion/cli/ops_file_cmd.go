@@ -16,11 +16,9 @@ type OpsFileCmd struct {
 func (c *OpsFileCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("compiled-release/ops-file")
 
-	resInfo, err := c.getCompiledRelease()
+	artifact, err := c.getCompiledRelease()
 	if err != nil {
-		log.Fatalf("requesting compiled version info: %v", err)
-	} else if resInfo == nil {
-		log.Fatalf("no compiled release available")
+		return fmt.Errorf("finding compiled release: %v", err)
 	}
 
 	opsBytes, err := yaml.Marshal([]map[string]interface{}{
@@ -30,8 +28,8 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 			"value": map[string]interface{}{
 				"name":    c.CompiledReleaseOpts.Release.Name,
 				"version": c.CompiledReleaseOpts.Release.Version,
-				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(resInfo.Data.Artifact.Hashes[0]).String(), "sha1:"), // TODO .Preferred()
-				"url":     resInfo.Data.Artifact.URLs[0].URL,
+				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(artifact.ArtifactMetalinkFile().Hashes[0]).String(), "sha1:"), // TODO .Preferred()
+				"url":     artifact.ArtifactMetalinkFile().URLs[0].URL,
 				"stemcell": map[string]string{
 					"os":      c.CompiledReleaseOpts.OS.Name,
 					"version": c.CompiledReleaseOpts.OS.Version,

@@ -33,3 +33,22 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 
 	return results, nil
 }
+
+func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
+
+func (i *index) Store(artifact analysis.Artifact) error {
+	for idxIdx, idx := range i.aggregated {
+		err := idx.Store(artifact)
+		if err == datastore.UnsupportedOperationErr {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("storing %d: %v", idxIdx, err)
+		}
+
+		return nil
+	}
+
+	return datastore.UnsupportedOperationErr
+}

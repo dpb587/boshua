@@ -1,5 +1,5 @@
 package clicommon
 
-import "github.com/dpb587/boshua/api/v2/models/analysis"
+import "github.com/dpb587/boshua/analysis"
 
-type AnalysisLoader func() (*analysis.GETInfoResponse, error)
+type AnalysisLoader func() (analysis.Artifact, error)

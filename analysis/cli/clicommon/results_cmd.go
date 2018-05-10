@@ -2,6 +2,7 @@ package clicommon
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os/exec"
 	// "io"
@@ -25,11 +26,9 @@ type ResultsCmd struct {
 }
 
 func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, args []string) error {
-	resInfo, err := loader()
+	artifact, err := loader()
 	if err != nil {
-		log.Fatal(err)
-	} else if resInfo == nil {
-		log.Fatalf("no analysis available")
+		return fmt.Errorf("finding analysis: %v", err)
 	}
 
 	tempfile, err := ioutil.TempFile("", "boshua-analysis-")
@@ -45,7 +44,7 @@ func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, arg
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
 
-	file := resInfo.Data.Artifact
+	file := artifact.ArtifactMetalinkFile()
 
 	local, err := urlLoader.Load(metalink.URL{URL: tempfile.Name()})
 	if err != nil {

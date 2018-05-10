@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,16 +19,14 @@ type UploadReleaseCmd struct {
 func (c *UploadReleaseCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("release/upload-release")
 
-	resInfo, err := c.getCompiledRelease()
+	artifact, err := c.getCompiledRelease()
 	if err != nil {
-		log.Fatalf("requesting compiled version info: %v", err)
-	} else if resInfo == nil {
-		log.Fatalf("no compiled release available")
+		return fmt.Errorf("finding compiled release: %v", err)
 	}
 
 	var sha1 checksum.Checksum
 
-	for _, cs := range metalinkutil.HashesToChecksums(resInfo.Data.Artifact.Hashes) {
+	for _, cs := range metalinkutil.HashesToChecksums(artifact.ArtifactMetalinkFile().Hashes) {
 		if cs.Algorithm().Name() == "sha1" {
 			sha1 = &cs
 
@@ -39,7 +36,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 
 	if c.Cmd {
 		fmt.Printf("bosh upload-release --name=%s --version=%s \\\n", c.CompiledReleaseOpts.Release.Name, c.CompiledReleaseOpts.Release.Version)
-		fmt.Printf("  %s \\\n", resInfo.Data.Artifact.URLs[0].URL)
+		fmt.Printf("  %s \\\n", artifact.ArtifactMetalinkFile().URLs[0].URL)
 		fmt.Printf("  --sha1=%s \\\n", strings.TrimPrefix(sha1.String(), "sha1:"))
 		fmt.Printf("  --stemcell=%s/%s\n", c.CompiledReleaseOpts.OS.Name, c.CompiledReleaseOpts.OS.Version)
 
@@ -51,7 +48,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 		"upload-release",
 		fmt.Sprintf("--name=%s", c.CompiledReleaseOpts.Release.Name),
 		fmt.Sprintf("--version=%s", c.CompiledReleaseOpts.Release.Version),
-		resInfo.Data.Artifact.URLs[0].URL,
+		artifact.ArtifactMetalinkFile().URLs[0].URL,
 		fmt.Sprintf("--sha1=%s \\\n", strings.TrimPrefix(sha1.String(), "sha1:")),
 		fmt.Sprintf("--stemcell=%s/%s\n", c.CompiledReleaseOpts.OS.Name, c.CompiledReleaseOpts.OS.Version),
 	)

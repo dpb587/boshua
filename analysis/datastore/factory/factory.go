@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/analysis/datastore/presentbcr"
+	"github.com/dpb587/boshua/config"
 	analysisdatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/sirupsen/logrus"
 )
@@ -28,13 +29,13 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 
 	switch provider {
 	case "presentbcr":
-		config := presentbcr.Config{}
-		err := config.Load(options)
+		cfg := presentbcr.Config{}
+		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, fmt.Errorf("loading options: %v", err)
 		}
 
-		return presentbcr.New(config, logger), nil
+		return presentbcr.New(cfg, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

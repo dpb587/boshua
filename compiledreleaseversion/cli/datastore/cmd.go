@@ -1,9 +1,9 @@
 package datastore
 
 import (
+	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/compiledreleaseversion/cli/datastore/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/compiledreleaseversion/cli/opts"
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 )
 

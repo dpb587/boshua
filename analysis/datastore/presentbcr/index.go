@@ -75,6 +75,10 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	}, nil
 }
 
+func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
+	return datastore.FilterForOne(i, ref)
+}
+
 func (i *index) reloader() (bool, error) {
 	if time.Now().Sub(i.lastLoaded) < i.pullInterval {
 		return false, nil

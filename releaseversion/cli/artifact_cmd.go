@@ -17,16 +17,11 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("release/artifact")
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		datastore, err := c.AppOpts.GetReleaseIndex("default")
+		artifact, err := c.getRelease()
 		if err != nil {
-			return metalink.File{}, fmt.Errorf("loading datastore: %v", err)
+			return metalink.File{}, fmt.Errorf("finding release: %v", err)
 		}
 
-		res, err := datastore.Find(c.ReleaseOpts.Reference())
-		if err != nil {
-			return metalink.File{}, fmt.Errorf("fetching: %v", err)
-		}
-
-		return res.ArtifactMetalinkFile(), nil
+		return artifact.ArtifactMetalinkFile(), nil
 	})
 }

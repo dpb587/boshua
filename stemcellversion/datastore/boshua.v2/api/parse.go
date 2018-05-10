@@ -1,4 +1,4 @@
-package stemcellversion
+package api
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func parseRequest(baseLogger logrus.FieldLogger, r *http.Request, ds datastore.I
 	if err != nil {
 		httperr := httputil.NewError(err, http.StatusInternalServerError, "stemcell version index failed")
 
-		if err == datastore.MissingErr {
+		if err == datastore.NoMatchErr {
 			httperr = httputil.NewError(err, http.StatusNotFound, "stemcell version not found")
 		}
 

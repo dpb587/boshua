@@ -2,38 +2,20 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"time"
 
-	"github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
-	"github.com/dpb587/boshua/api/v2/models/scheduler"
+	"github.com/dpb587/boshua/compiledreleaseversion"
 )
 
-func (o *CmdOpts) getCompiledRelease() (*compiledreleaseversion.GETCompilationInfoResponse, error) {
-	client := o.AppOpts.GetClient()
-
-	ref := o.CompiledReleaseOpts.Reference()
-
-	if o.CompiledReleaseOpts.NoWait {
-		return client.GetCompiledReleaseVersionCompilation(ref.ReleaseVersion, ref.OSVersion)
+func (o *CmdOpts) getCompiledRelease() (compiledreleaseversion.Artifact, error) {
+	datastore, err := o.AppOpts.GetCompiledReleaseIndex("default")
+	if err != nil {
+		return compiledreleaseversion.Artifact{}, fmt.Errorf("loading compiled release index: %v", err)
 	}
 
-	return client.RequireCompiledReleaseVersionCompilation(
-		ref.ReleaseVersion,
-		ref.OSVersion,
-		func(task scheduler.TaskStatus) {
-			if !o.AppOpts.Quiet {
-				fmt.Fprintf(
-					os.Stderr,
-					"boshua | %s | fetching compiled release: %s/%s: %s/%s: compilation %s\n",
-					time.Now().Format("15:04:05"),
-					ref.OSVersion.Name,
-					ref.OSVersion.Version,
-					ref.ReleaseVersion.Name,
-					ref.ReleaseVersion.Version,
-					task.Status,
-				)
-			}
-		},
-	)
+	res, err := datastore.Find(o.CompiledReleaseOpts.Reference())
+	if err != nil {
+		return compiledreleaseversion.Artifact{}, fmt.Errorf("finding compiled release: %v", err)
+	}
+
+	return res, err
 }

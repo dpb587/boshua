@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dpb587/boshua/api/v2/client"
 	"github.com/dpb587/boshua/cli/args"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
@@ -161,12 +160,6 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 	return osversionstemcellversionindex.New(stemcellVersionIndex, o.GetLogger()), nil
 }
 
-func (o *Opts) GetClient() *client.Client {
-	panic("TODO")
-	// return client.New(http.DefaultClient, o.Server, o.GetLogger())
-	return nil
-}
-
 func (o *Opts) GetLogger() logrus.FieldLogger {
 	if o.logger == nil {
 		panic("logger is not configured")
@@ -186,8 +179,4 @@ func (o *Opts) ConfigureLogger(command string) {
 	logger.Level = logrus.Level(o.LogLevel)
 
 	o.logger = logger.WithField("cli.command", command)
-}
-
-func (o *Opts) createLogger() {
-
 }

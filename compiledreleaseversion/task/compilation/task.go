@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/concourse/atc"
-	"github.com/dpb587/boshua"
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
@@ -24,7 +24,7 @@ func (t Task) Type() string {
 	return "compilation"
 }
 
-func (t Task) ArtifactReference() boshua.Reference {
+func (t Task) ArtifactReference() artifact.Reference {
 	return t.artifact.ArtifactReference()
 }
 

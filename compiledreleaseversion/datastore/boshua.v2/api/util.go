@@ -1,4 +1,4 @@
-package compiledreleaseversion
+package api
 
 import (
 	"fmt"

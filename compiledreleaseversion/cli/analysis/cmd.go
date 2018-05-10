@@ -1,13 +1,11 @@
 package analysis
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"time"
 
+	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
-	"github.com/dpb587/boshua/api/v2/models/analysis"
-	"github.com/dpb587/boshua/api/v2/models/scheduler"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/compiledreleaseversion/cli/opts"
 )
@@ -29,38 +27,41 @@ type CmdOpts struct {
 	AnalysisOpts        *opts.Opts
 }
 
-func (o *CmdOpts) getAnalysis() (*analysis.GETInfoResponse, error) {
-	client := o.AppOpts.GetClient()
-
-	ref := o.CompiledReleaseOpts.Reference()
-	analyzer := o.AnalysisOpts.Analyzer
-
-	if o.AnalysisOpts.NoWait {
-		return client.GetCompiledReleaseVersionAnalysis(ref.ReleaseVersion, ref.OSVersion, analyzer)
+func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
+	datastore, err := o.AppOpts.GetCompiledReleaseIndex("default")
+	if err != nil {
+		return analysis.Artifact{}, fmt.Errorf("loading compiled release index: %v", err)
 	}
 
-	return client.RequireCompiledReleaseVersionAnalysis(
-		ref.ReleaseVersion,
-		ref.OSVersion,
-		analyzer,
-		func(task scheduler.TaskStatus) {
-			if o.AppOpts.Quiet {
-				return
-			}
+	_, err = datastore.Find(o.CompiledReleaseOpts.Reference())
+	if err != nil {
+		return analysis.Artifact{}, fmt.Errorf("finding compiled release: %v", err)
+	}
 
-			fmt.Fprintf(
-				os.Stderr,
-				"boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n",
-				time.Now().Format("15:04:05"),
-				ref.OSVersion.Name,
-				ref.OSVersion.Version,
-				ref.ReleaseVersion.Name,
-				ref.ReleaseVersion.Version,
-				analyzer,
-				task.Status,
-			)
-		},
-	)
+	return analysis.Artifact{}, errors.New("TODO")
+
+	// return client.RequireCompiledReleaseVersionAnalysis(
+	// 	ref.ReleaseVersion,
+	// 	ref.OSVersion,
+	// 	analyzer,
+	// 	func(task scheduler.TaskStatus) {
+	// 		if o.AppOpts.Quiet {
+	// 			return
+	// 		}
+	//
+	// 		fmt.Fprintf(
+	// 			os.Stderr,
+	// 			"boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n",
+	// 			time.Now().Format("15:04:05"),
+	// 			ref.OSVersion.Name,
+	// 			ref.OSVersion.Version,
+	// 			ref.ReleaseVersion.Name,
+	// 			ref.ReleaseVersion.Version,
+	// 			analyzer,
+	// 			task.Status,
+	// 		)
+	// 	},
+	// )
 }
 
 func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {

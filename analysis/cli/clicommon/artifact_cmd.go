@@ -1,7 +1,7 @@
 package clicommon
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/dpb587/metalink"
@@ -13,13 +13,12 @@ type ArtifactCmd struct {
 
 func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		resInfo, err := loader()
+		artifact, err := loader()
 		if err != nil {
-			log.Fatal(err)
-		} else if resInfo == nil {
-			log.Fatalf("no analysis available")
+			return metalink.File{}, fmt.Errorf("finding artifact: %v", err)
 		}
 
-		return resInfo.Data.Artifact, nil
+		return artifact.ArtifactMetalinkFile(), nil
+
 	})
 }
