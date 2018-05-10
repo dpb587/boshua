@@ -8,6 +8,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/datastore/boshio"
 	"github.com/dpb587/boshua/releaseversion/datastore/boshreleasedir"
 	"github.com/dpb587/boshua/releaseversion/datastore/meta4"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,7 +32,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := boshio.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return boshio.New(cfg, logger), nil
@@ -39,7 +40,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := boshreleasedir.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return boshreleasedir.New(cfg, logger), nil
@@ -47,7 +48,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := meta4.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return meta4.New(cfg, logger), nil

@@ -12,6 +12,7 @@ import (
 
 	"github.com/cheggaaa/pb"
 	"github.com/dpb587/metalink/file"
+	"github.com/pkg/errors"
 )
 
 type Reference struct {
@@ -49,7 +50,7 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 
 	tmpdir, err := ioutil.TempDir("", "boshrelease-")
 	if err != nil {
-		return nil, fmt.Errorf("creating tempdir: %v", err)
+		return nil, errors.Wrap(err, "creating tempdir")
 	}
 
 	defer os.RemoveAll(tmpdir)
@@ -67,7 +68,7 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 
 	tmptar, err := ioutil.TempFile("", "boshrelease-")
 	if err != nil {
-		return nil, fmt.Errorf("creating tempfile: %v", err)
+		return nil, errors.Wrap(err, "creating tempfile")
 	}
 
 	{ // build release
@@ -83,7 +84,7 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 
 	fh, err := os.Open(tmptar.Name())
 	if err != nil {
-		return nil, fmt.Errorf("opening release tarball: %v", err)
+		return nil, errors.Wrap(err, "opening release tarball")
 	}
 
 	return Reader{

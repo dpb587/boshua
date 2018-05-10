@@ -11,6 +11,7 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellmanifest.v1/output"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -29,14 +30,14 @@ func New(tarball string) Analyzer {
 func (a Analyzer) Analyze(results analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
-		return fmt.Errorf("opening file: %v", err)
+		return errors.Wrap(err, "opening file")
 	}
 
 	defer fh.Close()
 
 	gzReader, err := gzip.NewReader(fh)
 	if err != nil {
-		return fmt.Errorf("starting gzip: %v", err)
+		return errors.Wrap(err, "starting gzip")
 	}
 
 	tarReader := tar.NewReader(gzReader)
@@ -47,7 +48,7 @@ func (a Analyzer) Analyze(results analysis.Writer) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("advancing tar: %v", err)
+			return errors.Wrap(err, "advancing tar")
 		} else if header.Typeflag == tar.TypeDir {
 			continue
 		}
@@ -71,14 +72,14 @@ func (a Analyzer) Analyze(results analysis.Writer) error {
 func (a Analyzer) analyzeManifest(results analysis.Writer, artifact string, reader io.Reader) error {
 	marshalBytes, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return fmt.Errorf("reading release.MF: %v", err)
+		return errors.Wrap(err, "reading release.MF")
 	}
 
 	var spec interface{}
 
 	err = yaml.Unmarshal(marshalBytes, &spec)
 	if err != nil {
-		return fmt.Errorf("parsing release.MF: %v", err)
+		return errors.Wrap(err, "parsing release.MF")
 	}
 
 	err = results.Write(output.Result{
@@ -86,7 +87,7 @@ func (a Analyzer) analyzeManifest(results analysis.Writer, artifact string, read
 		Parsed: safejson(spec),
 	})
 	if err != nil {
-		return fmt.Errorf("writing result: %v", err)
+		return errors.Wrap(err, "writing result")
 	}
 
 	return nil

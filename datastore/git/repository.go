@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -52,7 +53,7 @@ func (i *Repository) Reload() (bool, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return false, fmt.Errorf("pulling repository: %v", err)
+		return false, errors.Wrap(err, "pulling repository")
 	}
 
 	if strings.Contains(outbuf.String(), "Already up to date.") {
@@ -70,7 +71,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 	for path, data := range files {
 		err := os.MkdirAll(filepath.Dir(filepath.Join(i.config.LocalPath, path)), 0644)
 		if err != nil {
-			return fmt.Errorf("mkdir file dir: %v", err)
+			return errors.Wrap(err, "mkdir file dir")
 		}
 
 		err = ioutil.WriteFile(filepath.Join(i.config.LocalPath, path), data, 0644)
@@ -83,7 +84,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 
 		err = cmd.Run()
 		if err != nil {
-			return fmt.Errorf("adding file: %v", err)
+			return errors.Wrap(err, "adding file")
 		}
 	}
 
@@ -94,7 +95,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 
 		err := cmd.Run()
 		if err != nil {
-			return fmt.Errorf("committing: %v", err)
+			return errors.Wrap(err, "committing")
 		}
 	}
 
@@ -105,7 +106,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 
 		err := cmd.Run()
 		if err != nil {
-			return fmt.Errorf("pushing: %v", err)
+			return errors.Wrap(err, "pushing")
 		}
 	}
 

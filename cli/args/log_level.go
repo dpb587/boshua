@@ -1,8 +1,7 @@
 package args
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,7 +10,7 @@ type LogLevel logrus.Level
 func (ll *LogLevel) UnmarshalFlag(data string) error {
 	parsed, err := logrus.ParseLevel(data)
 	if err != nil {
-		return fmt.Errorf("parsing log level: %v", err)
+		return errors.Wrap(err, "parsing log level")
 	}
 
 	*ll = LogLevel(parsed)

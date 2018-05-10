@@ -31,14 +31,14 @@ func WriteFailure(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Requ
 func WriteResponse(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		WriteFailure(logger, w, r, fmt.Errorf("marshaling response: %v", err))
+		WriteFailure(logger, w, r, errors.Wrap(err))
 
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataBytes)
-	w.Write([]byte("\n"))
+	w.Write([]byte("\n"), "marshaling response")
 }
 
 func ApplyLoggerContext(logger logrus.FieldLogger, r *http.Request) logrus.FieldLogger {

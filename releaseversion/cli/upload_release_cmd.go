@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type UploadReleaseCmd struct {
@@ -18,7 +20,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 
 	artifact, err := c.getRelease()
 	if err != nil {
-		return fmt.Errorf("finding compiled release: %v", err)
+		return errors.Wrap(err, "finding compiled release")
 	}
 
 	if c.Cmd {

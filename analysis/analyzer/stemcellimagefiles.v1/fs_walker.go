@@ -14,6 +14,7 @@ import (
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/output"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
+	"github.com/pkg/errors"
 )
 
 func (a Analyzer) loadFileNameMap(path string) (map[int]string, error) {
@@ -21,7 +22,7 @@ func (a Analyzer) loadFileNameMap(path string) (map[int]string, error) {
 
 	pathBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("reading file: %v", err)
+		return nil, errors.Wrap(err, "reading file")
 	}
 
 	for _, line := range strings.SplitN(string(pathBytes), "\n", -1) {
@@ -32,7 +33,7 @@ func (a Analyzer) loadFileNameMap(path string) (map[int]string, error) {
 
 		num, err := strconv.Atoi(cols[2])
 		if err != nil {
-			return nil, fmt.Errorf("converting id: %v", err)
+			return nil, errors.Wrap(err, "converting id")
 		}
 
 		results[num] = cols[0]
@@ -73,7 +74,7 @@ func (a Analyzer) walkFS(results analysis.Writer, baseDir string, userMap map[in
 		if info.Mode()&os.ModeSymlink != 0 {
 			resolved, err := os.Readlink(path)
 			if err != nil {
-				return fmt.Errorf("reading link: %v", err)
+				return errors.Wrap(err, "reading link")
 			}
 
 			result.Link = resolved
@@ -82,7 +83,7 @@ func (a Analyzer) walkFS(results analysis.Writer, baseDir string, userMap map[in
 		if info.Mode()&os.ModeType == 0 {
 			fh, err := os.Open(path)
 			if err != nil {
-				return fmt.Errorf("open file for checksum: %v", err)
+				return errors.Wrap(err, "open file for checksum")
 			}
 
 			defer fh.Close()
@@ -96,7 +97,7 @@ func (a Analyzer) walkFS(results analysis.Writer, baseDir string, userMap map[in
 
 			_, err = io.Copy(checksums, fh)
 			if err != nil {
-				return fmt.Errorf("creating checksum: %v", err)
+				return errors.Wrap(err, "creating checksum")
 			}
 
 			result.Checksums = checksums.ImmutableChecksums()
@@ -104,7 +105,7 @@ func (a Analyzer) walkFS(results analysis.Writer, baseDir string, userMap map[in
 
 		err = results.Write(result)
 		if err != nil {
-			return fmt.Errorf("writing result: %v", err)
+			return errors.Wrap(err, "writing result")
 		}
 
 		return nil

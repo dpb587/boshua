@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/util/checksum/algorithm"
+	"github.com/pkg/errors"
 )
 
 type ImmutableChecksum struct {
@@ -32,7 +33,7 @@ func (c *ImmutableChecksum) UnmarshalJSON(data []byte) error {
 
 	nc, err := CreateFromString(raw)
 	if err != nil {
-		return fmt.Errorf("parsing checksum: %v", err)
+		return errors.Wrap(err, "parsing checksum")
 	}
 
 	*c = nc

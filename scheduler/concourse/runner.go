@@ -34,24 +34,24 @@ func (c *Runner) Schedule(t task.Task) error {
 
 	file, err := ioutil.TempFile("", "boshua-")
 	if err != nil {
-		return fmt.Errorf("creating temp file: %v", err)
+		return errors.Wrap(err, "creating temp file")
 	}
 
 	defer file.Close()
 
 	pipeline, err := t.Config()
 	if err != nil {
-		return fmt.Errorf("building pipeline: %v", err)
+		return errors.Wrap(err, "building pipeline")
 	}
 
 	pipelineBytes, err := yaml.Marshal(pipeline)
 	if err != nil {
-		return fmt.Errorf("marshaling pipeline: %v", err)
+		return errors.Wrap(err, "marshaling pipeline")
 	}
 
 	_, err = file.Write(pipelineBytes)
 	if err != nil {
-		return fmt.Errorf("writing pipeline: %v", err)
+		return errors.Wrap(err, "writing pipeline")
 	}
 
 	_, _, err = c.runStdin(
@@ -62,7 +62,7 @@ func (c *Runner) Schedule(t task.Task) error {
 		"--load-vars-from", c.SecretsPath,
 	)
 	if err != nil {
-		return fmt.Errorf("setting pipeline: %v", err)
+		return errors.Wrap(err, "setting pipeline")
 	}
 
 	_, _, err = c.run(
@@ -70,7 +70,7 @@ func (c *Runner) Schedule(t task.Task) error {
 		"--pipeline", pipelineName,
 	)
 	if err != nil {
-		return fmt.Errorf("unpausing pipeline: %v", err)
+		return errors.Wrap(err, "unpausing pipeline")
 	}
 
 	return nil
@@ -85,7 +85,7 @@ func (c *Runner) Status(t task.Task) (scheduler.Status, error) {
 			return scheduler.StatusUnknown, nil
 		}
 
-		return scheduler.StatusUnknown, fmt.Errorf("listing jobs: %v", err)
+		return scheduler.StatusUnknown, errors.Wrap(err, "listing jobs")
 	}
 
 	lines := strings.Split(string(stdout), "\n")
@@ -132,7 +132,7 @@ func (c *Runner) prepare() error {
 
 		_, _, err := c.run("login", args...)
 		if err != nil {
-			return fmt.Errorf("logging in: %v", err)
+			return errors.Wrap(err, "logging in")
 		}
 
 		c.needsLogin = false
@@ -152,7 +152,7 @@ func (c *Runner) prepare() error {
 
 		_, _, err := c.run("sync", args...)
 		if err != nil {
-			return fmt.Errorf("syncing: %v", err)
+			return errors.Wrap(err, "syncing")
 		}
 
 		c.needsSync = false
@@ -169,7 +169,7 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 	if !c.isPrepareCommand(command) {
 		err := c.prepare()
 		if err != nil {
-			return nil, nil, fmt.Errorf("preparing to run: %v", err)
+			return nil, nil, errors.Wrap(err, "preparing to run")
 		}
 	}
 
@@ -181,7 +181,7 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 
 	stdinAll, err := ioutil.ReadAll(stdin)
 	if err != nil {
-		return nil, nil, fmt.Errorf("buffering stdin: %v", err)
+		return nil, nil, errors.Wrap(err, "buffering stdin")
 	}
 
 	cmd.Stdin = bytes.NewBuffer(stdinAll)
@@ -190,7 +190,7 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 
 	err = cmd.Start()
 	if err != nil {
-		return nil, nil, fmt.Errorf("starting command: %v", err)
+		return nil, nil, errors.Wrap(err, "starting command")
 	}
 
 	err = cmd.Wait()

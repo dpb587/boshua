@@ -38,12 +38,12 @@ func NewAnalysisHandler(
 		func(baseLogger logrus.FieldLogger, r *http.Request) (analysis.Reference, logrus.FieldLogger, error) {
 			compiledReleaseVersionRef, logger, err := parseRequest(baseLogger, r)
 			if err != nil {
-				return analysis.Reference{}, nil, fmt.Errorf("parsing request: %v", err)
+				return analysis.Reference{}, nil, errors.Wrap(err, "parsing request")
 			}
 
 			analyzer, err := urlutil.AnalysisAnalyzerFromParam(r)
 			if err != nil {
-				return analysis.Reference{}, nil, fmt.Errorf("parsing analyzer: %v", err)
+				return analysis.Reference{}, nil, errors.Wrap(err, "parsing analyzer")
 			}
 
 			logger = logger.WithField("boshua.analysis.analyzer", analyzer)

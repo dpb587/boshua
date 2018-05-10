@@ -42,7 +42,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	_, err := i.reloader()
 	if err != nil {
-		return nil, fmt.Errorf("reloading: %v", err)
+		return nil, errors.Wrap(err, "reloading")
 	}
 
 	meta4Path := filepath.Join(i.localPath, ref.ArtifactStorageDir(), "artifact.meta4")
@@ -101,7 +101,7 @@ func (i *index) reloader() (bool, error) {
 	if err != nil {
 		i.logger.WithField("error", err).Errorf("pulling repository")
 
-		return false, fmt.Errorf("pulling repository: %v", err)
+		return false, errors.Wrap(err, "pulling repository")
 	}
 
 	if strings.Contains(outbuf.String(), "Already up to date.") {

@@ -3,13 +3,13 @@ package git
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/dpb587/boshua/util/marshaltypes"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -25,17 +25,17 @@ type RepositoryConfig struct {
 func (c *RepositoryConfig) Load(options map[string]interface{}) error {
 	optionsBytes, err := yaml.Marshal(options)
 	if err != nil {
-		return fmt.Errorf("remarshaling: %v", err)
+		return errors.Wrap(err, "remarshaling")
 	}
 
 	err = yaml.Unmarshal(optionsBytes, c)
 	if err != nil {
-		return fmt.Errorf("unmarshaling: %v", err)
+		return errors.Wrap(err, "unmarshaling")
 	}
 
 	err = c.validate()
 	if err != nil {
-		return fmt.Errorf("validating: %v", err)
+		return errors.Wrap(err, "validating")
 	}
 
 	c.applyDefaults()

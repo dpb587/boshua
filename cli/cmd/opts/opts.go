@@ -1,7 +1,6 @@
 package opts
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -19,6 +18,7 @@ import (
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -47,12 +47,12 @@ func (o *Opts) getParsedConfig() (config.Config, error) {
 
 	configBytes, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".config", "boshua", "config.yml"))
 	if err != nil {
-		return config.Config{}, fmt.Errorf("reading config: %v", err)
+		return config.Config{}, errors.Wrap(err, "reading config")
 	}
 
 	err = yaml.Unmarshal(configBytes, o.parsedConfig)
 	if err != nil {
-		return config.Config{}, fmt.Errorf("unmarshalling config: %v", err)
+		return config.Config{}, errors.Wrap(err, "unmarshalling config")
 	}
 
 	return *o.parsedConfig, nil
@@ -65,7 +65,7 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 
 	config, err := o.getParsedConfig()
 	if err != nil {
-		return nil, fmt.Errorf("loading config: %v", err)
+		return nil, errors.Wrap(err, "loading config")
 	}
 
 	var all []releaseversiondatastore.Index
@@ -74,7 +74,7 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 	for _, cfg := range config.Releases {
 		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
-			return nil, fmt.Errorf("creating release version datastore: %v", err)
+			return nil, errors.Wrap(err, "creating release version datastore")
 		}
 
 		all = append(all, idx)
@@ -86,7 +86,7 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 // func (o *Opts) GetCompiledReleaseManager() (*manager.Manager, error) {
 // 	rvi, err := o.GetReleaseIndex(name)
 // 	if err != nil {
-// 		return nil, fmt.Errorf("loading release index: %v", err)
+// 		return nil, errors.Wrap(err, "loading release index")
 // 	}
 //
 // 	return manager.NewManager(rv, ov)
@@ -99,12 +99,12 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 
 	config, err := o.getParsedConfig()
 	if err != nil {
-		return nil, fmt.Errorf("loading config: %v", err)
+		return nil, errors.Wrap(err, "loading config")
 	}
 
 	releaseIndex, err := o.GetReleaseIndex("default")
 	if err != nil {
-		return nil, fmt.Errorf("loading release index: %v", err)
+		return nil, errors.Wrap(err, "loading release index")
 	}
 
 	var all []compiledreleaseversiondatastore.Index
@@ -113,7 +113,7 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 	for _, cfg := range config.CompiledReleases {
 		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
-			return nil, fmt.Errorf("creating compiled release version datastore: %v", err)
+			return nil, errors.Wrap(err, "creating compiled release version datastore")
 		}
 
 		all = append(all, idx)
@@ -129,7 +129,7 @@ func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, er
 
 	config, err := o.getParsedConfig()
 	if err != nil {
-		return nil, fmt.Errorf("loading config: %v", err)
+		return nil, errors.Wrap(err, "loading config")
 	}
 
 	var all []stemcellversiondatastore.Index
@@ -138,7 +138,7 @@ func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, er
 	for _, cfg := range config.Stemcells {
 		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
-			return nil, fmt.Errorf("creating stemcell version datastore: %v", err)
+			return nil, errors.Wrap(err, "creating stemcell version datastore")
 		}
 
 		all = append(all, idx)
@@ -154,7 +154,7 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 
 	stemcellVersionIndex, err := o.GetStemcellIndex("default")
 	if err != nil {
-		return nil, fmt.Errorf("loading stemcell index: %v", err)
+		return nil, errors.Wrap(err, "loading stemcell index")
 	}
 
 	return osversionstemcellversionindex.New(stemcellVersionIndex, o.GetLogger()), nil

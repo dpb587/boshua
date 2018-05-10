@@ -12,12 +12,13 @@ import (
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/output"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
+	"github.com/pkg/errors"
 )
 
 func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) error {
 	gzReader, err := gzip.NewReader(imageReader)
 	if err != nil {
-		return fmt.Errorf("starting gzip: %v", err)
+		return errors.Wrap(err, "starting gzip")
 	}
 
 	tarReader := tar.NewReader(gzReader)
@@ -28,7 +29,7 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("advancing tar: %v", err)
+			return errors.Wrap(err, "advancing tar")
 		}
 
 		result := output.Result{
@@ -66,7 +67,7 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 
 			_, err = io.Copy(checksums, tarReader)
 			if err != nil {
-				return fmt.Errorf("creating checksum: %v", err)
+				return errors.Wrap(err, "creating checksum")
 			}
 
 			result.Checksums = checksums.ImmutableChecksums()
@@ -74,7 +75,7 @@ func (a Analyzer) handleTGZ(results analysis.Writer, imageReader io.Reader) erro
 
 		err = results.Write(result)
 		if err != nil {
-			return fmt.Errorf("writing result: %v", err)
+			return errors.Wrap(err, "writing result")
 		}
 	}
 

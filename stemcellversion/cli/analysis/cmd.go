@@ -1,13 +1,11 @@
 package analysis
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
+	"github.com/pkg/errors"
 )
 
 type Cmd struct {
@@ -30,12 +28,12 @@ type CmdOpts struct {
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 	datastore, err := o.AppOpts.GetStemcellIndex("default")
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("loading stemcell index: %v", err)
+		return analysis.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}
 
 	_, err = datastore.Find(o.StemcellOpts.Reference())
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("finding stemcell: %v", err)
+		return analysis.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
 
 	return analysis.Artifact{}, errors.New("TODO")

@@ -14,7 +14,7 @@ import (
 func parseRequest(baseLogger logrus.FieldLogger, r *http.Request, ds datastore.Index) (stemcellversion.Artifact, logrus.FieldLogger, error) {
 	stemcellVersionRef, err := urlutil.StemcellVersionRefFromParam(r)
 	if err != nil {
-		return stemcellversion.Artifact{}, baseLogger, fmt.Errorf("parsing stemcell version: %v", err)
+		return stemcellversion.Artifact{}, baseLogger, errors.Wrap(err, "parsing stemcell version")
 	}
 
 	logger := baseLogger.WithFields(logrus.Fields{

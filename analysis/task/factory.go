@@ -15,7 +15,7 @@ func New(subject analysis.Subject, analyzer string, privileged bool) (task.Task,
 		Files: []metalink.File{file},
 	})
 	if err != nil {
-		return task.Task{}, fmt.Errorf("marshaling metalink: %v", err)
+		return task.Task{}, errors.Wrap(err, "marshaling metalink")
 	}
 
 	return task.Task{

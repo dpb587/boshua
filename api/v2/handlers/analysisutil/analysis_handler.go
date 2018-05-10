@@ -97,7 +97,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	analyses, err := h.analysisIndex.Filter(analysisRef)
 	if err != nil {
-		httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "analysis index failed"))
+		httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "analysis index failed"))
 
 		return
 	} else if len(analyses) == 0 {
@@ -106,13 +106,13 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		// check existing status
 		status, err = h.cc.Status(t)
 		if err != nil {
-			httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("checking task status: %v", err), http.StatusInternalServerError, "checking task status failed"))
+			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "checking task status"), http.StatusInternalServerError, "checking task status failed"))
 
 			return
 		} else if status == scheduler.StatusUnknown {
 			err = h.cc.Schedule(t)
 			if err != nil {
-				httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("scheduling task: %v", err), http.StatusInternalServerError, "scheduling task failed"))
+				httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "scheduling task"), http.StatusInternalServerError, "scheduling task failed"))
 
 				return
 			}
@@ -122,7 +122,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 			status = scheduler.StatusPending
 		}
 	} else if err != nil {
-		httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("finding analysis: %v", err), http.StatusInternalServerError, "analysis index failed"))
+		httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "finding analysis"), http.StatusInternalServerError, "analysis index failed"))
 
 		return
 	} else {
@@ -135,7 +135,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	case scheduler.StatusSucceeded:
 		analyses, err = h.analysisIndex.Filter(analysisRef)
 		if err != nil {
-			httputil.WriteFailure(logger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "analysis index failed"))
+			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "analysis index failed"))
 
 			return
 		} else if len(analyses) == 0 {

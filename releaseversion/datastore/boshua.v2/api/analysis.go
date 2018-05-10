@@ -43,7 +43,7 @@ func NewAnalysisHandler(
 
 			analyzer, err := urlutil.AnalysisAnalyzerFromParam(r)
 			if err != nil {
-				return analysis.Reference{}, nil, fmt.Errorf("parsing analyzer: %v", err)
+				return analysis.Reference{}, nil, errors.Wrap(err, "parsing analyzer")
 			}
 
 			logger = logger.WithField("boshua.analysis.analyzer", analyzer)

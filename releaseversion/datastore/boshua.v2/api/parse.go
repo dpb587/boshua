@@ -14,7 +14,7 @@ import (
 func parseRequest(baseLogger logrus.FieldLogger, r *http.Request, ds datastore.Index) (releaseversion.Artifact, logrus.FieldLogger, error) {
 	releaseVersionRef, err := urlutil.ReleaseVersionRefFromParam(r)
 	if err != nil {
-		return releaseversion.Artifact{}, baseLogger, fmt.Errorf("parsing release version: %v", err)
+		return releaseversion.Artifact{}, baseLogger, errors.Wrap(err, "parsing release version")
 	}
 
 	logger := baseLogger.WithFields(logrus.Fields{

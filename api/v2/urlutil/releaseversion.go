@@ -44,7 +44,7 @@ func ReleaseVersionRefFromParam(r *http.Request) (releaseversion.Reference, erro
 		// return releaseversion.Reference{}, err
 		releaseChecksum, err := checksum.CreateFromString(releaseChecksumString)
 		if err != nil {
-			return releaseversion.Reference{}, fmt.Errorf("parameter 'release.checksum': %v", fmt.Errorf("parsing checksum: %v", err))
+			return releaseversion.Reference{}, fmt.Errorf("parameter 'release.checksum': %v", errors.Wrap(err), "parsing checksum")
 		}
 
 		ref.Checksums = checksum.ImmutableChecksums{releaseChecksum}

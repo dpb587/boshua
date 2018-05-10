@@ -52,7 +52,7 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	compiledReleaseVersionRef, logger, err := parseRequest(baseLogger, r)
 	if err != nil {
-		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("parsing request: %v", err), http.StatusBadRequest, "parsing request failed"))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "parsing request"), http.StatusBadRequest, "parsing request failed"))
 
 		return
 	}
@@ -110,7 +110,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	compiledReleaseVersionRef, logger, err := parseRequest(baseLogger, r)
 	if err != nil {
-		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("parsing request: %v", err), http.StatusBadRequest, "parsing request failed"))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "parsing request"), http.StatusBadRequest, "parsing request failed"))
 
 		return
 	}
@@ -137,7 +137,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 	results, err := h.compiledReleaseVersionIndex.Filter(compiledReleaseVersionRef)
 	if err != nil {
-		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("finding compiled release: %v", err), http.StatusInternalServerError, "compiled release index failed"))
+		httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "finding compiled release"), http.StatusInternalServerError, "compiled release index failed"))
 
 		return
 	} else if len(results) == 0 {
@@ -146,13 +146,13 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 		// check existing status
 		status, err = h.cc.Status(task)
 		if err != nil {
-			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("checking task status: %v", err), http.StatusInternalServerError, "checking task status failed"))
+			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "checking task status"), http.StatusInternalServerError, "checking task status failed"))
 
 			return
 		} else if status == scheduler.StatusUnknown {
 			err = h.cc.Schedule(task)
 			if err != nil {
-				httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("scheduling task: %v", err), http.StatusInternalServerError, "scheduling task failed"))
+				httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "scheduling task"), http.StatusInternalServerError, "scheduling task failed"))
 
 				return
 			}
@@ -171,7 +171,7 @@ func (h *CompilationHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	case scheduler.StatusSucceeded:
 		results, err = h.compiledReleaseVersionIndex.Filter(compiledReleaseVersionRef)
 		if err != nil {
-			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(fmt.Errorf("filtering: %v", err), http.StatusInternalServerError, "compiled release index failed"))
+			httputil.WriteFailure(baseLogger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "compiled release index failed"))
 
 			return
 		}

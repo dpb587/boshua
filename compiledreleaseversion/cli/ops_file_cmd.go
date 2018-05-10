@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -18,7 +19,7 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 
 	artifact, err := c.getCompiledRelease()
 	if err != nil {
-		return fmt.Errorf("finding compiled release: %v", err)
+		return errors.Wrap(err, "finding compiled release")
 	}
 
 	opsBytes, err := yaml.Marshal([]map[string]interface{}{

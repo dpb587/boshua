@@ -12,12 +12,12 @@ import (
 func parseRequest(logger logrus.FieldLogger, r *http.Request) (compiledreleaseversion.Reference, logrus.FieldLogger, error) {
 	releaseVersionRef, err := urlutil.ReleaseVersionRefFromParam(r)
 	if err != nil {
-		return compiledreleaseversion.Reference{}, nil, fmt.Errorf("parsing release version: %v", err)
+		return compiledreleaseversion.Reference{}, nil, errors.Wrap(err, "parsing release version")
 	}
 
 	osVersionRef, err := urlutil.OSVersionRefFromParam(r)
 	if err != nil {
-		return compiledreleaseversion.Reference{}, nil, fmt.Errorf("parsing os version: %v", err)
+		return compiledreleaseversion.Reference{}, nil, errors.Wrap(err, "parsing os version")
 	}
 
 	logger = logger.WithFields(logrus.Fields{

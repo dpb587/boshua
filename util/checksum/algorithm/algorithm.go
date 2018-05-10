@@ -1,9 +1,10 @@
 package algorithm
 
 import (
-	"fmt"
 	"hash"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 type Algorithm struct {
@@ -24,7 +25,7 @@ func (a Algorithm) Hash(reader io.Reader) ([]byte, error) {
 
 	_, err := io.Copy(h, reader)
 	if err != nil {
-		return nil, fmt.Errorf("copying data: %v", err)
+		return nil, errors.Wrap(err, "copying data")
 	}
 
 	return h.Sum(nil), nil

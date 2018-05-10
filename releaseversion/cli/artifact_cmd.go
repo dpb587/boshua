@@ -1,10 +1,9 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 )
 
 type ArtifactCmd struct {
@@ -19,7 +18,7 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
 		artifact, err := c.getRelease()
 		if err != nil {
-			return metalink.File{}, fmt.Errorf("finding release: %v", err)
+			return metalink.File{}, errors.Wrap(err, "finding release")
 		}
 
 		return artifact.ArtifactMetalinkFile(), nil

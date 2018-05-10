@@ -16,14 +16,14 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 
 	err := yaml.Unmarshal(manifestBytes, &parsed)
 	if err != nil {
-		return nil, fmt.Errorf("parsing manifest: %v", err)
+		return nil, errors.Wrap(err, "parsing manifest")
 	}
 
 	var parsedRaw map[interface{}]interface{}
 
 	err = yaml.Unmarshal(manifestBytes, &parsedRaw)
 	if err != nil {
-		return nil, fmt.Errorf("parsing raw manifest: %v", err)
+		return nil, errors.Wrap(err, "parsing raw manifest")
 	}
 
 	var requirements []ReleasePatch

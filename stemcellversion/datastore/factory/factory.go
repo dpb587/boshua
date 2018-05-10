@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/boshio"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,7 +29,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		config := boshio.Config{}
 		err := config.Load(options)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return boshio.New(config, logger), nil

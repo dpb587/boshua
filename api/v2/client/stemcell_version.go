@@ -19,14 +19,14 @@ func (c *Client) GetStemcellVersion(stemcellVersion stemcellversion.Reference) (
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/stemcell-version/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyStemcellVersionRefToQuery(request, stemcellVersion)
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -37,14 +37,14 @@ func (c *Client) GetStemcellVersion(stemcellVersion stemcellversion.Reference) (
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *api.InfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -55,7 +55,7 @@ func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Refe
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/stemcell-version/analysis/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyStemcellVersionRefToQuery(request, stemcellVersion)
@@ -63,7 +63,7 @@ func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Refe
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -74,14 +74,14 @@ func (c *Client) GetStemcellVersionAnalysis(stemcellVersion stemcellversion.Refe
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -92,7 +92,7 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/stemcell-version/analysis/queue", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyStemcellVersionRefToQuery(request, stemcellVersion)
@@ -100,7 +100,7 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
@@ -108,14 +108,14 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -124,14 +124,14 @@ func (c *Client) RequestStemcellVersionAnalysis(stemcellVersion stemcellversion.
 func (c *Client) RequireStemcellVersionAnalysis(stemcellVersion stemcellversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETInfoResponse, error) {
 	resInfo, err := c.GetStemcellVersionAnalysis(stemcellVersion, analyzer)
 	if err != nil {
-		return nil, fmt.Errorf("finding analysis: %v", err)
+		return nil, errors.Wrap(err, "finding analysis")
 	} else if resInfo == nil {
 		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestStemcellVersionAnalysis(stemcellVersion, analyzer)
 			if err != nil {
-				return nil, fmt.Errorf("requesting analysis: %v", err)
+				return nil, errors.Wrap(err, "requesting analysis")
 			} else if res == nil {
 				return nil, fmt.Errorf("unsupported analysis")
 			}
@@ -155,7 +155,7 @@ func (c *Client) RequireStemcellVersionAnalysis(stemcellVersion stemcellversion.
 
 		resInfo, err = c.GetStemcellVersionAnalysis(stemcellVersion, analyzer)
 		if err != nil {
-			return nil, fmt.Errorf("finding analysis: %v", err)
+			return nil, errors.Wrap(err, "finding analysis")
 		} else if resInfo == nil {
 			return nil, fmt.Errorf("finding analysis: unable to fetch expected analysis")
 		}

@@ -20,7 +20,7 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/compilation/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -28,7 +28,7 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -39,14 +39,14 @@ func (c *Client) GetCompiledReleaseVersionCompilation(releaseVersion releasevers
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *api.GETCompilationInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -57,7 +57,7 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/compilation/queue", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -65,7 +65,7 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
@@ -73,14 +73,14 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *api.POSTCompilationQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -89,14 +89,14 @@ func (c *Client) RequestCompiledReleaseVersionCompilation(releaseVersion release
 func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion releaseversion.Reference, osVersion osversion.Reference, taskStatusWatcher TaskStatusWatcher) (*api.GETCompilationInfoResponse, error) {
 	resInfo, err := c.GetCompiledReleaseVersionCompilation(releaseVersion, osVersion)
 	if err != nil {
-		return nil, fmt.Errorf("finding compiled release: %v", err)
+		return nil, errors.Wrap(err, "finding compiled release")
 	} else if resInfo == nil {
 		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestCompiledReleaseVersionCompilation(releaseVersion, osVersion)
 			if err != nil {
-				return nil, fmt.Errorf("requesting compiled release: %v", err)
+				return nil, errors.Wrap(err, "requesting compiled release")
 			} else if res == nil {
 				return nil, fmt.Errorf("unsupported compilation")
 			}
@@ -120,7 +120,7 @@ func (c *Client) RequireCompiledReleaseVersionCompilation(releaseVersion release
 
 		resInfo, err = c.GetCompiledReleaseVersionCompilation(releaseVersion, osVersion)
 		if err != nil {
-			return nil, fmt.Errorf("finding compiled release: %v", err)
+			return nil, errors.Wrap(err, "finding compiled release")
 		} else if resInfo == nil {
 			return nil, fmt.Errorf("finding compiled release: unable to fetch expected compilation")
 		}
@@ -134,7 +134,7 @@ func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/compiled-release-version/analysis/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -143,7 +143,7 @@ func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -154,14 +154,14 @@ func (c *Client) GetCompiledReleaseVersionAnalysis(releaseVersion releaseversion
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -172,7 +172,7 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/compiled-release-version/analysis/queue", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -181,7 +181,7 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
@@ -189,14 +189,14 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -205,14 +205,14 @@ func (c *Client) RequestCompiledReleaseVersionAnalysis(releaseVersion releasever
 func (c *Client) RequireCompiledReleaseVersionAnalysis(releaseVersion releaseversion.Reference, osVersion osversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETInfoResponse, error) {
 	resInfo, err := c.GetCompiledReleaseVersionAnalysis(releaseVersion, osVersion, analyzer)
 	if err != nil {
-		return nil, fmt.Errorf("finding analysis: %v", err)
+		return nil, errors.Wrap(err, "finding analysis")
 	} else if resInfo == nil {
 		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestCompiledReleaseVersionAnalysis(releaseVersion, osVersion, analyzer)
 			if err != nil {
-				return nil, fmt.Errorf("requesting analysis: %v", err)
+				return nil, errors.Wrap(err, "requesting analysis")
 			} else if res == nil {
 				return nil, fmt.Errorf("unsupported analysis")
 			}
@@ -236,7 +236,7 @@ func (c *Client) RequireCompiledReleaseVersionAnalysis(releaseVersion releasever
 
 		resInfo, err = c.GetCompiledReleaseVersionAnalysis(releaseVersion, osVersion, analyzer)
 		if err != nil {
-			return nil, fmt.Errorf("finding analysis: %v", err)
+			return nil, errors.Wrap(err, "finding analysis")
 		} else if resInfo == nil {
 			return nil, fmt.Errorf("finding analysis: unable to fetch expected analysis")
 		}

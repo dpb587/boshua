@@ -2,7 +2,6 @@ package clicommon
 
 import (
 	"compress/gzip"
-	"fmt"
 	"io"
 	"os/exec"
 	// "io"
@@ -19,6 +18,7 @@ import (
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
+	"github.com/pkg/errors"
 )
 
 type ResultsCmd struct {
@@ -28,7 +28,7 @@ type ResultsCmd struct {
 func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, args []string) error {
 	artifact, err := loader()
 	if err != nil {
-		return fmt.Errorf("finding analysis: %v", err)
+		return errors.Wrap(err, "finding analysis")
 	}
 
 	tempfile, err := ioutil.TempFile("", "boshua-analysis-")

@@ -2,10 +2,10 @@ package checksum
 
 import (
 	"encoding/hex"
-	"fmt"
 	"strings"
 
 	"github.com/dpb587/boshua/util/checksum/algorithm"
+	"github.com/pkg/errors"
 )
 
 func New(a algorithm.Algorithm) *WritableChecksum {
@@ -30,7 +30,7 @@ func CreateFromString(raw string) (ImmutableChecksum, error) {
 
 	d, err := hex.DecodeString(split[1])
 	if err != nil {
-		return ImmutableChecksum{}, fmt.Errorf("decoding: %v", err)
+		return ImmutableChecksum{}, errors.Wrap(err, "decoding")
 	}
 
 	a, err := algorithm.LookupName(split[0])

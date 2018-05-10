@@ -19,14 +19,14 @@ func (c *Client) GetReleaseVersion(releaseVersion releaseversion.Reference) (*ap
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/release-version/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -37,14 +37,14 @@ func (c *Client) GetReleaseVersion(releaseVersion releaseversion.Reference) (*ap
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *api.InfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -55,7 +55,7 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%sv2/release-version/analysis/info", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -63,7 +63,7 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode == http.StatusNotFound {
 		// not available; expected
 		return nil, nil
@@ -74,14 +74,14 @@ func (c *Client) GetReleaseVersionAnalysis(releaseVersion releaseversion.Referen
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.GETInfoResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -92,7 +92,7 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%sv2/release-version/analysis/queue", c.endpoint), nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %v", err)
+		return nil, errors.Wrap(err, "creating request")
 	}
 
 	urlutil.ApplyReleaseVersionRefToQuery(request, releaseVersion)
@@ -100,7 +100,7 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 
 	response, err := c.doRequest(logger, request)
 	if err != nil {
-		return nil, fmt.Errorf("executing request: %v", err)
+		return nil, errors.Wrap(err, "executing request")
 	} else if response.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
@@ -108,14 +108,14 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("reading response body: %v", err)
+		return nil, errors.Wrap(err, "reading response body")
 	}
 
 	var res *analysisapi.POSTQueueResponse
 
 	err = json.Unmarshal(resBytes, &res)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshalling response body: %v", err)
+		return nil, errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return res, nil
@@ -124,14 +124,14 @@ func (c *Client) RequestReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Reference, analyzer string, taskStatusWatcher TaskStatusWatcher) (*analysisapi.GETInfoResponse, error) {
 	resInfo, err := c.GetReleaseVersionAnalysis(releaseVersion, analyzer)
 	if err != nil {
-		return nil, fmt.Errorf("finding analysis: %v", err)
+		return nil, errors.Wrap(err, "finding analysis")
 	} else if resInfo == nil {
 		priorStatus := schedulerapi.TaskStatus{}
 
 		for {
 			res, err := c.RequestReleaseVersionAnalysis(releaseVersion, analyzer)
 			if err != nil {
-				return nil, fmt.Errorf("requesting analysis: %v", err)
+				return nil, errors.Wrap(err, "requesting analysis")
 			} else if res == nil {
 				return nil, fmt.Errorf("unsupported analysis")
 			}
@@ -155,7 +155,7 @@ func (c *Client) RequireReleaseVersionAnalysis(releaseVersion releaseversion.Ref
 
 		resInfo, err = c.GetReleaseVersionAnalysis(releaseVersion, analyzer)
 		if err != nil {
-			return nil, fmt.Errorf("finding analysis: %v", err)
+			return nil, errors.Wrap(err, "finding analysis")
 		} else if resInfo == nil {
 			return nil, fmt.Errorf("finding analysis: unable to fetch expected analysis")
 		}

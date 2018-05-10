@@ -5,19 +5,20 @@ import (
 
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 )
 
 func HashToChecksum(hash metalink.Hash) checksum.ImmutableChecksum {
 	hashType, err := FromMetalinkHashType(hash.Type)
 	if err != nil {
 		// TODO no panic?
-		panic(fmt.Errorf("converting hash type: %v", err))
+		panic(errors.Wrap(err, "converting hash type"))
 	}
 
 	cs, err := checksum.CreateFromString(fmt.Sprintf("%s:%s", hashType, hash.Hash))
 	if err != nil {
 		// TODO no panic?
-		panic(fmt.Errorf("parsing checksum: %v", err))
+		panic(errors.Wrap(err, "parsing checksum"))
 	}
 
 	return cs

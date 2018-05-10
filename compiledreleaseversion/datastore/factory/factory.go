@@ -9,6 +9,7 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/presentbcr"
 	"github.com/dpb587/boshua/config"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,7 +35,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := boshreleasedpb.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return boshreleasedpb.New(cfg, logger), nil
@@ -42,7 +43,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := presentbcr.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return presentbcr.New(cfg, logger), nil
@@ -50,7 +51,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := legacybcr.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return legacybcr.New(cfg, f.releaseVersionsIndex, logger), nil

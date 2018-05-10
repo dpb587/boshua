@@ -1,20 +1,19 @@
 package cli
 
 import (
-	"fmt"
-
 	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/pkg/errors"
 )
 
 func (o *CmdOpts) getCompiledRelease() (compiledreleaseversion.Artifact, error) {
 	datastore, err := o.AppOpts.GetCompiledReleaseIndex("default")
 	if err != nil {
-		return compiledreleaseversion.Artifact{}, fmt.Errorf("loading compiled release index: %v", err)
+		return compiledreleaseversion.Artifact{}, errors.Wrap(err, "loading compiled release index")
 	}
 
 	res, err := datastore.Find(o.CompiledReleaseOpts.Reference())
 	if err != nil {
-		return compiledreleaseversion.Artifact{}, fmt.Errorf("finding compiled release: %v", err)
+		return compiledreleaseversion.Artifact{}, errors.Wrap(err, "finding compiled release")
 	}
 
 	return res, err

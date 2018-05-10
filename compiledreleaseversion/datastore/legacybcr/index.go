@@ -18,6 +18,7 @@ import (
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -59,7 +60,7 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/data/**/**/**/bcr.json", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
-		return nil, fmt.Errorf("globbing: %v", err)
+		return nil, errors.Wrap(err, "globbing")
 	}
 
 	var inmemory = []compiledreleaseversion.Artifact{}

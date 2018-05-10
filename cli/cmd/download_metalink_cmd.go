@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"time"
@@ -15,6 +14,7 @@ import (
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
+	"github.com/pkg/errors"
 )
 
 type DownloadMetalinkCmd struct {
@@ -40,14 +40,14 @@ func (c *DownloadMetalinkCmd) Execute(_ []string) error {
 
 	meta4Bytes, err := ioutil.ReadFile(c.Args.Metalink)
 	if err != nil {
-		return fmt.Errorf("reading metalink: %v", err)
+		return errors.Wrap(err, "reading metalink")
 	}
 
 	var meta4 metalink.Metalink
 
 	err = metalink.Unmarshal(meta4Bytes, &meta4)
 	if err != nil {
-		return fmt.Errorf("unmarshaling metalink: %v", err)
+		return errors.Wrap(err, "unmarshaling metalink")
 	}
 
 	for _, file := range meta4.Files {
@@ -59,14 +59,14 @@ func (c *DownloadMetalinkCmd) Execute(_ []string) error {
 
 		local, err := urlLoader.Load(metalink.URL{URL: localPath})
 		if err != nil {
-			return fmt.Errorf("loading download destination: %v", err)
+			return errors.Wrap(err, "loading download destination")
 		}
 
 		progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
 
 		err = transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(file, local, progress)
 		if err != nil {
-			return fmt.Errorf("failed transferring: %v", err)
+			return errors.Wrap(err, "failed transferring")
 		}
 	}
 

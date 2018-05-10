@@ -1,6 +1,6 @@
 package checksum
 
-import "fmt"
+import "github.com/pkg/errors"
 
 type WritableChecksums []*WritableChecksum
 
@@ -8,7 +8,7 @@ func (cs WritableChecksums) Write(p []byte) (int, error) {
 	for _, c := range cs {
 		l, err := c.Write(p)
 		if err != nil {
-			return l, fmt.Errorf("writing checksum: %v", err)
+			return l, errors.Wrap(err, "writing checksum")
 		}
 	}
 

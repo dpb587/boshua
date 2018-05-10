@@ -41,7 +41,7 @@ func (t Task) Config() (atc.Config, error) {
 		},
 	}, "", "  ")
 	if err != nil {
-		return atc.Config{}, fmt.Errorf("marshalling reference: %v", err)
+		return atc.Config{}, errors.Wrap(err, "marshalling reference")
 	}
 
 	return atc.Config{

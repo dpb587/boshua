@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/pkg/errors"
 )
 
 type UploadStemcellCmd struct {
@@ -17,7 +19,7 @@ func (c *UploadStemcellCmd) Execute(_ []string) error {
 
 	artifact, err := c.getStemcell()
 	if err != nil {
-		return fmt.Errorf("finding compiled stemcell: %v", err)
+		return errors.Wrap(err, "finding compiled stemcell")
 	}
 
 	if c.Cmd {

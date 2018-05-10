@@ -2,7 +2,6 @@ package clicommon
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
+	"github.com/pkg/errors"
 )
 
 type ArtifactCmd struct {
@@ -47,7 +47,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 
 		local, err := urlLoader.Load(metalink.URL{URL: target})
 		if err != nil {
-			return fmt.Errorf("loading download destination: %v", err)
+			return errors.Wrap(err, "loading download destination")
 		}
 
 		progress := pb.New64(int64(artifact.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)

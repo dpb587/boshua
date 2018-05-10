@@ -15,6 +15,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -51,7 +52,7 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 func (i *index) loader() ([]releaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
-		return nil, fmt.Errorf("globbing: %v", err)
+		return nil, errors.Wrap(err, "globbing")
 	}
 
 	var inmemory = []releaseversion.Artifact{}

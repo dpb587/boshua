@@ -1,10 +1,9 @@
 package inmemory
 
 import (
-	"fmt"
-
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
+	"github.com/pkg/errors"
 )
 
 type index struct {
@@ -29,7 +28,7 @@ func (i *index) load() error {
 
 	reload, err = i.reloader()
 	if err != nil {
-		return fmt.Errorf("checking reloader: %v", err)
+		return errors.Wrap(err, "checking reloader")
 	}
 
 	if reload || i.inmemory == nil {
@@ -42,7 +41,7 @@ func (i *index) load() error {
 func (i *index) reload() error {
 	data, err := i.loader()
 	if err != nil {
-		return fmt.Errorf("reloading: %v", err)
+		return errors.Wrap(err, "reloading")
 	}
 
 	i.inmemory = data
@@ -55,7 +54,7 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 
 	err := i.load()
 	if err != nil {
-		return nil, fmt.Errorf("reloading: %v", err)
+		return nil, errors.Wrap(err, "reloading")
 	}
 
 	for _, artifact := range i.inmemory {

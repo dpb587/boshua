@@ -16,6 +16,7 @@ import (
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,7 +65,7 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 
 	meta4Bytes, err := metalink.Marshal(meta4)
 	if err != nil {
-		return fmt.Errorf("marshalling metalink: %v", err)
+		return errors.Wrap(err, "marshalling metalink")
 	}
 
 	return i.repository.Commit(
@@ -81,7 +82,7 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, "compiled-release", i.config.Channel, "**", "**", "*.meta4"))
 	if err != nil {
-		return nil, fmt.Errorf("globbing: %v", err)
+		return nil, errors.Wrap(err, "globbing")
 	}
 
 	var inmemory = []compiledreleaseversion.Artifact{}

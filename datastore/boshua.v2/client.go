@@ -34,7 +34,7 @@ func (c *Client) Execute(request *http.Request, responseData interface{}) error 
 
 	response, err := c.doRequest(request)
 	if err != nil {
-		return fmt.Errorf("executing request: %v", err)
+		return errors.Wrap(err, "executing request")
 	} else if response.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(response.Body)
 		return fmt.Errorf("executing request: status %d: %s", response.StatusCode, bodyBytes)
@@ -42,12 +42,12 @@ func (c *Client) Execute(request *http.Request, responseData interface{}) error 
 
 	resBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return fmt.Errorf("reading response body: %v", err)
+		return errors.Wrap(err, "reading response body")
 	}
 
 	err = json.Unmarshal(resBytes, responseData)
 	if err != nil {
-		return fmt.Errorf("unmarshalling response body: %v", err)
+		return errors.Wrap(err, "unmarshalling response body")
 	}
 
 	return nil

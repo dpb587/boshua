@@ -20,7 +20,7 @@ func (m *Manifest) UpdateRelease(release ReleasePatch) error {
 
 	updated, err := op.Apply(m.parsed)
 	if err != nil {
-		return fmt.Errorf("applying op: %v", err)
+		return errors.Wrap(err, "applying op")
 	}
 
 	m.parsed = updated
@@ -31,7 +31,7 @@ func (m *Manifest) UpdateRelease(release ReleasePatch) error {
 func (m *Manifest) Bytes() ([]byte, error) {
 	bytes, err := yaml.Marshal(m.parsed)
 	if err != nil {
-		return nil, fmt.Errorf("marshalling yaml: %v", err)
+		return nil, errors.Wrap(err, "marshalling yaml")
 	}
 
 	return bytes, nil

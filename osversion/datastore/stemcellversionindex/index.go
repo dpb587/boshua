@@ -1,13 +1,12 @@
 package boshio
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/osversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,7 +27,7 @@ func New(stemcellVersionIndex stemcellversiondatastore.Index, logger logrus.Fiel
 func (i *index) Filter(ref osversion.Reference) ([]osversion.Artifact, error) {
 	artifacts, err := i.list()
 	if err != nil {
-		return nil, fmt.Errorf("listing versions: %v", err)
+		return nil, errors.Wrap(err, "listing versions")
 	}
 
 	var results []osversion.Artifact
@@ -59,7 +58,7 @@ func (i *index) list() ([]osversion.Artifact, error) {
 
 	stemcells, err := i.stemcellVersionIndex.List()
 	if err != nil {
-		return nil, fmt.Errorf("listing stemcell versions: %v", err)
+		return nil, errors.Wrap(err, "listing stemcell versions")
 	}
 
 	for _, stemcellVersion := range stemcells {

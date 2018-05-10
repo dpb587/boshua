@@ -8,6 +8,7 @@ import (
 
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/util/checksum"
+	"github.com/pkg/errors"
 )
 
 type UploadReleaseCmd struct {
@@ -21,7 +22,7 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 
 	artifact, err := c.getCompiledRelease()
 	if err != nil {
-		return fmt.Errorf("finding compiled release: %v", err)
+		return errors.Wrap(err, "finding compiled release")
 	}
 
 	var sha1 checksum.Checksum

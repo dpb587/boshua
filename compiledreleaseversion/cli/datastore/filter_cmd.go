@@ -2,6 +2,8 @@ package datastore
 
 import (
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 type FilterCmd struct {
@@ -13,12 +15,12 @@ func (c *FilterCmd) Execute(_ []string) error {
 
 	index, err := c.getDatastore()
 	if err != nil {
-		return fmt.Errorf("loading datastore: %v", err)
+		return errors.Wrap(err, "loading datastore")
 	}
 
 	results, err := index.Filter(c.CompiledReleaseOpts.Reference())
 	if err != nil {
-		return fmt.Errorf("filtering: %v", err)
+		return errors.Wrap(err, "filtering")
 	}
 
 	for _, result := range results {

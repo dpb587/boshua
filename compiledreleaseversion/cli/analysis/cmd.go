@@ -1,13 +1,11 @@
 package analysis
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/compiledreleaseversion/cli/opts"
+	"github.com/pkg/errors"
 )
 
 type Cmd struct {
@@ -30,12 +28,12 @@ type CmdOpts struct {
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 	datastore, err := o.AppOpts.GetCompiledReleaseIndex("default")
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("loading compiled release index: %v", err)
+		return analysis.Artifact{}, errors.Wrap(err, "loading compiled release index")
 	}
 
 	_, err = datastore.Find(o.CompiledReleaseOpts.Reference())
 	if err != nil {
-		return analysis.Artifact{}, fmt.Errorf("finding compiled release: %v", err)
+		return analysis.Artifact{}, errors.Wrap(err, "finding compiled release")
 	}
 
 	return analysis.Artifact{}, errors.New("TODO")

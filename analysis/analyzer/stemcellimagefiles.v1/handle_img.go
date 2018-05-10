@@ -1,7 +1,6 @@
 package analyzer
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -9,12 +8,13 @@ import (
 	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
+	"github.com/pkg/errors"
 )
 
 func (a Analyzer) handleIMG(results analysis.Writer, imageReader io.Reader) error {
 	image, err := ioutil.TempFile("", "boshua-image-")
 	if err != nil {
-		return fmt.Errorf("making temp file: %v", err)
+		return errors.Wrap(err, "making temp file")
 	}
 
 	defer os.Remove(image.Name())
@@ -27,13 +27,13 @@ func (a Analyzer) handleIMG(results analysis.Writer, imageReader io.Reader) erro
 
 		err = cmd.Run()
 		if err != nil {
-			return fmt.Errorf("extracting image: %v", err)
+			return errors.Wrap(err, "extracting image")
 		}
 	}
 
 	mountDir, err := ioutil.TempDir("", "boshua-mount-")
 	if err != nil {
-		return fmt.Errorf("making temp dir: %v", err)
+		return errors.Wrap(err, "making temp dir")
 	}
 
 	defer os.RemoveAll(mountDir)
@@ -45,23 +45,23 @@ func (a Analyzer) handleIMG(results analysis.Writer, imageReader io.Reader) erro
 
 		err = cmd.Run()
 		if err != nil {
-			return fmt.Errorf("mounting image: %v", err)
+			return errors.Wrap(err, "mounting image")
 		}
 	}
 
 	userMap, err := a.loadFileNameMap(filepath.Join(mountDir, "etc", "passwd"))
 	if err != nil {
-		return fmt.Errorf("loading /etc/passwd: %v", err)
+		return errors.Wrap(err, "loading /etc/passwd")
 	}
 
 	groupMap, err := a.loadFileNameMap(filepath.Join(mountDir, "etc", "group"))
 	if err != nil {
-		return fmt.Errorf("loading /etc/group: %v", err)
+		return errors.Wrap(err, "loading /etc/group")
 	}
 
 	err = filepath.Walk(mountDir, a.walkFS(results, mountDir, userMap, groupMap))
 	if err != nil {
-		return fmt.Errorf("walking image: %v", err)
+		return errors.Wrap(err, "walking image")
 	}
 
 	return nil

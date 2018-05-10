@@ -32,7 +32,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		cfg := presentbcr.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
-			return nil, fmt.Errorf("loading options: %v", err)
+			return nil, errors.Wrap(err, "loading options")
 		}
 
 		return presentbcr.New(cfg, logger), nil

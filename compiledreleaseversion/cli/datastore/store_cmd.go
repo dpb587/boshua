@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"fmt"
 	"path/filepath"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -31,34 +30,34 @@ func (c *StoreCmd) Execute(_ []string) error {
 
 	index, err := c.getDatastore()
 	if err != nil {
-		return fmt.Errorf("loading datastore: %v", err)
+		return errors.Wrap(err, "loading datastore")
 	}
 
 	rawCompiledReleaseRef := c.CompiledReleaseOpts.Reference()
 
 	releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
 	if err != nil {
-		return fmt.Errorf("loading release index: %v", err)
+		return errors.Wrap(err, "loading release index")
 	}
 
 	releaseVersion, err := releaseVersionIndex.Find(rawCompiledReleaseRef.ReleaseVersion)
 	if err != nil {
-		return fmt.Errorf("finding release: %v", err)
+		return errors.Wrap(err, "finding release")
 	}
 
 	osVersionIndex, err := c.AppOpts.GetOSIndex("default")
 	if err != nil {
-		return fmt.Errorf("loading os index: %v", err)
+		return errors.Wrap(err, "loading os index")
 	}
 
 	osVersion, err := osVersionIndex.Find(rawCompiledReleaseRef.OSVersion)
 	if err != nil {
-		return fmt.Errorf("finding os: %v", err)
+		return errors.Wrap(err, "finding os")
 	}
 
 	meta4File, err := c.createMetalinkFile()
 	if err != nil {
-		return fmt.Errorf("building metalink: %v", err)
+		return errors.Wrap(err, "building metalink")
 	}
 
 	return index.Store(compiledreleaseversion.New(

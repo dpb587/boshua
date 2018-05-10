@@ -12,6 +12,7 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/stemcellpackages.v1/output"
+	"github.com/pkg/errors"
 )
 
 var dpkgList = regexp.MustCompile(`^ii\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+(.+)$`)
@@ -31,14 +32,14 @@ func New(tarball string) Analyzer {
 func (a Analyzer) Analyze(results analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
-		return fmt.Errorf("opening file: %v", err)
+		return errors.Wrap(err, "opening file")
 	}
 
 	defer fh.Close()
 
 	gzReader, err := gzip.NewReader(fh)
 	if err != nil {
-		return fmt.Errorf("starting gzip: %v", err)
+		return errors.Wrap(err, "starting gzip")
 	}
 
 	tarReader := tar.NewReader(gzReader)
@@ -49,7 +50,7 @@ func (a Analyzer) Analyze(results analysis.Writer) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("advancing tar: %v", err)
+			return errors.Wrap(err, "advancing tar")
 		} else if header.Typeflag == tar.TypeDir {
 			continue
 		}
@@ -89,12 +90,12 @@ func (a Analyzer) analyzePackages(results analysis.Writer, artifact string, read
 
 		err := results.Write(result)
 		if err != nil {
-			return fmt.Errorf("writing result: %v", err)
+			return errors.Wrap(err, "writing result")
 		}
 	}
 
 	if scanner.Err() != nil {
-		return fmt.Errorf("scanning packages: %v", scanner.Err())
+		return errors.Wrap(scanner.Err(), "scanning packages")
 	}
 
 	return nil
