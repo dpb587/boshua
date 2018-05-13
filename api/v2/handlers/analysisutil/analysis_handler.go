@@ -74,7 +74,7 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	httputil.WriteResponse(logger, w, r, api.GETInfoResponse{
 		Data: api.GETInfoResponseData{
-			Artifact: results[0].ArtifactMetalinkFile(),
+			Artifact: results[0].MetalinkFile(),
 		},
 	})
 }

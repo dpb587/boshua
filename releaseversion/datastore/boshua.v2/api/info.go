@@ -42,7 +42,7 @@ func (h *InfoHandler) GET(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteResponse(logger, w, r, api.InfoResponse{
 		Data: api.InfoResponseData{
 			Reference: api.FromReference(subject.Reference),
-			Artifact:  subject.ArtifactMetalinkFile(),
+			Artifact:  subject.MetalinkFile(),
 		},
 	})
 }

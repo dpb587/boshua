@@ -7,8 +7,9 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/tempfile"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
@@ -49,6 +50,10 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 	return i.inmemory.Find(ref)
 }
 
+func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
+	return tempfile.New()
+}
+
 func (i *index) loader() ([]releaseversion.Artifact, error) {
 	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/**/**/source.meta4", i.config.RepositoryConfig.LocalPath))
 	if err != nil {
@@ -58,14 +63,6 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 	var inmemory = []releaseversion.Artifact{}
 
 	for _, meta4Path := range paths {
-		meta4Source := map[string]interface{}{
-			"uri": fmt.Sprintf(
-				"%s//%s",
-				i.config.RepositoryConfig.Repository,
-				strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.config.RepositoryConfig.LocalPath)), "/"),
-			),
-		}
-
 		meta4Bytes, err := ioutil.ReadFile(meta4Path)
 		if err != nil {
 			return nil, fmt.Errorf("reading %s: %v", meta4Path, err)
@@ -105,12 +102,9 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 			Checksums: metalinkutil.HashesToChecksums(meta4File.Hashes),
 		}
 
-		meta4Source["version"] = ref.Version
-
 		inmemory = append(inmemory, releaseversion.New(
 			ref,
 			meta4File,
-			meta4Source,
 		))
 	}
 

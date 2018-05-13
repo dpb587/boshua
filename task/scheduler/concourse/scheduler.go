@@ -2,20 +2,18 @@ package concourse
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os/exec"
 	"strings"
 
+	"github.com/dpb587/boshua/task"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
-
-	"github.com/dpb587/boshua/scheduler"
-	"github.com/dpb587/boshua/scheduler/task"
 )
 
-type Runner struct {
+type Scheduler struct {
 	Target   string
 	Insecure bool
 	URL      string
@@ -29,8 +27,10 @@ type Runner struct {
 	needsSync  bool
 }
 
-func (c *Runner) Schedule(t task.Task) error {
-	pipelineName := c.pipelineName(t)
+var _ task.Scheduler = &Scheduler{}
+
+func (s *Scheduler) Schedule(t task.Task) error {
+	pipelineName := s.pipelineName(t)
 
 	file, err := ioutil.TempFile("", "boshua-")
 	if err != nil {
@@ -54,18 +54,18 @@ func (c *Runner) Schedule(t task.Task) error {
 		return errors.Wrap(err, "writing pipeline")
 	}
 
-	_, _, err = c.runStdin(
+	_, _, err = s.runStdin(
 		bytes.NewBufferString("y\n"),
 		"set-pipeline",
 		"--pipeline", pipelineName,
 		"--config", file.Name(),
-		"--load-vars-from", c.SecretsPath,
+		"--load-vars-from", s.SecretsPath,
 	)
 	if err != nil {
 		return errors.Wrap(err, "setting pipeline")
 	}
 
-	_, _, err = c.run(
+	_, _, err = s.run(
 		"unpause-pipeline",
 		"--pipeline", pipelineName,
 	)
@@ -76,104 +76,104 @@ func (c *Runner) Schedule(t task.Task) error {
 	return nil
 }
 
-func (c *Runner) Status(t task.Task) (scheduler.Status, error) {
-	pipelineName := c.pipelineName(t)
+func (s *Scheduler) Status(t task.Task) (task.Status, error) {
+	pipelineName := s.pipelineName(t)
 
-	stdout, stderr, err := c.run("jobs", "--pipeline", pipelineName)
+	stdout, stderr, err := s.run("jobs", "--pipeline", pipelineName)
 	if err != nil {
 		if strings.Contains(string(stderr), "error: resource not found") {
-			return scheduler.StatusUnknown, nil
+			return task.StatusUnknown, nil
 		}
 
-		return scheduler.StatusUnknown, errors.Wrap(err, "listing jobs")
+		return task.StatusUnknown, errors.Wrap(err, "listing jobs")
 	}
 
 	lines := strings.Split(string(stdout), "\n")
 	if len(lines) < 1 {
-		return scheduler.StatusUnknown, errors.New("listing jobs: lines missing")
+		return task.StatusUnknown, errors.New("listing jobs: lines missing")
 	}
 
 	fields := strings.Fields(string(stdout))
 	if len(fields) != 4 {
-		return scheduler.StatusUnknown, errors.New("listing jobs: columns incorrect")
+		return task.StatusUnknown, errors.New("listing jobs: columns incorrect")
 	}
 
 	if fields[2] == "succeeded" {
-		return scheduler.StatusSucceeded, nil
+		return task.StatusSucceeded, nil
 	} else if fields[3] == "started" {
-		return scheduler.StatusRunning, nil
+		return task.StatusRunning, nil
 	} else if fields[2] == "aborted" {
-		return scheduler.StatusFailed, nil
+		return task.StatusFailed, nil
 	} else if fields[2] == "failed" {
-		return scheduler.StatusFailed, nil
+		return task.StatusFailed, nil
 	} else if fields[2] == "errored" {
-		return scheduler.StatusFailed, nil
+		return task.StatusFailed, nil
 	} else if fields[3] == "pending" {
-		return scheduler.StatusPending, nil
+		return task.StatusPending, nil
 	} else if fields[2] == "n/a" && fields[3] == "n/a" {
-		return scheduler.StatusPending, nil
+		return task.StatusPending, nil
 	}
 
-	return scheduler.StatusUnknown, errors.New("unrecognized pipeline state")
+	return task.StatusUnknown, errors.New("unrecognized pipeline state")
 }
 
-func (c *Runner) prepare() error {
-	if c.needsLogin {
+func (s *Scheduler) prepare() error {
+	if s.needsLogin {
 		args := []string{
-			"-c", c.URL,
-			"-n", c.Team,
-			"-u", c.Username,
-			"-p", c.Password,
+			"-c", s.URL,
+			"-n", s.Team,
+			"-u", s.Username,
+			"-p", s.Password,
 		}
 
-		if c.Insecure {
+		if s.Insecure {
 			args = append(args, "-k")
 		}
 
-		_, _, err := c.run("login", args...)
+		_, _, err := s.run("login", args...)
 		if err != nil {
 			return errors.Wrap(err, "logging in")
 		}
 
-		c.needsLogin = false
+		s.needsLogin = false
 	}
 
-	if c.needsSync {
+	if s.needsSync {
 		args := []string{
-			"-c", c.URL,
-			"-n", c.Team,
-			"-u", c.Username,
-			"-p", c.Password,
+			"-c", s.URL,
+			"-n", s.Team,
+			"-u", s.Username,
+			"-p", s.Password,
 		}
 
-		if c.Insecure {
+		if s.Insecure {
 			args = append(args, "-k")
 		}
 
-		_, _, err := c.run("sync", args...)
+		_, _, err := s.run("sync", args...)
 		if err != nil {
 			return errors.Wrap(err, "syncing")
 		}
 
-		c.needsSync = false
+		s.needsSync = false
 	}
 
 	return nil
 }
 
-func (c *Runner) isPrepareCommand(command string) bool {
+func (s *Scheduler) isPrepareCommand(command string) bool {
 	return command == "login" || command == "sync"
 }
 
-func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]byte, []byte, error) {
-	if !c.isPrepareCommand(command) {
-		err := c.prepare()
+func (s *Scheduler) runStdin(stdin io.Reader, command string, args ...string) ([]byte, []byte, error) {
+	if !s.isPrepareCommand(command) {
+		err := s.prepare()
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "preparing to run")
 		}
 	}
 
-	allArgs := append([]string{"-t", c.Target, command}, args...)
+	allArgs := append([]string{"-t", s.Target, command}, args...)
 	cmd := exec.Command("/usr/local/bin/fly", allArgs...)
 
 	outbuf := bytes.NewBuffer(nil)
@@ -202,17 +202,17 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 		var retryable bool
 
 		if strings.Contains(string(errbuf.Bytes()), "not authorized.") {
-			c.needsLogin = true
+			s.needsLogin = true
 			retryable = true
 		} else if strings.Contains(string(errbuf.Bytes()), "out of sync with the target") {
-			c.needsSync = true
+			s.needsSync = true
 			retryable = true
 		}
 
-		retryable = retryable && !c.isPrepareCommand(command)
+		retryable = retryable && !s.isPrepareCommand(command)
 
 		if retryable {
-			return c.runStdin(bytes.NewBuffer(stdinAll), command, args...)
+			return s.runStdin(bytes.NewBuffer(stdinAll), command, args...)
 		}
 
 		return outbuf.Bytes(), errbuf.Bytes(), fmt.Errorf("cli: running %#+v: %v", allArgs, err)
@@ -221,10 +221,10 @@ func (c *Runner) runStdin(stdin io.Reader, command string, args ...string) ([]by
 	return outbuf.Bytes(), errbuf.Bytes(), nil
 }
 
-func (c *Runner) run(cmd string, args ...string) ([]byte, []byte, error) {
-	return c.runStdin(bytes.NewBuffer(nil), cmd, args...)
+func (s *Scheduler) run(cmd string, args ...string) ([]byte, []byte, error) {
+	return s.runStdin(bytes.NewBuffer(nil), cmd, args...)
 }
 
-func (c *Runner) pipelineName(t task.Task) string {
+func (s *Scheduler) pipelineName(t task.Task) string {
 	return fmt.Sprintf("%s:%s:%s", t.Type(), t.ArtifactReference().Context, t.ArtifactReference().ID)
 }

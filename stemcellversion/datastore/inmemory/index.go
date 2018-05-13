@@ -57,24 +57,26 @@ func (i *index) Filter(ref stemcellversion.Reference) ([]stemcellversion.Artifac
 		return nil, errors.Wrap(err, "reloading")
 	}
 
-	for _, stemcellversion := range i.inmemory {
-		if stemcellversion.Reference.IaaS != ref.IaaS {
+	for _, artifact := range i.inmemory {
+		artifactRef := artifact.Reference().(stemcellversion.Reference)
+
+		if artifactRef.IaaS != ref.IaaS {
 			continue
-		} else if stemcellversion.Reference.Hypervisor != ref.Hypervisor {
+		} else if artifactRef.Hypervisor != ref.Hypervisor {
 			continue
-		} else if stemcellversion.Reference.OS != ref.OS {
+		} else if artifactRef.OS != ref.OS {
 			continue
-		} else if stemcellversion.Reference.Light != ref.Light {
+		} else if artifactRef.Light != ref.Light {
 			continue
 		}
 
 		if ref.Version == "*" {
 			// okay
-		} else if stemcellversion.Reference.Version != ref.Version {
+		} else if artifactRef.Version != ref.Version {
 			continue
 		}
 
-		results = append(results, stemcellversion)
+		results = append(results, artifact)
 	}
 
 	return results, nil

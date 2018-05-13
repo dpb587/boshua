@@ -15,6 +15,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const Name analysis.AnalyzerName = "stemcellpackages.v1"
+
 var dpkgList = regexp.MustCompile(`^ii\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+(.+)$`)
 
 type Analyzer struct {
@@ -27,6 +29,10 @@ func New(tarball string) Analyzer {
 	return Analyzer{
 		tarball: tarball,
 	}
+}
+
+func (a Analyzer) Name() analysis.AnalyzerName {
+	return Name
 }
 
 func (a Analyzer) Analyze(results analysis.Writer) error {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/osversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -33,13 +34,15 @@ func (i *index) Filter(ref osversion.Reference) ([]osversion.Artifact, error) {
 	var results []osversion.Artifact
 
 	for _, artifact := range artifacts {
-		if artifact.Name != ref.Name {
+		artifactRef := artifact.Reference().(osversion.Reference)
+
+		if artifactRef.Name != ref.Name {
 			continue
 		}
 
 		if ref.Version == "*" {
 			// okay
-		} else if artifact.Version != ref.Version {
+		} else if artifactRef.Version != ref.Version {
 			continue
 		}
 
@@ -61,22 +64,23 @@ func (i *index) list() ([]osversion.Artifact, error) {
 		return nil, errors.Wrap(err, "listing stemcell versions")
 	}
 
-	for _, stemcellVersion := range stemcells {
-		if stemcellVersion.IaaS != "warden" {
+	for _, artifact := range stemcells {
+		artifactRef := artifact.Reference().(stemcellversion.Reference)
+
+		if artifactRef.IaaS != "warden" {
 			continue
-		} else if stemcellVersion.Hypervisor != "boshlite" {
+		} else if artifactRef.Hypervisor != "boshlite" {
 			continue
 		}
 
 		ref := osversion.Reference{
-			Name:    stemcellVersion.OS,
-			Version: stemcellVersion.Version,
+			Name:    artifactRef.OS,
+			Version: artifactRef.Version,
 		}
 
 		matches[ref] = osversion.New(
 			ref,
-			stemcellVersion.ArtifactMetalinkFile(),
-			stemcellVersion.ArtifactMetalinkStorage(),
+			artifact.MetalinkFile(),
 		)
 	}
 

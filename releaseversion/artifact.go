@@ -8,20 +8,18 @@ import (
 )
 
 type Artifact struct {
-	Reference
-
-	metalinkFile   metalink.File
-	metalinkSource map[string]interface{}
+	reference    Reference
+	metalinkFile metalink.File
 }
 
 var _ artifact.Artifact = &Artifact{}
 
-func (s Artifact) ArtifactMetalinkFile() metalink.File {
+func (s Artifact) MetalinkFile() metalink.File {
 	return s.metalinkFile
 }
 
-func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
-	return s.metalinkSource
+func (s Artifact) Reference() interface{} {
+	return s.reference
 }
 
 func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {

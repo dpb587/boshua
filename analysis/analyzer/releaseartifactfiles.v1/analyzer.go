@@ -16,6 +16,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const Name analysis.AnalyzerName = "releaseartifactfiles.v1"
+
 type Analyzer struct {
 	tarball string
 }
@@ -26,6 +28,10 @@ func New(tarball string) Analyzer {
 	return Analyzer{
 		tarball: tarball,
 	}
+}
+
+func (a Analyzer) Name() analysis.AnalyzerName {
+	return Name
 }
 
 func (a Analyzer) Analyze(results analysis.Writer) error {

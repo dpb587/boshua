@@ -13,7 +13,7 @@ func (s Artifact) SupportedAnalyzers() []string {
 		"stemcellmanifest.v1",
 	}
 
-	if !strings.HasPrefix(s.OS, "windows") {
+	if !strings.HasPrefix(s.reference.OS, "windows") {
 		analyzers = append(analyzers,
 			"stemcellimagefiles.v1",
 			"stemcellpackages.v1",

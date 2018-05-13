@@ -2,10 +2,9 @@ package releaseversion
 
 import "github.com/dpb587/metalink"
 
-func New(ref Reference, meta4File metalink.File, meta4Source map[string]interface{}) Artifact {
+func New(ref Reference, meta4File metalink.File) Artifact {
 	return Artifact{
-		Reference:      ref,
-		metalinkFile:   meta4File,
-		metalinkSource: meta4Source,
+		reference:    ref,
+		metalinkFile: meta4File,
 	}
 }

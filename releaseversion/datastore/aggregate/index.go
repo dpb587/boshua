@@ -3,6 +3,8 @@ package aggregate
 import (
 	"fmt"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/tempfile"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 )
@@ -36,4 +38,8 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 
 func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
 	return datastore.FilterForOne(i, ref)
+}
+
+func (i *index) GetAnalysisDatastore() analysisdatastore.Index { // TODO aggregate probably requires err for Unsupported check
+	return tempfile.New()
 }

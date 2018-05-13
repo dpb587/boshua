@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const Name analysis.AnalyzerName = "stemcellimagefiles.v1"
+
 type Analyzer struct {
 	tarball string
 }
@@ -23,6 +25,10 @@ func New(tarball string) Analyzer {
 	return Analyzer{
 		tarball: tarball,
 	}
+}
+
+func (a Analyzer) Name() analysis.AnalyzerName {
+	return Name
 }
 
 func (a Analyzer) Analyze(results analysis.Writer) error {

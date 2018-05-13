@@ -98,7 +98,7 @@ func (h *CompilationHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 
 	httputil.WriteResponse(logger, w, r, api.GETCompilationInfoResponse{
 		Data: api.GETCompilationInfoResponseData{
-			Artifact: result.ArtifactMetalinkFile(),
+			Artifact: result.MetalinkFile(),
 		},
 	})
 }

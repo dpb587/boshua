@@ -29,8 +29,8 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 			"value": map[string]interface{}{
 				"name":    c.CompiledReleaseOpts.Release.Name,
 				"version": c.CompiledReleaseOpts.Release.Version,
-				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(artifact.ArtifactMetalinkFile().Hashes[0]).String(), "sha1:"), // TODO .Preferred()
-				"url":     artifact.ArtifactMetalinkFile().URLs[0].URL,
+				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(artifact.MetalinkFile().Hashes[0]).String(), "sha1:"), // TODO .Preferred()
+				"url":     artifact.MetalinkFile().URLs[0].URL,
 				"stemcell": map[string]string{
 					"os":      c.CompiledReleaseOpts.OS.Name,
 					"version": c.CompiledReleaseOpts.OS.Version,

@@ -1,20 +1,24 @@
 package analysis
 
 import (
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/metalink"
 )
 
 type Artifact struct {
-	Reference
-
-	metalinkFile   metalink.File
-	metalinkSource map[string]interface{}
+	artifact artifact.Artifact
+	analyzer AnalyzerName
+	subject  Subject
 }
 
-func (s Artifact) ArtifactMetalinkFile() metalink.File {
-	return s.metalinkFile
+func (a Artifact) Analyzer() AnalyzerName {
+	return a.analyzer
 }
 
-func (s Artifact) ArtifactMetalinkStorage() map[string]interface{} {
-	return s.metalinkSource
+func (a Artifact) MetalinkFile() metalink.File {
+	return a.artifact.MetalinkFile()
+}
+
+func (a Artifact) Subject() Subject {
+	return a.subject
 }

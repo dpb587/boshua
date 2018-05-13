@@ -17,7 +17,7 @@ func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 			return metalink.File{}, errors.Wrap(err, "finding artifact")
 		}
 
-		return artifact.ArtifactMetalinkFile(), nil
+		return artifact.MetalinkFile(), nil
 
 	})
 }

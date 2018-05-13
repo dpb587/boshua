@@ -6,7 +6,6 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
@@ -50,16 +49,18 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 }
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
+	artifactRef := artifact.Reference().(compiledreleaseversion.Reference)
+
 	path := filepath.Join(
 		"compiled-release",
 		i.config.Channel,
-		artifact.OSVersion.Name,
-		artifact.OSVersion.Version,
-		fmt.Sprintf("%s.meta4", artifact.ReleaseVersion.Version),
+		artifactRef.OSVersion.Name,
+		artifactRef.OSVersion.Version,
+		fmt.Sprintf("%s.meta4", artifactRef.ReleaseVersion.Version),
 	)
 
 	meta4 := metalink.Metalink{
-		Files:     []metalink.File{artifact.ArtifactMetalinkFile()},
+		Files:     []metalink.File{artifact.MetalinkFile()},
 		Generator: "boshua/boshreleasedpb",
 	}
 
@@ -72,9 +73,9 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 		map[string][]byte{path: meta4Bytes},
 		fmt.Sprintf(
 			"Compiling v%s for %s/%s",
-			artifact.ReleaseVersion.Version,
-			artifact.OSVersion.Name,
-			artifact.OSVersion.Version,
+			artifactRef.ReleaseVersion.Version,
+			artifactRef.OSVersion.Name,
+			artifactRef.OSVersion.Version,
 		),
 	)
 }
@@ -122,28 +123,18 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 		inmemory = append(
 			inmemory,
 			compiledreleaseversion.New(
-				releaseversion.Reference{
-					Name:      i.config.Release,
-					Version:   releaseMeta4.Files[0].Version,
-					Checksums: metalinkutil.HashesToChecksums(releaseMeta4.Files[0].Hashes),
-				},
-				osversion.Reference{
-					Name:    path.Base(path.Dir(path.Dir(compiledReleasePath))),
-					Version: path.Base(path.Dir(compiledReleasePath)),
-				},
-				compiledReleaseMeta4.Files[0],
-				map[string]interface{}{
-					"uri": fmt.Sprintf(
-						"%s//%s",
-						i.config.RepositoryConfig.Repository,
-						strings.TrimPrefix(path.Dir(strings.TrimPrefix(compiledReleasePath, i.config.RepositoryConfig.LocalPath)), "/"),
-					),
-					"version": compiledReleaseMeta4.Files[0].Version,
-					// TODO configurable
-					"options": map[string]interface{}{
-						"private_key": "((index_private_key))",
+				compiledreleaseversion.Reference{
+					ReleaseVersion: releaseversion.Reference{
+						Name:      i.config.Release,
+						Version:   releaseMeta4.Files[0].Version,
+						Checksums: metalinkutil.HashesToChecksums(releaseMeta4.Files[0].Hashes),
+					},
+					OSVersion: osversion.Reference{
+						Name:    path.Base(path.Dir(path.Dir(compiledReleasePath))),
+						Version: path.Base(path.Dir(compiledReleasePath)),
 					},
 				},
+				compiledReleaseMeta4.Files[0],
 			),
 		)
 	}

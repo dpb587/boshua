@@ -3,11 +3,11 @@ package meta4
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/tempfile"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
@@ -47,6 +47,10 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 	return i.inmemory.Find(ref)
 }
 
+func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
+	return tempfile.New()
+}
+
 func (i *index) loader() ([]releaseversion.Artifact, error) {
 	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, "*.meta4"))
 	if err != nil {
@@ -70,25 +74,15 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 
 		meta4File := meta4.Files[0]
 
-		ref := releaseversion.Reference{
-			Name:      i.config.Release,
-			Version:   meta4File.Version,
-			Checksums: metalinkutil.HashesToChecksums(meta4File.Hashes),
-		}
-
 		inmemory = append(
 			inmemory,
 			releaseversion.New(
-				ref,
-				meta4File,
-				map[string]interface{}{
-					"uri": fmt.Sprintf(
-						"%s//%s",
-						i.config.RepositoryConfig.Repository,
-						strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.config.RepositoryConfig.LocalPath)), "/"),
-					),
-					"version": ref.Version,
+				releaseversion.Reference{
+					Name:      i.config.Release,
+					Version:   meta4File.Version,
+					Checksums: metalinkutil.HashesToChecksums(meta4File.Hashes),
 				},
+				meta4File,
 			),
 		)
 	}

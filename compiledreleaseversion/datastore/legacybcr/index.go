@@ -107,16 +107,17 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 				continue
 			}
 
-			releaseRef = releaseArtifacts[0].Reference
+			releaseRef = releaseArtifacts[0].Reference().(releaseversion.Reference)
 
 			inmemory = append(inmemory, compiledreleaseversion.New(
-				releaseRef,
-				osversion.Reference{
-					Name:    record.Stemcell.OS,
-					Version: record.Stemcell.Version,
+				compiledreleaseversion.Reference{
+					ReleaseVersion: releaseRef,
+					OSVersion: osversion.Reference{
+						Name:    record.Stemcell.OS,
+						Version: record.Stemcell.Version,
+					},
 				},
 				meta4File,
-				map[string]interface{}{},
 			))
 		}
 	}

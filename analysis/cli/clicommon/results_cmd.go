@@ -13,6 +13,7 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
@@ -25,10 +26,10 @@ type ResultsCmd struct {
 	Raw bool `long:"raw" description:"Show raw, unformatted analysis results"`
 }
 
-func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, args []string) error {
+func (c *ResultsCmd) ExecuteAnalysis(analyzer analysis.AnalyzerName, loader AnalysisLoader, args []string) error {
 	artifact, err := loader()
 	if err != nil {
-		return errors.Wrap(err, "finding analysis")
+		return errors.Wrap(err, "loading analysis")
 	}
 
 	tempfile, err := ioutil.TempFile("", "boshua-analysis-")
@@ -44,7 +45,7 @@ func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, arg
 	urlLoader := urldefaultloader.New(fs)
 	metaurlLoader := metaurl.NewLoaderFactory()
 
-	file := artifact.ArtifactMetalinkFile()
+	file := artifact.MetalinkFile()
 
 	local, err := urlLoader.Load(metalink.URL{URL: tempfile.Name()})
 	if err != nil {
@@ -73,7 +74,7 @@ func (c *ResultsCmd) ExecuteAnalysis(analyzer string, loader AnalysisLoader, arg
 		return nil
 	}
 
-	formatterArgs := append([]string{"analysis", "formatter", analyzer}, args...)
+	formatterArgs := append([]string{"analysis", "formatter", string(analyzer)}, args...)
 	formatterCmd := exec.Command(os.Args[0], formatterArgs...)
 	formatterCmd.Stdin = gzReader
 	formatterCmd.Stdout = os.Stdout

@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
@@ -93,27 +92,18 @@ func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {
 		inmemory = append(
 			inmemory,
 			compiledreleaseversion.New(
-				releaseversion.Reference{
-					Name:      bcrJSON.Release.Name,
-					Version:   bcrJSON.Release.Version,
-					Checksums: bcrJSON.Release.Checksums,
-				},
-				osversion.Reference{
-					Name:    bcrJSON.OS.Name,
-					Version: bcrJSON.OS.Version,
-				},
-				meta4.Files[0],
-				map[string]interface{}{
-					"uri": fmt.Sprintf(
-						"%s//%s",
-						i.config.RepositoryConfig.Repository,
-						strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.config.RepositoryConfig.LocalPath)), "/"),
-					),
-					"version": meta4.Files[0].Version,
-					"options": map[string]interface{}{
-						"private_key": "((index_private_key))",
+				compiledreleaseversion.Reference{
+					ReleaseVersion: releaseversion.Reference{
+						Name:      bcrJSON.Release.Name,
+						Version:   bcrJSON.Release.Version,
+						Checksums: bcrJSON.Release.Checksums,
+					},
+					OSVersion: osversion.Reference{
+						Name:    bcrJSON.OS.Name,
+						Version: bcrJSON.OS.Version,
 					},
 				},
+				meta4.Files[0],
 			),
 		)
 	}

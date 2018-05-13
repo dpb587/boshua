@@ -15,6 +15,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 

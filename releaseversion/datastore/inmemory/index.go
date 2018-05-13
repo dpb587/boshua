@@ -1,6 +1,8 @@
 package inmemory
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/tempfile"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
@@ -62,13 +64,15 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 	var results []releaseversion.Artifact
 
 	for _, artifact := range i.inmemory {
-		if artifact.Reference.Name != ref.Name {
+		artifactRef := artifact.Reference().(releaseversion.Reference)
+
+		if artifactRef.Name != ref.Name {
 			continue
 		}
 
 		if ref.Version == "*" {
 			// okay
-		} else if artifact.Reference.Version != ref.Version {
+		} else if artifactRef.Version != ref.Version {
 			continue
 		}
 
@@ -90,4 +94,8 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 	}
 
 	return results, nil
+}
+
+func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
+	return tempfile.New()
 }

@@ -21,6 +21,6 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 			return metalink.File{}, errors.Wrap(err, "finding release")
 		}
 
-		return artifact.ArtifactMetalinkFile(), nil
+		return artifact.MetalinkFile(), nil
 	})
 }

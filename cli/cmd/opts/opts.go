@@ -18,6 +18,8 @@ import (
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
+	"github.com/dpb587/boshua/task/scheduler"
+	"github.com/dpb587/boshua/task/scheduler/localexec"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -158,6 +160,10 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 	}
 
 	return osversionstemcellversionindex.New(stemcellVersionIndex, o.GetLogger()), nil
+}
+
+func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
+	return &localexec.Scheduler{}, nil
 }
 
 func (o *Opts) GetLogger() logrus.FieldLogger {

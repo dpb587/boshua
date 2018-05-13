@@ -3,10 +3,8 @@ package boshio
 import (
 	"fmt"
 	"io/ioutil"
-	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
 
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -85,16 +83,6 @@ func (i *index) loader() ([]stemcellversion.Artifact, error) {
 				stemcellversion.New(
 					*ref,
 					file,
-					map[string]interface{}{
-						"uri": fmt.Sprintf(
-							"%s//%s",
-							i.config.RepositoryConfig.Repository,
-							strings.TrimPrefix(path.Dir(strings.TrimPrefix(meta4Path, i.config.RepositoryConfig.LocalPath)), "/"),
-						),
-						"include_files": []string{
-							file.Name,
-						},
-					},
 				),
 			)
 		}

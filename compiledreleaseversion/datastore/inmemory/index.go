@@ -58,17 +58,19 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 	}
 
 	for _, artifact := range i.inmemory {
-		if artifact.ReleaseVersion.Name != ref.ReleaseVersion.Name {
+		artifactRef := artifact.Reference().(compiledreleaseversion.Reference)
+
+		if artifactRef.ReleaseVersion.Name != ref.ReleaseVersion.Name {
 			continue
-		} else if artifact.ReleaseVersion.Version == "*" {
+		} else if artifactRef.ReleaseVersion.Version == "*" {
 			// okay
-		} else if artifact.ReleaseVersion.Version != ref.ReleaseVersion.Version {
+		} else if artifactRef.ReleaseVersion.Version != ref.ReleaseVersion.Version {
 			continue
-		} else if artifact.OSVersion.Name != ref.OSVersion.Name {
+		} else if artifactRef.OSVersion.Name != ref.OSVersion.Name {
 			continue
-		} else if artifact.OSVersion.Version == "*" {
+		} else if artifactRef.OSVersion.Version == "*" {
 			// okay
-		} else if artifact.OSVersion.Version != ref.OSVersion.Version {
+		} else if artifactRef.OSVersion.Version != ref.OSVersion.Version {
 			continue
 		}
 
@@ -76,7 +78,7 @@ func (i *index) Filter(ref compiledreleaseversion.Reference) ([]compiledreleasev
 			var match int
 
 			for _, cs := range ref.ReleaseVersion.Checksums {
-				if artifact.ReleaseVersion.Checksums.Contains(&cs) {
+				if artifactRef.ReleaseVersion.Checksums.Contains(&cs) {
 					match += 1
 				}
 			}

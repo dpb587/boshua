@@ -6,6 +6,8 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/verification"
@@ -61,10 +63,11 @@ func (c *StoreCmd) Execute(_ []string) error {
 	}
 
 	return index.Store(compiledreleaseversion.New(
-		releaseVersion.Reference,
-		osVersion.Reference,
+		compiledreleaseversion.Reference{
+			ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
+			OSVersion:      osVersion.Reference().(osversion.Reference),
+		},
 		*meta4File,
-		map[string]interface{}{},
 	))
 }
 
