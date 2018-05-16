@@ -1,7 +1,6 @@
 package localexec
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -79,7 +78,7 @@ func (t *Task) Wait(_ func(task.Status)) (task.Status, error) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		fmt.Printf("%s\n", step.Args)
+		// fmt.Printf("%s\n", step.Args)
 
 		err = cmd.Run()
 		if err != nil {

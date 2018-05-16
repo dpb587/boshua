@@ -117,17 +117,13 @@ func (i *index) cachePath(ref analysis.Reference) (string, error) {
 			"compiled-release",
 			subjectRef.OSVersion.Name,
 			subjectRef.OSVersion.Version,
-			subjectRef.ReleaseVersion.Name,
-			subjectRef.ReleaseVersion.Version,
-			subjectRef.ReleaseVersion.Checksums.Preferred().String(),
+			subjectRef.ReleaseVersion.UniqueID(),
 		)
 	case releaseversion.Reference:
 		pieces = append(
 			pieces,
 			"release",
-			subjectRef.Name,
-			subjectRef.Version,
-			subjectRef.Checksums.Preferred().String(),
+			subjectRef.UniqueID(),
 		)
 	default:
 		return "", errors.New("unsupported analysis subject")

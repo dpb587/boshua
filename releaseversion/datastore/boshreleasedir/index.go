@@ -1,6 +1,7 @@
 package boshreleasedir
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -86,6 +87,10 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 				return nil, fmt.Errorf("reading %s: %v", releasePath, err)
 			}
 
+			releaseSha1 := sha1.New()
+			releaseSha1.Write(releaseBytes)
+			sha1 := fmt.Sprintf("%x", releaseSha1.Sum(nil))
+
 			err = yaml.Unmarshal(releaseBytes, &release)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshalling %s: %v", indexPath, err)
@@ -94,6 +99,9 @@ func (i *index) loader() ([]releaseversion.Artifact, error) {
 			ref := releaseversion.Reference{
 				Name:    release.Name,
 				Version: release.Version,
+				URLs: []string{
+					fmt.Sprintf("%s//%s#%s", i.config.RepositoryConfig.Repository, releaseSubPath, sha1),
+				},
 			}
 
 			inmemory = append(inmemory, releaseversion.New(

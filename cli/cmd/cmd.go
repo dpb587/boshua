@@ -24,7 +24,7 @@ type Cmd struct {
 	// DeploymentCmd      *deployment.Cmd             `command:"deployment" description:"For working with deployments"`
 	StemcellCmd *stemcellversion.Cmd `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 
-	DownloadMetalinkCmd DownloadMetalinkCmd `command:"download-metalink" description:"Internal. Download resources in a metalink."`
+	DownloadMetalinkCmd DownloadMetalinkCmd `command:"download-metalink" description:"For downloading assets in a metalink"`
 }
 
 func New() *Cmd {

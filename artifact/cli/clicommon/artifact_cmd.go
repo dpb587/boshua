@@ -64,8 +64,20 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 	if c.Format == "json" {
 		output := map[string]string{
 			"file": artifact.Name,
-			"url":  artifact.URLs[0].URL,
 		}
+
+		for _, url := range artifact.URLs { // TODO only first?
+			output["url"] = url.URL
+
+			break
+		}
+
+		for _, metaurl := range artifact.MetaURLs { // TODO only first?
+			output["metaurl"] = metaurl.URL
+
+			break
+		}
+
 		for _, cs := range metalinkutil.HashesToChecksums(artifact.Hashes) {
 			output[cs.Algorithm().Name()] = fmt.Sprintf("%x", cs.Data())
 		}
@@ -81,7 +93,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 			Files: []metalink.File{
 				artifact,
 			},
-			Generator: "bosh-compiled-releases/0.0.0",
+			Generator: "boshua/0.0.0",
 		}
 
 		meta4Bytes, err := metalink.Marshal(meta4)

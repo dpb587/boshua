@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"io/ioutil"
 	"path/filepath"
 	"time"
@@ -68,6 +69,9 @@ func (c *DownloadMetalinkCmd) Execute(_ []string) error {
 		}
 
 		progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+		if file.Size == 0 {
+			progress.SetWriter(bytes.NewBuffer(nil))
+		}
 
 		err = transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(file, local, progress)
 		if err != nil {
