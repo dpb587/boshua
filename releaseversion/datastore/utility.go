@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
@@ -38,12 +39,25 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref relea
 		Analyzer: analyzer,
 	}
 
-	analysisSubject, err := analysisdatastore.FilterForOne(analysisIndex, analysisRef)
-	if err == analysisdatastore.NoMatchErr {
+	analysisSubject, analysisSubjectErr := analysisdatastore.FilterForOne(analysisIndex, analysisRef)
+	if analysisSubjectErr == analysisdatastore.NoMatchErr {
 		tt, err := analysistask.New(subject, analyzer)
 		if err != nil {
 			return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "preparing task")
 		}
+
+		tt = append(tt, task.Step{
+			Name: "storing",
+			Args: []string{
+				"release",
+				fmt.Sprintf("--release=%s/%s", ref.Name, ref.Version),
+				// TODO more options
+				"datastore",
+				"store-analysis",
+				fmt.Sprintf("--analyzer=%s", analyzer),
+				filepath.Join("input", "results.jsonl.gz"),
+			},
+		})
 
 		scheduledTask, err := scheduler_.Schedule(tt)
 		if err != nil {
@@ -57,11 +71,11 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref relea
 			return releaseversion.Artifact{}, analysis.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 
-		analysisSubject, err = analysisdatastore.FilterForOne(analysisIndex, analysisRef)
+		analysisSubject, analysisSubjectErr = analysisdatastore.FilterForOne(analysisIndex, analysisRef)
 	}
 
-	if err != nil {
-		return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+	if analysisSubjectErr != nil {
+		return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(analysisSubjectErr, "finding analysis")
 	}
 
 	return subject, analysisSubject, nil

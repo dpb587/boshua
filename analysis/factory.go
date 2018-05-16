@@ -1,13 +1,12 @@
 package analysis
 
 import (
-	"github.com/dpb587/boshua/artifact"
+	"github.com/dpb587/metalink"
 )
 
-func New(artifact artifact.Artifact, analyzer AnalyzerName, subject Subject) Artifact {
+func New(ref Reference, meta4File metalink.File) Artifact {
 	return Artifact{
-		artifact: artifact,
-		analyzer: analyzer,
-		subject:  subject,
+		reference:    ref,
+		metalinkFile: meta4File,
 	}
 }

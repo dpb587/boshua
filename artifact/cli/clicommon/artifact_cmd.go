@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -45,7 +46,12 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 			target = artifact.Name
 		}
 
-		local, err := urlLoader.Load(metalink.URL{URL: target})
+		targetPath, err := filepath.Abs(target)
+		if err != nil {
+			return errors.Wrap(err, "finding download path")
+		}
+
+		local, err := urlLoader.Load(metalink.URL{URL: targetPath})
 		if err != nil {
 			return errors.Wrap(err, "loading download destination")
 		}

@@ -2,7 +2,7 @@ package inmemory
 
 import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/tempfile"
+	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
@@ -97,5 +97,5 @@ func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact,
 }
 
 func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
-	return tempfile.New()
+	return localcache.New()
 }

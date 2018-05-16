@@ -6,19 +6,16 @@ import (
 )
 
 type Artifact struct {
-	artifact artifact.Artifact
-	analyzer AnalyzerName
-	subject  Subject
+	reference    Reference
+	metalinkFile metalink.File
 }
 
-func (a Artifact) Analyzer() AnalyzerName {
-	return a.analyzer
+var _ artifact.Artifact = &Artifact{}
+
+func (s Artifact) MetalinkFile() metalink.File {
+	return s.metalinkFile
 }
 
-func (a Artifact) MetalinkFile() metalink.File {
-	return a.artifact.MetalinkFile()
-}
-
-func (a Artifact) Subject() Subject {
-	return a.subject
+func (s Artifact) Reference() interface{} {
+	return s.reference
 }

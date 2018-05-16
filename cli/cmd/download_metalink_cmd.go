@@ -57,7 +57,12 @@ func (c *DownloadMetalinkCmd) Execute(_ []string) error {
 			localPath = filepath.Join(*c.Args.TargetDir, localPath)
 		}
 
-		local, err := urlLoader.Load(metalink.URL{URL: localPath})
+		fullPath, err := filepath.Abs(localPath)
+		if err != nil {
+			return errors.Wrap(err, "finding output file")
+		}
+
+		local, err := urlLoader.Load(metalink.URL{URL: fullPath})
 		if err != nil {
 			return errors.Wrap(err, "loading download destination")
 		}

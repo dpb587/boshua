@@ -18,6 +18,5 @@ func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 		}
 
 		return artifact.MetalinkFile(), nil
-
 	})
 }

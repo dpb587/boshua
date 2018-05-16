@@ -45,7 +45,7 @@ func New(subject analysis.Subject, analyzer analysis.AnalyzerName) (task.Task, e
 				"generate",
 				fmt.Sprintf("--analyzer=%s", analyzer),
 				filepath.Join("input", file.Name),
-				filepath.Join("output", "results.jsonl"),
+				filepath.Join("output", "results.jsonl.gz"),
 			},
 			Privileged: privileged,
 		},

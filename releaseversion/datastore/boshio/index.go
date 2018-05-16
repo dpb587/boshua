@@ -9,7 +9,7 @@ import (
 	"reflect"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/tempfile"
+	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
@@ -51,7 +51,7 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 }
 
 func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
-	return tempfile.New()
+	return localcache.New()
 }
 
 func (i *index) loader() ([]releaseversion.Artifact, error) {

@@ -1,6 +1,8 @@
 package datastore
 
-import "github.com/dpb587/boshua/analysis"
+import (
+	"github.com/dpb587/boshua/analysis"
+)
 
 func FilterForOne(index Index, ref analysis.Reference) (analysis.Artifact, error) {
 	results, err := index.Filter(ref)

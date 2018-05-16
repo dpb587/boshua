@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/tempfile"
+	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 )
@@ -41,5 +41,5 @@ func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, err
 }
 
 func (i *index) GetAnalysisDatastore() analysisdatastore.Index { // TODO aggregate probably requires err for Unsupported check
-	return tempfile.New()
+	return localcache.New()
 }

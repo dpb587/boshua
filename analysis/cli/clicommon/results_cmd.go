@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"io"
 	"os/exec"
+	"strings"
 	// "io"
 	"io/ioutil"
 	"log"
@@ -18,6 +19,7 @@ import (
 	"github.com/dpb587/metalink/file/metaurl"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
+	"github.com/dpb587/metalink/verification"
 	"github.com/dpb587/metalink/verification/hash"
 	"github.com/pkg/errors"
 )
@@ -52,10 +54,17 @@ func (c *ResultsCmd) ExecuteAnalysis(analyzer analysis.AnalyzerName, loader Anal
 		log.Fatalf("loading download destination: %v", err)
 	}
 
+	var verifier verification.Verifier = hash.StrongestVerification
+
+	// if local filesystem; avoid verifying
+	if len(file.URLs) > 0 && strings.HasPrefix(file.URLs[0].URL, "file://") {
+		verifier = verification.MultipleVerification{Verifications: []verification.Verification{}}
+	}
+
 	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
 	progress.SetWriter(ioutil.Discard)
 
-	err = transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(file, local, progress)
+	err = transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, verifier).TransferFile(file, local, progress)
 	if err != nil {
 		log.Fatalf("downloading results: %v", err)
 	}

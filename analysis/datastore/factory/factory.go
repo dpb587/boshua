@@ -4,23 +4,22 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/presentbcr"
+	"github.com/dpb587/boshua/analysis/datastore/boshreleasedpb"
+	// "github.com/dpb587/boshua/analysis/datastore/presentbcr"
 	"github.com/dpb587/boshua/config"
-	analysisdatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 type factory struct {
-	logger               logrus.FieldLogger
-	releaseVersionsIndex analysisdatastore.Index
+	logger logrus.FieldLogger
 }
 
 var _ datastore.Factory = &factory{}
 
-func New(logger logrus.FieldLogger, releaseVersionsIndex analysisdatastore.Index) datastore.Factory {
+func New(logger logrus.FieldLogger) datastore.Factory {
 	return &factory{
-		logger:               logger,
-		releaseVersionsIndex: releaseVersionsIndex,
+		logger: logger,
 	}
 }
 
@@ -28,14 +27,22 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	logger := f.logger.WithField("datastore", fmt.Sprintf("analysis:%s[%s]", provider, name))
 
 	switch provider {
-	case "presentbcr":
-		cfg := presentbcr.Config{}
+	case "boshreleasedpb":
+		cfg := boshreleasedpb.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return presentbcr.New(cfg, logger), nil
+		return boshreleasedpb.New(cfg, logger), nil
+	// case "presentbcr":
+	// 	cfg := presentbcr.Config{}
+	// 	err := config.RemarshalYAML(options, &cfg)
+	// 	if err != nil {
+	// 		return nil, errors.Wrap(err, "loading options")
+	// 	}
+	//
+	// 	return presentbcr.New(cfg, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
