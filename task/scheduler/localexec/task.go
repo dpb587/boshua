@@ -15,7 +15,8 @@ import (
 type Task struct {
 	cmdFactory CmdFactory
 	tt         task.Task
-	status     task.Status
+
+	status *task.Status
 }
 
 var _ scheduler.Task = &Task{}
@@ -24,16 +25,21 @@ func NewTask(cmdFactory CmdFactory, tt task.Task) *Task {
 	return &Task{
 		cmdFactory: cmdFactory,
 		tt:         tt,
-		status:     task.StatusPending,
 	}
 }
 
+// TODO synchronous
 func (t *Task) Status() (task.Status, error) {
-	return t.status, nil
+	var err error
+
+	if t.status == nil {
+		*t.status, err = t.run()
+	}
+
+	return *t.status, err
 }
 
-// TODO synchronous
-func (t *Task) Wait(_ func(task.Status)) (task.Status, error) {
+func (t *Task) run() (task.Status, error) {
 	inputDir, err := ioutil.TempDir("", "boshua-localexec-input")
 	if err != nil {
 		return task.StatusFailed, errors.Wrap(err, "creating input directory")

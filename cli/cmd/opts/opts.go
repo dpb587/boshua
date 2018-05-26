@@ -21,10 +21,9 @@ import (
 	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/dpb587/boshua/task/scheduler"
-	"github.com/dpb587/boshua/task/scheduler/localexec"
+	schedulerfactory "github.com/dpb587/boshua/task/scheduler/factory"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type Opts struct {
@@ -62,17 +61,18 @@ func (o *Opts) getParsedConfig() (config.Config, error) {
 		return *o.parsedConfig, nil
 	}
 
-	o.parsedConfig = &config.Config{}
-
 	configBytes, err := ioutil.ReadFile(o.getConfigPath())
 	if err != nil {
 		return config.Config{}, errors.Wrap(err, "reading config")
 	}
 
-	err = yaml.Unmarshal(configBytes, o.parsedConfig)
+	cfg := config.Config{}
+	err = config.UnmarshalYAML(configBytes, &cfg)
 	if err != nil {
-		return config.Config{}, errors.Wrap(err, "unmarshalling config")
+		return config.Config{}, errors.Wrap(err, "loading options")
 	}
+
+	o.parsedConfig = &cfg
 
 	return *o.parsedConfig, nil
 }
@@ -180,15 +180,25 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 }
 
 func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
-	return localexec.NewScheduler(func(args ...string) *exec.Cmd {
-		return exec.Command(
-			"boshua",
-			append([]string{
-				"--config", o.getConfigPath(),
-				// "--log-level", string(o.LogLevel),
-			}, args...)...,
-		)
-	}), nil
+	config, err := o.getParsedConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "loading config")
+	}
+
+	factory := schedulerfactory.New(
+		o.GetLogger(),
+		func(args ...string) *exec.Cmd {
+			return exec.Command(
+				"boshua",
+				append([]string{
+					"--config", o.getConfigPath(),
+					// "--log-level", string(o.LogLevel), // TODO stringify
+				}, args...)...,
+			)
+		},
+	)
+
+	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
 }
 
 func (o *Opts) GetLogger() logrus.FieldLogger {

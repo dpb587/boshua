@@ -1,8 +1,8 @@
 package config
 
 type Config struct {
-	General          GeneralConfig             `yaml:"general"`
-	Scheduler        AbstractComponentConfig   `yaml:"scheduler"`
+	General          GeneralConfig             `yaml:"general,omitempty"`
+	Scheduler        *AbstractComponentConfig  `yaml:"scheduler,omitempty"`
 	Stemcells        []AbstractComponentConfig `yaml:"stemcell_versions"`
 	Releases         []AbstractComponentConfig `yaml:"release_versions"`
 	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"`
@@ -24,4 +24,12 @@ type AbstractComponentConfig struct {
 	Name    string                 `yaml:"name"`
 	Type    string                 `yaml:"type"`
 	Options map[string]interface{} `yaml:"options"`
+}
+
+func (c *Config) ApplyDefaults() {
+	if c.Scheduler == nil {
+		c.Scheduler = &AbstractComponentConfig{
+			Type: "localexec",
+		}
+	}
 }

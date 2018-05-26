@@ -64,7 +64,7 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref relea
 			return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "scheduling task")
 		}
 
-		status, err := scheduledTask.Wait(nil) // TODO status reporter
+		status, err := scheduler.WaitForTask(scheduledTask, nil) // TODO status reporter
 		if err != nil {
 			return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "checking task")
 		} else if status != task.StatusSucceeded {

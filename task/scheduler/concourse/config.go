@@ -1,6 +1,8 @@
 package concourse
 
-type ConcourseConfig struct {
+type Config struct {
+	Fly string `yaml:"fly"`
+
 	Target   string `yaml:"target"`
 	Insecure bool   `yaml:"insecure"`
 	URL      string `yaml:"url"`
@@ -8,5 +10,11 @@ type ConcourseConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 
-	SecretsPath string `yaml:"secrets_path"`
+	SecretsPath string `yaml:"secrets_path"` // TODO remove?
+}
+
+func (c *Config) ApplyDefaults() {
+	if c.Fly == "" {
+		c.Fly = "/usr/local/bin/fly"
+	}
 }

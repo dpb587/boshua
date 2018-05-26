@@ -13,7 +13,11 @@ func RemarshalYAML(from interface{}, to interface{}) error {
 		return errors.Wrap(err, "marshaling")
 	}
 
-	err = yaml.Unmarshal(bytes, to)
+	return UnmarshalYAML(bytes, to)
+}
+
+func UnmarshalYAML(from []byte, to interface{}) error {
+	err := yaml.Unmarshal(from, to)
 	if err != nil {
 		return errors.Wrap(err, "unmarshalling")
 	}
@@ -32,7 +36,11 @@ func RemarshalJSON(from interface{}, to interface{}) error {
 		return errors.Wrap(err, "marshaling")
 	}
 
-	err = json.Unmarshal(bytes, to)
+	return UnmarshalJSON(bytes, to)
+}
+
+func UnmarshalJSON(from []byte, to interface{}) error {
+	err := json.Unmarshal(from, to)
 	if err != nil {
 		return errors.Wrap(err, "unmarshalling")
 	}
