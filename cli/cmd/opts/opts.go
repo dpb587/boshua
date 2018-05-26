@@ -1,12 +1,15 @@
 package opts
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
 	"github.com/dpb587/boshua/cli/args"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	compiledreleaseversionaggregate "github.com/dpb587/boshua/compiledreleaseversion/datastore/aggregate"
@@ -77,6 +80,30 @@ func (o *Opts) getParsedConfig() (config.Config, error) {
 	return *o.parsedConfig, nil
 }
 
+func (o *Opts) GetAnalysisIndex(name string) (analysisdatastore.Index, error) {
+	config, err := o.getParsedConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "loading config")
+	}
+
+	factory := analysisfactory.New(o.GetLogger())
+
+	for _, cfg := range config.Analyses {
+		if cfg.Name != name {
+			continue
+		}
+
+		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		if err != nil {
+			return nil, errors.Wrap(err, "creating analysis datastore")
+		}
+
+		return idx, nil
+	}
+
+	return nil, fmt.Errorf("failed to find analysis index: %s", name)
+}
+
 func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, error) {
 	if name != "default" {
 		panic("TODO")
@@ -130,7 +157,16 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 	factory := compiledreleaseversionfactory.New(o.GetLogger(), releaseIndex)
 
 	for _, cfg := range config.CompiledReleases {
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		var analysisIndex analysisdatastore.Index
+
+		if cfg.Analysis != nil {
+			analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+			if err != nil {
+				return nil, errors.Wrap(err, "loading compiled release analysis")
+			}
+		}
+
+		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options, analysisIndex)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating compiled release version datastore")
 		}

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
@@ -55,6 +56,10 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 	return datastore.UnsupportedOperationErr
+}
+
+func (i *index) GetAnalysisDatastore(_ compiledreleaseversion.Reference) (analysisdatastore.Index, error) {
+	return nil, errors.New("TODO")
 }
 
 func (i *index) loader() ([]compiledreleaseversion.Artifact, error) {

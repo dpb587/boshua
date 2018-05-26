@@ -40,7 +40,31 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 }
 
 func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
-	return nil, errors.New("TODO")
+	analysisPath, err := i.storagePath(ref)
+	if err != nil {
+		return nil, errors.Wrap(err, "finding analysis path")
+	}
+
+	analysisBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, analysisPath))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, datastore.NoMatchErr
+		}
+
+		return nil, errors.Wrap(err, "reading analysis meta4")
+	}
+
+	var analysisMeta4 metalink.Metalink
+
+	err = metalink.Unmarshal(analysisBytes, &analysisMeta4)
+	if err != nil {
+		// TODO warn and continue?
+		return nil, fmt.Errorf("unmarshalling %s: %v", analysisPath, err)
+	}
+
+	return []analysis.Artifact{
+		analysis.New(ref, analysisMeta4.Files[0]),
+	}, nil
 }
 
 func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
@@ -113,11 +137,11 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 
 	// not a good way to inject configs
 	priorAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	os.Setenv("AWS_ACCESS_KEY_ID", config.Blobstore.Options.SecretAccessKey)
+	os.Setenv("AWS_ACCESS_KEY_ID", config.Blobstore.Options.AccessKeyID)
 	defer os.Setenv("AWS_ACCESS_KEY_ID", priorAccessKey)
 
 	priorSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", config.Blobstore.Options.AccessKeyID)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", config.Blobstore.Options.SecretAccessKey)
 	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
 
 	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
@@ -151,6 +175,7 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 						URL: remote.ReaderURI(),
 					},
 				},
+				Hashes: file.Hashes,
 			},
 		},
 		Generator: "boshua/boshreleasedpb",
@@ -161,6 +186,7 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 		return errors.Wrap(err, "marshalling metalink")
 	}
 
+	fmt.Fprintln(os.Stderr, path)
 	return i.repository.Commit(
 		map[string][]byte{path: commitMeta4Bytes},
 		fmt.Sprintf(
@@ -173,31 +199,45 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 func (i *index) loadConfig() (releaseConfig, error) {
 	var finalConfig, privateConfig releaseConfig
 
-	{ // final.yml
-		finalBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "final.yml"))
-		if err != nil {
-			return releaseConfig{}, errors.Wrap(err, "reading final.yml")
+	if i.config.BlobstoreConfig.AWS.Host != "" {
+		finalConfig = releaseConfig{
+			Blobstore: releaseConfigBlobstore{
+				Provider: "s3",
+				Options: releaseConfigBlobstoreS3{
+					Host:            i.config.BlobstoreConfig.AWS.Host,
+					BucketName:      i.config.BlobstoreConfig.AWS.Bucket,
+					AccessKeyID:     i.config.BlobstoreConfig.AWS.AccessKey,
+					SecretAccessKey: i.config.BlobstoreConfig.AWS.SecretKey,
+				},
+			},
+		}
+	} else {
+		{ // final.yml
+			finalBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "final.yml"))
+			if err != nil {
+				return releaseConfig{}, errors.Wrap(err, "reading final.yml")
+			}
+
+			err = yaml.Unmarshal(finalBytes, &finalConfig)
+			if err != nil {
+				return releaseConfig{}, errors.Wrap(err, "unmarshalling final.yml")
+			}
 		}
 
-		err = yaml.Unmarshal(finalBytes, &finalConfig)
-		if err != nil {
-			return releaseConfig{}, errors.Wrap(err, "unmarshalling final.yml")
+		{ // private.yml
+			privateBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "private.yml"))
+			if err != nil {
+				return releaseConfig{}, errors.Wrap(err, "reading private.yml")
+			}
+
+			err = yaml.Unmarshal(privateBytes, &privateConfig)
+			if err != nil {
+				return releaseConfig{}, errors.Wrap(err, "unmarshalling private.yml")
+			}
 		}
+
+		finalConfig.Merge(privateConfig)
 	}
-
-	{ // private.yml
-		privateBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "private.yml"))
-		if err != nil {
-			return releaseConfig{}, errors.Wrap(err, "reading private.yml")
-		}
-
-		err = yaml.Unmarshal(privateBytes, &privateConfig)
-		if err != nil {
-			return releaseConfig{}, errors.Wrap(err, "unmarshalling private.yml")
-		}
-	}
-
-	finalConfig.Merge(privateConfig)
 
 	return finalConfig, nil
 }

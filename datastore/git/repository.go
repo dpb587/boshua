@@ -69,7 +69,7 @@ func (i *Repository) Reload() (bool, error) {
 
 func (i *Repository) Commit(files map[string][]byte, message string) error {
 	for path, data := range files {
-		err := os.MkdirAll(filepath.Dir(filepath.Join(i.config.LocalPath, path)), 0644)
+		err := os.MkdirAll(filepath.Dir(filepath.Join(i.config.LocalPath, path)), 0755)
 		if err != nil {
 			return errors.Wrap(err, "mkdir file dir")
 		}

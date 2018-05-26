@@ -3,8 +3,9 @@ package factory
 import (
 	"fmt"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/compiledreleaseversion/datastore/boshreleasedpb"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore/dpbreleaseartifacts"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/legacybcr"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/presentbcr"
 	"github.com/dpb587/boshua/config"
@@ -27,18 +28,18 @@ func New(logger logrus.FieldLogger, releaseVersionsIndex releaseversiondatastore
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
+func (f *factory) Create(provider, name string, options map[string]interface{}, analysisIndex analysisdatastore.Index) (datastore.Index, error) {
 	logger := f.logger.WithField("datastore", fmt.Sprintf("compiledreleaseversion:%s[%s]", provider, name))
 
 	switch provider {
-	case "boshreleasedpb":
-		cfg := boshreleasedpb.Config{}
+	case "dpbreleaseartifacts":
+		cfg := dpbreleaseartifacts.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return boshreleasedpb.New(cfg, logger), nil
+		return dpbreleaseartifacts.New(cfg, analysisIndex, logger), nil
 	case "presentbcr":
 		cfg := presentbcr.Config{}
 		err := config.RemarshalYAML(options, &cfg)
@@ -55,6 +56,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		}
 
 		return legacybcr.New(cfg, f.releaseVersionsIndex, logger), nil
+	// case "compiledreleasesops": // TODO https://github.com/cloudfoundry/cf-deployment/blob/master/operations/use-compiled-releases.yml
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

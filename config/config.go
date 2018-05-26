@@ -21,9 +21,10 @@ type ServerConfig struct {
 }
 
 type AbstractComponentConfig struct {
-	Name    string                 `yaml:"name"`
-	Type    string                 `yaml:"type"`
-	Options map[string]interface{} `yaml:"options"`
+	Name     string                   `yaml:"name"`
+	Type     string                   `yaml:"type"`
+	Options  map[string]interface{}   `yaml:"options"`
+	Analysis *AbstractComponentConfig `yaml:"analysis"`
 }
 
 func (c *Config) ApplyDefaults() {

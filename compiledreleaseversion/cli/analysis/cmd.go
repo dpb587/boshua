@@ -5,6 +5,7 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	compiledreleaseopts "github.com/dpb587/boshua/compiledreleaseversion/cli/opts"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/pkg/errors"
 )
 
@@ -26,17 +27,22 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	datastore, err := o.AppOpts.GetCompiledReleaseIndex("default")
+	index, err := o.AppOpts.GetCompiledReleaseIndex("default")
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "loading compiled release index")
 	}
 
-	_, err = datastore.Find(o.CompiledReleaseOpts.Reference())
+	scheduler, err := o.AppOpts.GetScheduler()
 	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding compiled release")
+		return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
 	}
 
-	return analysis.Artifact{}, errors.New("TODO")
+	_, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.CompiledReleaseOpts.Reference(), o.AnalysisOpts.Analyzer)
+	if err != nil {
+		return analysis.Artifact{}, err // intentional no Wrap
+	}
+
+	return subject, nil
 
 	// return client.RequireCompiledReleaseVersionAnalysis(
 	// 	ref.ReleaseVersion,

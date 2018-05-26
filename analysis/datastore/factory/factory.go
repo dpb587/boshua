@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/boshreleasedpb"
+	"github.com/dpb587/boshua/analysis/datastore/dpbreleaseartifacts"
 	// "github.com/dpb587/boshua/analysis/datastore/presentbcr"
 	"github.com/dpb587/boshua/config"
 	"github.com/pkg/errors"
@@ -27,7 +27,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	logger := f.logger.WithField("datastore", fmt.Sprintf("analysis:%s[%s]", provider, name))
 
 	switch provider {
-	case "boshreleasedpb":
+	case "dpbreleaseartifacts":
 		cfg := boshreleasedpb.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {

@@ -3,6 +3,7 @@ package aggregate
 import (
 	"fmt"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 )
@@ -51,4 +52,19 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 	}
 
 	return datastore.UnsupportedOperationErr
+}
+
+func (i *index) GetAnalysisDatastore(ref compiledreleaseversion.Reference) (analysisdatastore.Index, error) {
+	for idxIdx, idx := range i.aggregated {
+		analysisIndex, err := idx.GetAnalysisDatastore(ref)
+		if err == datastore.UnsupportedOperationErr {
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("getting analysis index %d: %v", idxIdx, err)
+		}
+
+		return analysisIndex, nil
+	}
+
+	return nil, datastore.UnsupportedOperationErr
 }

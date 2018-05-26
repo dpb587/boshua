@@ -1,4 +1,4 @@
-package boshreleasedpb
+package dpbreleaseartifacts
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore/inmemory"
@@ -20,19 +21,21 @@ import (
 )
 
 type index struct {
-	logger     logrus.FieldLogger
-	config     Config
-	repository *git.Repository
-	inmemory   datastore.Index
+	logger        logrus.FieldLogger
+	config        Config
+	repository    *git.Repository
+	inmemory      datastore.Index
+	analysisIndex analysisdatastore.Index
 }
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(config Config, analysisIndex analysisdatastore.Index, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		config:     config,
-		repository: git.NewRepository(logger, config.RepositoryConfig),
+		logger:        logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config:        config,
+		repository:    git.NewRepository(logger, config.RepositoryConfig),
+		analysisIndex: analysisIndex,
 	}
 
 	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
@@ -48,6 +51,14 @@ func (i *index) Find(ref compiledreleaseversion.Reference) (compiledreleaseversi
 	return i.inmemory.Find(ref)
 }
 
+func (i *index) GetAnalysisDatastore(_ compiledreleaseversion.Reference) (analysisdatastore.Index, error) {
+	if i.analysisIndex == nil {
+		return nil, datastore.UnsupportedOperationErr
+	}
+
+	return i.analysisIndex, nil
+}
+
 func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 	artifactRef := artifact.Reference().(compiledreleaseversion.Reference)
 
@@ -61,7 +72,7 @@ func (i *index) Store(artifact compiledreleaseversion.Artifact) error {
 
 	meta4 := metalink.Metalink{
 		Files:     []metalink.File{artifact.MetalinkFile()},
-		Generator: "boshua/boshreleasedpb",
+		Generator: "boshua/dpbreleaseartifacts",
 	}
 
 	meta4Bytes, err := metalink.Marshal(meta4)

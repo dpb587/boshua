@@ -1,4 +1,4 @@
-package boshreleasedpb
+package dpbreleaseartifacts
 
 import "github.com/dpb587/boshua/datastore/git"
 

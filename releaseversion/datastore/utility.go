@@ -33,6 +33,10 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref relea
 	}
 
 	analysisIndex := index.GetAnalysisDatastore()
+	// analysisIndex, err := index.GetAnalysisDatastore()
+	// if err != nil {
+	// 	return releaseversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "getting analysis datastore")
+	// }
 
 	analysisRef := analysis.Reference{
 		Subject:  subject,

@@ -33,7 +33,10 @@ func (t *Task) Status() (task.Status, error) {
 	var err error
 
 	if t.status == nil {
-		*t.status, err = t.run()
+		var status task.Status
+
+		status, err = t.run()
+		t.status = &status
 	}
 
 	return *t.status, err
