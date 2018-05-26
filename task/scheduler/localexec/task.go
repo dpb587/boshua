@@ -1,9 +1,9 @@
 package localexec
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -13,16 +13,18 @@ import (
 )
 
 type Task struct {
-	tt     task.Task
-	status task.Status
+	cmdFactory CmdFactory
+	tt         task.Task
+	status     task.Status
 }
 
 var _ scheduler.Task = &Task{}
 
-func NewTask(tt task.Task) *Task {
+func NewTask(cmdFactory CmdFactory, tt task.Task) *Task {
 	return &Task{
-		tt:     tt,
-		status: task.StatusPending,
+		cmdFactory: cmdFactory,
+		tt:         tt,
+		status:     task.StatusPending,
 	}
 }
 
@@ -73,12 +75,12 @@ func (t *Task) Wait(_ func(task.Status)) (task.Status, error) {
 			return task.StatusFailed, errors.Wrapf(err, "linking output")
 		}
 
-		cmd := exec.Command("boshua", step.Args...)
+		cmd := t.cmdFactory(step.Args...)
 		cmd.Dir = tmpdir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		// fmt.Printf("%s\n", step.Args)
+		fmt.Printf("%s\n", step.Args)
 
 		err = cmd.Run()
 		if err != nil {

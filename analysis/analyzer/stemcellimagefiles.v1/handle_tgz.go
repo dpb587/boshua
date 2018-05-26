@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/pkg/errors"

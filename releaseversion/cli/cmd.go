@@ -18,6 +18,7 @@ type Cmd struct {
 	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the release artifact"`
 	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with release datastores"`
 
+	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`
 }
@@ -39,6 +40,7 @@ func New(app *cmdopts.Opts) *Cmd {
 		ReleaseOpts: cmd.Opts,
 	}
 
+	cmd.AnalyzersCmd.CmdOpts = cmdOpts
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
 

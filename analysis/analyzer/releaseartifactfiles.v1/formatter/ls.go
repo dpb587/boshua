@@ -3,10 +3,11 @@ package formatter
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/formatter"
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/output"
 )
 
 type Ls struct{}
@@ -23,7 +24,10 @@ func (f Ls) Format(writer io.Writer, reader io.Reader) error {
 			return err
 		}
 
-		ff.Add(result)
+		// TODO prefix instead?
+		result.Result.Path = fmt.Sprintf("%s!%s", result.Artifact, result.Result.Path)
+
+		ff.Add(result.Result)
 	}
 
 	ff.Flush()

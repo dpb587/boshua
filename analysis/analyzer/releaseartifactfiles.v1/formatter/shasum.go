@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/output"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
@@ -24,9 +24,9 @@ func (f Shasum) Format(writer io.Writer, reader io.Reader) error {
 			return err
 		}
 
-		for _, cs := range result.Checksums {
+		for _, cs := range result.Result.Checksums {
 			if cs.Algorithm().Name() == f.Algorithm.Name() {
-				fmt.Fprintf(writer, "%x  %s\n", cs.Data(), result.Path)
+				fmt.Fprintf(writer, "%x  %s\n", cs.Data(), fmt.Sprintf("%s!%s", result.Artifact, result.Result.Path))
 
 				break
 			}

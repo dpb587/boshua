@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/analysis"
+	filescommonoutput "github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
 	"github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/output"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
@@ -96,7 +97,7 @@ func (a Analyzer) analyzeArtifact(results analysis.Writer, artifact string, read
 
 		path := strings.TrimPrefix(header.Name, "./")
 
-		filestat := output.ResultFileStat{
+		filestat := filescommonoutput.Result{
 			Type:    string(header.Typeflag),
 			Path:    path,
 			Link:    header.Linkname,
@@ -137,7 +138,6 @@ func (a Analyzer) analyzeArtifact(results analysis.Writer, artifact string, read
 
 		err = results.Write(output.Result{
 			Artifact: artifact,
-			Path:     path,
 			Result:   filestat,
 		})
 		if err != nil {

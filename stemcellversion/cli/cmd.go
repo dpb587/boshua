@@ -18,6 +18,7 @@ type Cmd struct {
 	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the stemcell artifact" subcommands-optional:"true"`
 	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with release datastores"`
 
+	AnalyzersCmd      AnalyzersCmd      `command:"analyzers" description:"For showing the supported analyzers"`
 	ArtifactCmd       ArtifactCmd       `command:"artifact" description:"For showing the stemcell artifact"`
 	UploadStemcellCmd UploadStemcellCmd `command:"upload-stemcell" description:"For uploading the stemcell to BOSH"`
 }
@@ -39,6 +40,7 @@ func New(app *cmdopts.Opts) *Cmd {
 		StemcellOpts: cmd.Opts,
 	}
 
+	cmd.AnalyzersCmd.CmdOpts = cmdOpts
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.UploadStemcellCmd.CmdOpts = cmdOpts
 

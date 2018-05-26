@@ -3,7 +3,9 @@ package opts
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/dpb587/boshua/cli/args"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/compiledreleaseversion/datastore"
@@ -26,7 +28,7 @@ import (
 )
 
 type Opts struct {
-	Config string `long:"config" description:"" env:"BOSHUA_CONFIG"`
+	Config string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
 
 	Quiet    bool          `long:"quiet" description:"Suppress informational output"`
 	LogLevel args.LogLevel `long:"log-level" description:"Show additional levels of log messages" default:"FATAL" env:"BOSHUA_LOG_LEVEL"`
@@ -40,6 +42,21 @@ type Opts struct {
 	osIndex              osversiondatastore.Index
 }
 
+func (o *Opts) getConfigPath() string {
+	configPath := o.Config
+
+	if strings.HasPrefix(configPath, "~/") {
+		configPath = filepath.Join(os.Getenv("HOME"), configPath[1:])
+	}
+
+	configPath, err := filepath.Abs(configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	return configPath
+}
+
 func (o *Opts) getParsedConfig() (config.Config, error) {
 	if o.parsedConfig != nil {
 		return *o.parsedConfig, nil
@@ -47,7 +64,7 @@ func (o *Opts) getParsedConfig() (config.Config, error) {
 
 	o.parsedConfig = &config.Config{}
 
-	configBytes, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".config", "boshua", "config.yml"))
+	configBytes, err := ioutil.ReadFile(o.getConfigPath())
 	if err != nil {
 		return config.Config{}, errors.Wrap(err, "reading config")
 	}
@@ -163,7 +180,15 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 }
 
 func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
-	return &localexec.Scheduler{}, nil
+	return localexec.NewScheduler(func(args ...string) *exec.Cmd {
+		return exec.Command(
+			"boshua",
+			append([]string{
+				"--config", o.getConfigPath(),
+				// "--log-level", string(o.LogLevel),
+			}, args...)...,
+		)
+	}), nil
 }
 
 func (o *Opts) GetLogger() logrus.FieldLogger {
