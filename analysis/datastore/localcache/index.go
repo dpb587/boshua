@@ -14,6 +14,7 @@ import (
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/pkg/errors"
@@ -123,6 +124,12 @@ func (i *index) cachePath(ref analysis.Reference) (string, error) {
 		pieces = append(
 			pieces,
 			"release",
+			subjectRef.UniqueID(),
+		)
+	case stemcellversion.Reference:
+		pieces = append(
+			pieces,
+			"stemcell",
 			subjectRef.UniqueID(),
 		)
 	default:

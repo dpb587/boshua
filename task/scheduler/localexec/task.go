@@ -89,7 +89,7 @@ func (t *Task) run() (task.Status, error) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		fmt.Printf("%s\n", step.Args)
+		fmt.Fprintf(os.Stderr, "%s\n", step.Args)
 
 		err = cmd.Run()
 		if err != nil {

@@ -68,6 +68,15 @@ Show the packages of a stemcell...
     ...
 
 
+## Concepts
+
+ * **Artifact** - an artifact represents something of interest and generally refers to a permanent blob of data somewhere, such as a BOSH release tarball stored on Amazon S3. Artifacts are usually identified by a couple pieces of information (e.g. name, version, checksum). There are several primary types of artifacts, each represented by a top-level CLI command.
+    * stemcell - a particular version of a BOSH stemcell for a given IaaS
+    * release - a particular version of a BOSH release
+    * compiled-release - a particular version of a BOSH release that has been compiled against a particular OS and version
+ * **Analysis** - generated metadata about an artifact. There are several different analyzers, all of which generate JSON data. Most analyzers have default formatters for rendering the data in a meaningful way.
+
+
 ## Limitations
 
  * TODO security

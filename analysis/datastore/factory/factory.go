@@ -5,7 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/analysis/datastore/dpbreleaseartifacts"
-	// "github.com/dpb587/boshua/analysis/datastore/presentbcr"
+	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -35,14 +35,8 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		}
 
 		return boshreleasedpb.New(cfg, logger), nil
-	// case "presentbcr":
-	// 	cfg := presentbcr.Config{}
-	// 	err := config.RemarshalYAML(options, &cfg)
-	// 	if err != nil {
-	// 		return nil, errors.Wrap(err, "loading options")
-	// 	}
-	//
-	// 	return presentbcr.New(cfg, logger), nil
+	case "localcache":
+		return localcache.New(), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

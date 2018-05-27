@@ -91,8 +91,9 @@ func (a Analyzer) analyzeReleaseManifest(results analysis.Writer, artifact strin
 	}
 
 	err = results.Write(output.Result{
-		Path:     artifact,
-		Manifest: safejson(spec).(output.ResultSpec),
+		Path:   artifact,
+		Raw:    string(marshalBytes),
+		Parsed: safejson(spec).(output.ResultSpec),
 	})
 	if err != nil {
 		return errors.Wrap(err, "writing result")
@@ -139,8 +140,9 @@ func (a Analyzer) analyzeJobArtifactManifest(results analysis.Writer, artifact s
 		}
 
 		err = results.Write(output.Result{
-			Path:     artifact,
-			Manifest: safejson(spec).(output.ResultSpec),
+			Path:   artifact,
+			Raw:    string(marshalBytes),
+			Parsed: safejson(spec).(output.ResultSpec),
 		})
 		if err != nil {
 			return errors.Wrap(err, "writing result")

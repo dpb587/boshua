@@ -5,6 +5,7 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
 )
 
@@ -26,37 +27,22 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	datastore, err := o.AppOpts.GetStemcellIndex("default")
+	index, err := o.AppOpts.GetStemcellIndex("default")
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}
 
-	_, err = datastore.Find(o.StemcellOpts.Reference())
+	scheduler, err := o.AppOpts.GetScheduler()
 	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding stemcell")
+		return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
 	}
 
-	return analysis.Artifact{}, errors.New("TODO")
+	_, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.StemcellOpts.Reference(), o.AnalysisOpts.Analyzer)
+	if err != nil {
+		return analysis.Artifact{}, err // intentional no Wrap
+	}
 
-	// return client.RequireStemcellVersionAnalysis(
-	// 	ref,
-	// 	analyzer,
-	// 	func(task scheduler.TaskStatus) {
-	// 		if o.AppOpts.Quiet {
-	// 			return
-	// 		}
-	//
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"boshua | %s | requesting stemcell analysis: %s/%s: %s: task is %s\n",
-	// 			time.Now().Format("15:04:05"),
-	// 			ref.Name(),
-	// 			ref.Version,
-	// 			analyzer,
-	// 			task.Status,
-	// 		)
-	// 	},
-	// )
+	return subject, nil
 }
 
 func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {

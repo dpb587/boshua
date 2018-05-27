@@ -186,7 +186,6 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 		return errors.Wrap(err, "marshalling metalink")
 	}
 
-	fmt.Fprintln(os.Stderr, path)
 	return i.repository.Commit(
 		map[string][]byte{path: commitMeta4Bytes},
 		fmt.Sprintf(

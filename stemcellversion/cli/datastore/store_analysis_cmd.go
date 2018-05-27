@@ -22,19 +22,19 @@ type StoreAnalysisArgs struct {
 }
 
 func (c *StoreAnalysisCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiledrelease/datastore/store-analysis")
+	c.AppOpts.ConfigureLogger("stemcell/datastore/store-analysis")
 
 	index, err := c.getDatastore()
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}
 
-	subject, err := index.Find(c.CompiledReleaseOpts.Reference())
+	subject, err := index.Find(c.StemcellOpts.Reference())
 	if err != nil {
 		return errors.Wrap(err, "filtering")
 	}
 
-	analysisIndex, err := index.GetAnalysisDatastore(c.CompiledReleaseOpts.Reference())
+	analysisIndex, err := index.GetAnalysisDatastore(c.StemcellOpts.Reference())
 	if err != nil {
 		return errors.Wrap(err, "getting analysis index")
 	}

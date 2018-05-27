@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
@@ -93,4 +94,8 @@ func (i *index) List() ([]stemcellversion.Artifact, error) {
 	}
 
 	return i.inmemory, nil
+}
+
+func (i *index) GetAnalysisDatastore(_ stemcellversion.Reference) (analysisdatastore.Index, error) {
+	return nil, datastore.UnsupportedOperationErr
 }
