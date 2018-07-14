@@ -7,6 +7,7 @@ import (
 	compiledreleaseversion "github.com/dpb587/boshua/compiledreleaseversion/cli"
 	// deployment "github.com/dpb587/boshua/deployment/cli"
 	releaseversion "github.com/dpb587/boshua/releaseversion/cli"
+	server "github.com/dpb587/boshua/server/cli"
 	stemcellversion "github.com/dpb587/boshua/stemcellversion/cli"
 	"github.com/sirupsen/logrus"
 )
@@ -25,6 +26,7 @@ type Cmd struct {
 	StemcellCmd *stemcellversion.Cmd `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 
 	DownloadMetalinkCmd DownloadMetalinkCmd `command:"download-metalink" description:"For downloading assets in a metalink"`
+	ServerCmd           server.Cmd          `command:"server" description:"For running an API server for remote access"`
 }
 
 func New() *Cmd {
@@ -45,6 +47,7 @@ func New() *Cmd {
 	}
 
 	app.DownloadMetalinkCmd.CmdOpts = cmdOpts
+	app.ServerCmd.AppOpts = app.Opts
 
 	return app
 }

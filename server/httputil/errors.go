@@ -1,4 +1,4 @@
-package urlutil
+package httputil
 
 import "errors"
 

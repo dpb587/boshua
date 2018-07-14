@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dpb587/boshua/api/logging"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,14 +32,14 @@ func WriteFailure(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Requ
 func WriteResponse(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		WriteFailure(logger, w, r, errors.Wrap(err))
+		WriteFailure(logger, w, r, errors.Wrap(err, "marshaling json"))
 
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataBytes)
-	w.Write([]byte("\n"), "marshaling response")
+	w.Write([]byte("\n"))
 }
 
 func ApplyLoggerContext(logger logrus.FieldLogger, r *http.Request) logrus.FieldLogger {

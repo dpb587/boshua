@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/boshua/api/v2/httputil"
+	"github.com/dpb587/boshua/server/httputil"
 	api "github.com/dpb587/boshua/api/v2/models/compiledreleaseversion"
 	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
 	"github.com/dpb587/boshua/compiledreleaseversion"

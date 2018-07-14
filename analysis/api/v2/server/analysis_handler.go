@@ -1,4 +1,4 @@
-package analysisutil
+package server
 
 import (
 	"fmt"
@@ -6,12 +6,13 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/task"
-	"github.com/dpb587/boshua/api/v2/httputil"
+	analysistask "github.com/dpb587/boshua/analysis/task"
 	api "github.com/dpb587/boshua/api/v2/models/analysis"
 	schedulerapi "github.com/dpb587/boshua/api/v2/models/scheduler"
-	"github.com/dpb587/boshua/scheduler"
-	"github.com/dpb587/boshua/scheduler/concourse"
+	"github.com/dpb587/boshua/server/httputil"
+	"github.com/dpb587/boshua/task"
+	"github.com/dpb587/boshua/task/scheduler"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +20,7 @@ type AnalysisHandlerRequestParser func(logger logrus.FieldLogger, r *http.Reques
 
 type AnalysisHandler struct {
 	logger          logrus.FieldLogger
-	cc              *concourse.Runner
+	scheduler       scheduler.Scheduler
 	analysisIndex   datastore.Index
 	privilegedTasks bool
 	requestParser   AnalysisHandlerRequestParser
@@ -27,21 +28,21 @@ type AnalysisHandler struct {
 
 func NewAnalysisHandler(
 	logger logrus.FieldLogger,
-	cc *concourse.Runner,
+	scheduler scheduler.Scheduler,
 	analysisIndex datastore.Index,
 	privilegedTasks bool,
 	requestParser AnalysisHandlerRequestParser,
 ) *AnalysisHandler {
 	return &AnalysisHandler{
 		logger:          logger,
-		cc:              cc,
+		scheduler:       scheduler,
 		analysisIndex:   analysisIndex,
 		privilegedTasks: privilegedTasks,
 		requestParser:   requestParser,
 	}
 }
 
-func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
+func (h *AnalysisHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	baseLogger := httputil.ApplyLoggerContext(h.logger, r)
 
 	analysisRef, logger, err := h.requestParser(baseLogger, r)
@@ -79,8 +80,8 @@ func (h *AnalysisHandler) InfoGET(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
-	var status scheduler.Status
+func (h *AnalysisHandler) PostQueue(w http.ResponseWriter, r *http.Request) {
+	var status task.Status
 
 	baseLogger := httputil.ApplyLoggerContext(h.logger, r)
 
@@ -96,21 +97,28 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	analyses, err := h.analysisIndex.Filter(analysisRef)
-	if err != nil {
-		httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "analysis index failed"))
-
-		return
-	} else if len(analyses) == 0 {
-		t := task.New(analysisRef.Artifact.(analysis.Subject), analysisRef.Analyzer, h.privilegedTasks)
-
-		// check existing status
-		status, err = h.cc.Status(t)
+	if err == datastore.NoMatchErr {
+		taskDefinition, err := analysistask.New(analysisRef.Subject.(analysis.Subject), analysisRef.Analyzer)
 		if err != nil {
-			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "checking task status"), http.StatusInternalServerError, "checking task status failed"))
+			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "building task definition"), http.StatusInternalServerError, "building analysis task definition failed"))
 
 			return
-		} else if status == scheduler.StatusUnknown {
-			err = h.cc.Schedule(t)
+		}
+
+		// check existing status
+		t, err := h.scheduler.Schedule(taskDefinition)
+		if err != nil {
+			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "scheduling task"), http.StatusInternalServerError, "scheduling task failed"))
+
+			return
+		}
+
+		status, err := t.Status()
+		if err != nil {
+			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "checking task status"), http.StatusInternalServerError, "scheduling task failed"))
+
+			return
+		} else if status == task.StatusUnknown {
 			if err != nil {
 				httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "scheduling task"), http.StatusInternalServerError, "scheduling task failed"))
 
@@ -119,20 +127,24 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 
 			logger.Infof("analysis scheduled")
 
-			status = scheduler.StatusPending
+			status = task.StatusPending
 		}
+	} else if err != nil {
+		httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "analysis index failed"))
+
+		return
 	} else if err != nil {
 		httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "finding analysis"), http.StatusInternalServerError, "analysis index failed"))
 
 		return
 	} else {
-		status = scheduler.StatusSucceeded
+		status = task.StatusSucceeded
 	}
 
 	var complete bool
 
 	switch status {
-	case scheduler.StatusSucceeded:
+	case task.StatusSucceeded:
 		analyses, err = h.analysisIndex.Filter(analysisRef)
 		if err != nil {
 			httputil.WriteFailure(logger, w, r, httputil.NewError(errors.Wrap(err, "filtering"), http.StatusInternalServerError, "analysis index failed"))
@@ -140,12 +152,12 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 			return
 		} else if len(analyses) == 0 {
 			// haven't reloaded it yet; delay them
-			status = scheduler.StatusFinishing
+			status = task.StatusFinishing
 		} else {
 			// TODO handle other errors?
 			complete = true
 		}
-	case scheduler.StatusFailed:
+	case task.StatusFailed:
 		complete = true
 	}
 
@@ -158,7 +170,7 @@ func (h *AnalysisHandler) QueuePOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AnalysisHandler) validateAnalyzer(analysisRef analysis.Reference) error {
-	subject, ok := analysisRef.Artifact.(analysis.Subject)
+	subject, ok := analysisRef.Subject.(analysis.Subject)
 	if !ok {
 		return fmt.Errorf("TODO panic about using bad subjects for analysis")
 	}

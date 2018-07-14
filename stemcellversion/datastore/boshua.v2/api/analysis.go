@@ -8,7 +8,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/api/v2/handlers/analysisutil"
-	"github.com/dpb587/boshua/api/v2/httputil"
+	"github.com/dpb587/boshua/server/httputil"
 	"github.com/dpb587/boshua/api/v2/urlutil"
 	"github.com/dpb587/boshua/scheduler/concourse"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"

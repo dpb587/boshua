@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dpb587/boshua/api/v2/httputil"
+	"github.com/dpb587/boshua/server/httputil"
 	"github.com/dpb587/boshua/api/v2/urlutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"

@@ -41,7 +41,7 @@ Showing the tarball of a stemcell...
 
 Show the filesystem of a stemcell...
 
-    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 analysis --analyzer=stemcellimagefiles.v1 -- ls
+    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 results --analyzer=stemcellimagefiles.v1 -- ls
     drwxr-xr-x - root root       0 Apr  6 18:43 /bin
     -rwxr-xr-x - root root 1021112 May 16  2017 /bin/bash
     -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bunzip2

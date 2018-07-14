@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/server/httputil"
 )
 
 func ApplyOSVersionRefToQuery(r *http.Request, ref osversion.Reference) {
@@ -16,12 +17,12 @@ func ApplyOSVersionRefToQuery(r *http.Request, ref osversion.Reference) {
 }
 
 func OSVersionRefFromParam(r *http.Request) (osversion.Reference, error) {
-	osName, err := simpleQueryLookup(r, "os.name")
+	osName, err := httputil.SimpleQueryLookup(r, "os.name")
 	if err != nil {
 		return osversion.Reference{}, err
 	}
 
-	osVersion, err := simpleQueryLookup(r, "os.version")
+	osVersion, err := httputil.SimpleQueryLookup(r, "os.version")
 	if err != nil {
 		return osversion.Reference{}, err
 	}

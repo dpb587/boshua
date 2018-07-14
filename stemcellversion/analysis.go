@@ -8,8 +8,8 @@ import (
 
 var _ analysis.Subject = &Artifact{}
 
-func (s Artifact) SupportedAnalyzers() []string {
-	analyzers := []string{
+func (s Artifact) SupportedAnalyzers() []analysis.AnalyzerName {
+	analyzers := []analysis.AnalyzerName{
 		"stemcellmanifest.v1",
 	}
 

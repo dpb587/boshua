@@ -2,7 +2,6 @@ package clicommon
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -15,7 +14,9 @@ func (c *AnalyzersCmd) Execute(loader SubjectLoader) error {
 		return errors.Wrap(err, "finding subject")
 	}
 
-	fmt.Printf("%s\n", strings.Join(subject.SupportedAnalyzers(), "\n"))
+	for _, analyzer := range subject.SupportedAnalyzers() {
+		fmt.Println(analyzer)
+	}
 
 	return nil
 }

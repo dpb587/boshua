@@ -9,6 +9,7 @@ import (
 	"time"
 
 	uuid "github.com/nu7hatch/gouuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 

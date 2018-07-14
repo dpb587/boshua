@@ -246,6 +246,15 @@ func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
 	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
 }
 
+func (o *Opts) GetServerConfig() (config.ServerConfig, error) {
+	parsed, err := o.getParsedConfig()
+	if err != nil {
+		return config.ServerConfig{}, errors.Wrap(err, "loading config")
+	}
+
+	return parsed.Server, nil
+}
+
 func (o *Opts) GetLogger() logrus.FieldLogger {
 	if o.logger == nil {
 		panic("logger is not configured")

@@ -3,6 +3,7 @@ package urlutil
 import (
 	"net/http"
 
+	"github.com/dpb587/boshua/server/httputil"
 	"github.com/dpb587/boshua/stemcellversion"
 )
 
@@ -18,22 +19,22 @@ func ApplyStemcellVersionRefToQuery(r *http.Request, ref stemcellversion.Referen
 }
 
 func StemcellVersionRefFromParam(r *http.Request) (stemcellversion.Reference, error) {
-	iaas, err := simpleQueryLookup(r, "stemcell.iaas")
+	iaas, err := httputil.SimpleQueryLookup(r, "stemcell.iaas")
 	if err != nil {
 		return stemcellversion.Reference{}, err
 	}
 
-	hypervisor, err := simpleQueryLookup(r, "stemcell.hypervisor")
+	hypervisor, err := httputil.SimpleQueryLookup(r, "stemcell.hypervisor")
 	if err != nil {
 		return stemcellversion.Reference{}, err
 	}
 
-	os, err := simpleQueryLookup(r, "stemcell.os")
+	os, err := httputil.SimpleQueryLookup(r, "stemcell.os")
 	if err != nil {
 		return stemcellversion.Reference{}, err
 	}
 
-	version, err := simpleQueryLookup(r, "stemcell.version")
+	version, err := httputil.SimpleQueryLookup(r, "stemcell.version")
 	if err != nil {
 		return stemcellversion.Reference{}, err
 	}

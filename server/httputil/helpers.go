@@ -1,4 +1,4 @@
-package urlutil
+package httputil
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func simpleQueryLookup(r *http.Request, param string) (string, error) {
+func SimpleQueryLookup(r *http.Request, param string) (string, error) {
 	paramValue, ok := r.URL.Query()[param]
 	if !ok {
 		return "", fmt.Errorf("parameter '%s': %v", param, ParamMissingError)

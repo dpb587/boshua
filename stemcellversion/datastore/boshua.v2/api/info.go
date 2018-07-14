@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/dpb587/boshua/api/v2/httputil"
+	"github.com/dpb587/boshua/server/httputil"
 	api "github.com/dpb587/boshua/api/v2/models/stemcellversion"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/sirupsen/logrus"

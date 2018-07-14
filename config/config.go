@@ -14,8 +14,13 @@ type GeneralConfig struct {
 	IgnoreDefaultServer bool `yaml:"ignore_default_server"`
 }
 
-// TODO
 type ServerConfig struct {
+	Bind string          `yaml:"bind"`
+	TLS  ServerTLSConfig `yaml:"tls"`
+}
+
+type ServerTLSConfig struct {
+	CA          string `yaml:"ca"`
 	Certificate string `yaml:"certificate"`
 	PrivateKey  string `yaml:"private_key"`
 }
@@ -32,5 +37,9 @@ func (c *Config) ApplyDefaults() {
 		c.Scheduler = &AbstractComponentConfig{
 			Type: "localexec",
 		}
+	}
+
+	if c.Server.Bind == "" {
+		c.Server.Bind = "127.0.0.1:4508"
 	}
 }
