@@ -34,10 +34,7 @@ func (c *StoreAnalysisCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "filtering")
 	}
 
-	analysisIndex, err := index.GetAnalysisDatastore(c.StemcellOpts.Reference())
-	if err != nil {
-		return errors.Wrap(err, "getting analysis index")
-	}
+	analysisIndex := index.GetAnalysisDatastore()
 
 	ref := analysis.Reference{
 		Subject:  subject,

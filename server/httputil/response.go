@@ -30,7 +30,7 @@ func WriteFailure(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Requ
 }
 
 func WriteResponse(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Request, data interface{}) {
-	dataBytes, err := json.Marshal(data)
+	dataBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		WriteFailure(logger, w, r, errors.Wrap(err, "marshaling json"))
 

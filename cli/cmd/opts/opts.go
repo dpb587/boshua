@@ -191,16 +191,16 @@ func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, er
 	factory := stemcellversionfactory.New(o.GetLogger())
 
 	for _, cfg := range config.Stemcells {
-		var analysisIndex analysisdatastore.Index
+		// var analysisIndex analysisdatastore.Index
+		//
+		// if cfg.Analysis != nil {
+		// 	analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+		// 	if err != nil {
+		// 		return nil, errors.Wrap(err, "loading compiled release analysis")
+		// 	}
+		// }
 
-		if cfg.Analysis != nil {
-			analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-			if err != nil {
-				return nil, errors.Wrap(err, "loading compiled release analysis")
-			}
-		}
-
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options, analysisIndex)
+		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating stemcell version datastore")
 		}

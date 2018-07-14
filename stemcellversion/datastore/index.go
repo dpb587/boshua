@@ -8,7 +8,7 @@ import (
 type Index interface {
 	Find(stemcellversion.Reference) (stemcellversion.Artifact, error)
 	Filter(stemcellversion.Reference) ([]stemcellversion.Artifact, error)
-	GetAnalysisDatastore(stemcellversion.Reference) (datastore.Index, error)
+	GetAnalysisDatastore() datastore.Index
 
 	// TODO remove; kept for osversion
 	List() ([]stemcellversion.Artifact, error)

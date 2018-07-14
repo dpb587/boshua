@@ -32,10 +32,11 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref stemc
 		return stemcellversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
 
-	analysisIndex, err := index.GetAnalysisDatastore(ref)
-	if err != nil {
-		return stemcellversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "getting analysis datastore")
-	}
+	analysisIndex := index.GetAnalysisDatastore()
+	// analysisIndex, err := index.GetAnalysisDatastore(ref)
+	// if err != nil {
+	// 	return stemcellversion.Artifact{}, analysis.Artifact{}, errors.Wrap(err, "getting analysis datastore")
+	// }
 
 	analysisRef := analysis.Reference{
 		Subject:  subject,
@@ -53,7 +54,7 @@ func FindOrCreateAnalysis(index Index, scheduler_ scheduler.Scheduler, ref stemc
 			Name: "storing",
 			Args: []string{
 				"stemcell",
-				fmt.Sprintf("--stemcell=%s/%s", ref.Name(), ref.Version),
+				fmt.Sprintf("--stemcell=%s/%s", ref.FullName(), ref.Version),
 				// TODO more options
 				"datastore",
 				"store-analysis",

@@ -3,7 +3,6 @@ package factory
 import (
 	"fmt"
 
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/boshio"
 	"github.com/pkg/errors"
@@ -22,7 +21,7 @@ func New(logger logrus.FieldLogger) datastore.Factory {
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}, analysisIndex analysisdatastore.Index) (datastore.Index, error) {
+func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
 	logger := f.logger.WithField("datastore", fmt.Sprintf("stemcellversion:%s[%s]", provider, name))
 
 	switch provider {
@@ -33,7 +32,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return boshio.New(config, analysisIndex, logger), nil
+		return boshio.New(config, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

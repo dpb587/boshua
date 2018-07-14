@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/cli/cmd/opts"
 	releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
+	stemcellversionv2 "github.com/dpb587/boshua/stemcellversion/api/v2/server"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
@@ -37,6 +38,15 @@ func (c *Cmd) Execute(extra []string) error {
 		}
 
 		releaseversionv2.NewHandler(c.AppOpts.GetLogger(), datastore, scheduler).RegisterHandlers(r)
+	}
+
+	{
+		datastore, err := c.AppOpts.GetStemcellIndex("default")
+		if err != nil {
+			return errors.Wrap(err, "loading stemcell index")
+		}
+
+		stemcellversionv2.NewHandler(c.AppOpts.GetLogger(), datastore, scheduler).RegisterHandlers(r)
 	}
 
 	return http.ListenAndServe(cfg.Bind, r)

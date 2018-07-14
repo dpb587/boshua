@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/metalink"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/pkg/errors"
 )
 
@@ -46,16 +46,12 @@ func (c *StoreAnalysisCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "expanding artifact path")
 	}
 
-	err = analysisIndex.Store(ref, metalink.Metalink{
-		Files: []metalink.File{
-			{
-				URLs: []metalink.URL{
-					{
-						URL: fmt.Sprintf("file://%s", path),
-					},
-				},
-			},
-		}})
+	meta4, err := metalinkutil.CreateFromFiles(fmt.Sprintf("file://%s", path))
+	if err != nil {
+		return errors.Wrap(err, "creating in-memory metalink")
+	}
+
+	err = analysisIndex.Store(ref, *meta4)
 	if err != nil {
 		return errors.Wrap(err, "storing artifact")
 	}

@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -19,21 +20,19 @@ import (
 const compileMatch = "bosh-stemcell-*-warden-boshlite-ubuntu-trusty-go_agent.tgz"
 
 type index struct {
-	logger        logrus.FieldLogger
-	config        Config
-	repository    *git.Repository
-	inmemory      datastore.Index
-	analysisIndex analysisdatastore.Index
+	logger     logrus.FieldLogger
+	config     Config
+	repository *git.Repository
+	inmemory   datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
-func New(config Config, analysisIndex analysisdatastore.Index, logger logrus.FieldLogger) datastore.Index {
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	idx := &index{
-		logger:        logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		config:        config,
-		repository:    git.NewRepository(logger, config.RepositoryConfig),
-		analysisIndex: analysisIndex,
+		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		config:     config,
+		repository: git.NewRepository(logger, config.RepositoryConfig),
 	}
 
 	idx.inmemory = inmemory.New(idx.loader, idx.repository.Reload)
@@ -53,12 +52,8 @@ func (i *index) List() ([]stemcellversion.Artifact, error) {
 	return i.inmemory.List()
 }
 
-func (i *index) GetAnalysisDatastore(ref stemcellversion.Reference) (analysisdatastore.Index, error) {
-	if i.analysisIndex == nil {
-		return nil, datastore.UnsupportedOperationErr
-	}
-
-	return i.analysisIndex, nil
+func (i *index) GetAnalysisDatastore() analysisdatastore.Index {
+	return localcache.New()
 }
 
 func (i *index) loader() ([]stemcellversion.Artifact, error) {
