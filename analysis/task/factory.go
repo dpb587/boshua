@@ -13,7 +13,7 @@ import (
 func New(subject analysis.Subject, analyzer analysis.AnalyzerName) (task.Task, error) {
 	file := subject.MetalinkFile()
 
-	meta4Bytes, err := metalink.Marshal(metalink.Metalink{
+	meta4Bytes, err := metalink.MarshalXML(metalink.Metalink{
 		Files: []metalink.File{file},
 	})
 	if err != nil {

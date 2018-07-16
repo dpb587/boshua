@@ -66,7 +66,7 @@ func (i *index) Store(artifact releaseversion.Artifact) error {
 		Generator: "boshua/dpbreleaseartifacts",
 	}
 
-	meta4Bytes, err := metalink.Marshal(meta4)
+	meta4Bytes, err := metalink.MarshalXML(meta4)
 	if err != nil {
 		return errors.Wrap(err, "marshalling metalink")
 	}

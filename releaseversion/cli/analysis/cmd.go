@@ -5,7 +5,6 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
-	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
 )
 
@@ -27,22 +26,24 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	index, err := o.AppOpts.GetReleaseIndex("default")
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading release index")
-	}
+	return analysis.Artifact{}, errors.New("TODO resurrect functionality")
 
-	scheduler, err := o.AppOpts.GetScheduler()
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-	}
+	// index, err := o.AppOpts.GetReleaseIndex("default")
+	// if err != nil {
+	// 	return analysis.Artifact{}, errors.Wrap(err, "loading release index")
+	// }
+	//
+	// scheduler, err := o.AppOpts.GetScheduler()
+	// if err != nil {
+	// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
+	// }
 
-	_, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.ReleaseOpts.Reference(), o.AnalysisOpts.Analyzer)
-	if err != nil {
-		return analysis.Artifact{}, err // intentional no Wrap
-	}
+	// _, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.ReleaseOpts.Reference(), o.AnalysisOpts.Analyzer)
+	// if err != nil {
+	// 	return analysis.Artifact{}, err // intentional no Wrap
+	// }
 
-	return subject, nil
+	// return subject, nil
 
 	// return client.RequireReleaseVersionAnalysis(
 	// 	ref,

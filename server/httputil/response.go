@@ -37,6 +37,7 @@ func WriteResponse(logger logrus.FieldLogger, w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataBytes)
 	w.Write([]byte("\n"))

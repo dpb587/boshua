@@ -181,7 +181,7 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 		Generator: "boshua/boshreleasedpb",
 	}
 
-	commitMeta4Bytes, err := metalink.Marshal(commitMeta4)
+	commitMeta4Bytes, err := metalink.MarshalXML(commitMeta4)
 	if err != nil {
 		return errors.Wrap(err, "marshalling metalink")
 	}

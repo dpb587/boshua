@@ -68,6 +68,90 @@ Show the packages of a stemcell...
     ...
 
 
+### GraphQL
+
+Fetch tarball of a compiled release...
+
+    {
+      release(name: "openvpn", version: "5.1.0") {
+        compilation(os: "ubuntu-trusty", version: "3586.12") {
+          tarball {
+            hash(type: "sha1"),
+            url
+          }
+        }
+      }
+    }
+
+Fetch jobs and packages of a release...
+
+    {
+      release(name: "openvpn", version: "5.1.0") {
+        jobs {
+          name,
+          consumes,
+          provides,
+          dependencies,
+          properties
+        }
+
+        packages {
+          name,
+          dependencies
+        }
+      }
+    }
+
+Fetch raw analysis results of a release...
+
+    {
+      release(name: "openvpn", version: "5.1.0") {
+        analysis(analyzer: "releaseartifactfiles.v1") {
+          raw {
+            hash(type: "sha1"),
+            url
+          }
+        }
+      }
+    }
+
+Fetch specialized analysis results...
+
+    {
+      release(name: "openvpn", version: "5.1.0") {
+        releaseartifactfilesV1 {
+          status
+          results {
+            totalCount
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+            edges {
+
+            }
+        }
+      }
+    }
+
+Request an analysis be made...
+
+    mutation {
+      executeAnalysis(
+        analyzer: "releaseartifactfiles.v1",
+        subject: {
+          release: {
+            name: "openvpn",
+            version: "5.1.0",
+            checksum: "sha1:b42eb85e5f074c26b065956cc9b8a6d69208f8a0"
+          }
+        }
+      ) {
+        status
+      }
+    }
+
+
 ## Concepts
 
  * **Artifact** - an artifact represents something of interest and generally refers to a permanent blob of data somewhere, such as a BOSH release tarball stored on Amazon S3. Artifacts are usually identified by a couple pieces of information (e.g. name, version, checksum). There are several primary types of artifacts, each represented by a top-level CLI command.

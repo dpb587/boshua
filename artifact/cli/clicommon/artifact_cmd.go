@@ -96,7 +96,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 			Generator: "boshua/0.0.0",
 		}
 
-		meta4Bytes, err := metalink.Marshal(meta4)
+		meta4Bytes, err := metalink.MarshalXML(meta4)
 		if err != nil {
 			log.Fatalf("marshalling response: %v", err)
 		}

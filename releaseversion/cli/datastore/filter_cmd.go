@@ -19,7 +19,7 @@ func (c *FilterCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading datastore")
 	}
 
-	results, err := index.Filter(c.ReleaseOpts.Reference())
+	results, err := index.Filter(c.ReleaseOpts.FilterParams())
 	if err != nil {
 		return errors.Wrap(err, "filtering")
 	}

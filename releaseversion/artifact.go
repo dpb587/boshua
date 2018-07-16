@@ -8,22 +8,28 @@ import (
 )
 
 type Artifact struct {
-	reference    Reference
-	metalinkFile metalink.File
+	Name          string        `json:"name"`
+	Version       string        `json:"version"`
+	SourceTarball metalink.File `json:"source_tarball"`
 }
 
 var _ artifact.Artifact = &Artifact{}
 
 func (s Artifact) MetalinkFile() metalink.File {
-	return s.metalinkFile
+	return s.SourceTarball
 }
 
 func (s Artifact) Reference() interface{} {
-	return s.reference
+	ref := Reference{
+		Name:    s.Name,
+		Version: s.Version,
+	}
+
+	return ref
 }
 
 func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {
-	for _, hash := range s.metalinkFile.Hashes {
+	for _, hash := range s.SourceTarball.Hashes {
 		if metalinkutil.HashToChecksum(hash).String() == cs.String() {
 			return true
 		}

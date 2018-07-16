@@ -8,6 +8,12 @@
   revision = "99757edba73523adac0d2460f4c3555f938663b5"
 
 [[projects]]
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
+
+[[projects]]
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
   revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
@@ -70,7 +76,7 @@
     "verification",
     "verification/hash"
   ]
-  revision = "4ceb93bfa6ddb7ed4fc2c1cdea25ed2961170e34"
+  revision = "06a0c58a4575904366e8fc0c3dd462c26149e9dd"
 
 [[projects]]
   branch = "master"
@@ -95,6 +101,24 @@
   packages = ["."]
   revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
   version = "v1.6.1"
+
+[[projects]]
+  name = "github.com/graphql-go/graphql"
+  packages = [
+    ".",
+    "gqlerrors",
+    "language/ast",
+    "language/kinds",
+    "language/lexer",
+    "language/location",
+    "language/parser",
+    "language/printer",
+    "language/source",
+    "language/typeInfo",
+    "language/visitor"
+  ]
+  revision = "1e23489041ba90a66f317fe0deccb236a2fff3cb"
+  version = "v0.7.5"
 
 [[projects]]
   name = "github.com/jessevdk/go-flags"
@@ -230,6 +254,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0986ddae0f009b74eab2363d21c2f803246beb5d616c2c61af67a758b8c3e1f2"
+  inputs-digest = "0a102bdc43d84b0544d6e73835361ee5eb18f89190158a25d1f45cb4130c0565"
   solver-name = "gps-cdcl"
   solver-version = 1

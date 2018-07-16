@@ -5,9 +5,6 @@ import (
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
-	"github.com/dpb587/boshua/compiledreleaseversion"
-	"github.com/dpb587/boshua/osversion"
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/verification"
@@ -28,47 +25,48 @@ type StoreCmdArgs struct {
 }
 
 func (c *StoreCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
-
-	index, err := c.getDatastore()
-	if err != nil {
-		return errors.Wrap(err, "loading datastore")
-	}
-
-	rawCompiledReleaseRef := c.CompiledReleaseOpts.Reference()
-
-	releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
-	if err != nil {
-		return errors.Wrap(err, "loading release index")
-	}
-
-	releaseVersion, err := releaseVersionIndex.Find(rawCompiledReleaseRef.ReleaseVersion)
-	if err != nil {
-		return errors.Wrap(err, "finding release")
-	}
-
-	osVersionIndex, err := c.AppOpts.GetOSIndex("default")
-	if err != nil {
-		return errors.Wrap(err, "loading os index")
-	}
-
-	osVersion, err := osVersionIndex.Find(rawCompiledReleaseRef.OSVersion)
-	if err != nil {
-		return errors.Wrap(err, "finding os")
-	}
-
-	meta4File, err := c.createMetalinkFile()
-	if err != nil {
-		return errors.Wrap(err, "building metalink")
-	}
-
-	return index.Store(compiledreleaseversion.New(
-		compiledreleaseversion.Reference{
-			ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
-			OSVersion:      osVersion.Reference().(osversion.Reference),
-		},
-		*meta4File,
-	))
+	return errors.New("TODO resurrect functionality")
+	// c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
+	//
+	// index, err := c.getDatastore()
+	// if err != nil {
+	// 	return errors.Wrap(err, "loading datastore")
+	// }
+	//
+	// rawCompiledReleaseRef := c.CompiledReleaseOpts.Reference()
+	//
+	// releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
+	// if err != nil {
+	// 	return errors.Wrap(err, "loading release index")
+	// }
+	//
+	// releaseVersion, err := releaseVersionIndex.Find(rawCompiledReleaseRef.ReleaseVersion)
+	// if err != nil {
+	// 	return errors.Wrap(err, "finding release")
+	// }
+	//
+	// osVersionIndex, err := c.AppOpts.GetOSIndex("default")
+	// if err != nil {
+	// 	return errors.Wrap(err, "loading os index")
+	// }
+	//
+	// osVersion, err := osVersionIndex.Find(rawCompiledReleaseRef.OSVersion)
+	// if err != nil {
+	// 	return errors.Wrap(err, "finding os")
+	// }
+	//
+	// meta4File, err := c.createMetalinkFile()
+	// if err != nil {
+	// 	return errors.Wrap(err, "building metalink")
+	// }
+	//
+	// return index.Store(compiledreleaseversion.New(
+	// 	compiledreleaseversion.Reference{
+	// 		ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
+	// 		OSVersion:      osVersion.Reference().(osversion.Reference),
+	// 	},
+	// 	*meta4File,
+	// ))
 }
 
 func (c *StoreCmd) createMetalinkFile() (*metalink.File, error) {

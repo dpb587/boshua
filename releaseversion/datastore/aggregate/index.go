@@ -3,43 +3,87 @@ package aggregate
 import (
 	"fmt"
 
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/pkg/errors"
 )
 
-type index struct {
-	aggregated []datastore.Index
+type Index struct {
+	datastores []datastore.Index
 }
 
-var _ datastore.Index = &index{}
-
-func New(aggregated ...datastore.Index) datastore.Index {
-	return &index{
-		aggregated: aggregated,
+func New(datastores ...datastore.Index) *Index {
+	return &Index{
+		datastores: datastores,
 	}
 }
 
-func (i *index) Filter(ref releaseversion.Reference) ([]releaseversion.Artifact, error) {
-	var results []releaseversion.Artifact
+var _ datastore.Index = &Index{}
 
-	for idxIdx, idx := range i.aggregated {
-		found, err := idx.Filter(ref)
+func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
+	aggregateResults := map[string][]releaseversion.Artifact{}
+
+	for _, index := range i.datastores {
+		results, err := index.Filter(f)
 		if err != nil {
-			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
+			return nil, err
 		}
 
-		results = append(results, found...)
+		for _, result := range results {
+			key := fmt.Sprintf("%s/%s", result.Name, result.Version)
+
+			aggregateResults[key] = append(aggregateResults[key], result)
+		}
+	}
+
+	var results []releaseversion.Artifact
+
+	for aggregateResultIdx, aggregateResult := range aggregateResults {
+		if len(aggregateResult) == 1 {
+			results = append(results, aggregateResult...)
+
+			continue
+		}
+
+		aggregatedResult, err := i.merge(aggregateResult)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed merging results for '%s'", aggregateResultIdx)
+		}
+
+		results = append(results, aggregatedResult)
 	}
 
 	return results, nil
 }
 
-func (i *index) Find(ref releaseversion.Reference) (releaseversion.Artifact, error) {
-	return datastore.FilterForOne(i, ref)
-}
+func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifact, error) {
+	// assume Name and Version already match
+	result := results[0]
 
-func (i *index) GetAnalysisDatastore() analysisdatastore.Index { // TODO aggregate probably requires err for Unsupported check
-	return localcache.New()
+	for _, subresult := range results[1:] {
+		if len(result.SourceTarball.Hashes) > 0 && len(subresult.SourceTarball.Hashes) > 0 {
+			// TODO make this smarter
+			// TODO configurable error handling; e.g. ignore vs error
+			return releaseversion.Artifact{}, errors.New("multiple results with hashes found")
+		}
+
+		for _, hash := range subresult.SourceTarball.Hashes {
+			// TODO avoid duplicates
+			result.SourceTarball.Hashes = append(result.SourceTarball.Hashes, hash)
+		}
+
+		for _, url := range subresult.SourceTarball.URLs {
+			// TODO avoid duplicates
+			result.SourceTarball.URLs = append(result.SourceTarball.URLs, url)
+		}
+
+		for _, metaurl := range subresult.SourceTarball.MetaURLs {
+			// TODO avoid duplicates
+			result.SourceTarball.MetaURLs = append(result.SourceTarball.MetaURLs, metaurl)
+		}
+
+		// TODO handle other metalink fields
+	}
+
+	return result, nil
 }
