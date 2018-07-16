@@ -26,6 +26,11 @@ func (s Artifact) Reference() interface{} {
 	}
 }
 
+func (s Artifact) PreferredChecksum() checksum.ImmutableChecksum {
+	// TODO should not panic; should be nillable
+	return metalinkutil.HashToChecksum(metalinkutil.PreferredHash(s.SourceTarball.Hashes))
+}
+
 func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {
 	for _, hash := range s.SourceTarball.Hashes {
 		if metalinkutil.HashToChecksum(hash).String() == cs.String() {

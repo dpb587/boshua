@@ -51,6 +51,8 @@ func (f *FilterParams) VersionSatisfied(actual string) bool {
 		return true
 	} else if f.Version == actual {
 		return true
+	} else if f.VersionConstraint == nil {
+		return false
 	}
 
 	actualVersion, err := semver.NewVersion(actual)

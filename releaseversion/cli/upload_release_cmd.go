@@ -24,9 +24,9 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 	}
 
 	if c.Cmd {
-		fmt.Printf("bosh upload-release --name=%s --version=%s \\\n", c.ReleaseOpts.Release.Name, c.ReleaseOpts.Release.Version)
+		fmt.Printf("bosh upload-release --name=%s --version=%s \\\n", artifact.Name, artifact.Version)
 		fmt.Printf("  %s \\\n", artifact.MetalinkFile().URLs[0].URL)
-		fmt.Printf("  --sha1=%s\n", strings.TrimPrefix(c.ReleaseOpts.ReleaseChecksum.ImmutableChecksum.String(), "sha1:"))
+		fmt.Printf("  --sha1=%s\n", strings.TrimPrefix(artifact.PreferredChecksum().String(), "sha1:"))
 
 		return nil
 	}
@@ -34,10 +34,10 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 	cmd := exec.Command(
 		"bosh",
 		"upload-release",
-		fmt.Sprintf("--name=%s", c.ReleaseOpts.Release.Name),
-		fmt.Sprintf("--version=%s", c.ReleaseOpts.Release.Version),
+		fmt.Sprintf("--name=%s", artifact.Name),
+		fmt.Sprintf("--version=%s", artifact.Version),
 		artifact.MetalinkFile().URLs[0].URL,
-		fmt.Sprintf("--sha1=%s", strings.TrimPrefix(c.ReleaseOpts.ReleaseChecksum.ImmutableChecksum.String(), "sha1:")),
+		fmt.Sprintf("--sha1=%s", strings.TrimPrefix(artifact.PreferredChecksum().String(), "sha1:")),
 	)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
