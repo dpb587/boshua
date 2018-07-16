@@ -151,6 +151,15 @@ Request an analysis be made...
       }
     }
 
+Lookup a stemcell...
+
+    {
+      stemcell(os: "ubuntu-xenial", version: "87.3", iaas: "aws") {
+        url
+        sha1
+      }
+    }
+
 
 ## Concepts
 

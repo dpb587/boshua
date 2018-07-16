@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dpb587/boshua/stemcellversion/datastore/boshio"
+	"github.com/dpb587/boshua/stemcellversion/datastore/boshioindex"
 )
 
 type Stemcell struct {
@@ -23,7 +23,7 @@ func (r *Stemcell) UnmarshalFlag(data string) error {
 	// TODO parse better
 	split := strings.SplitN(data, "/", -1)
 	value := fmt.Sprintf("bosh-stemcell-%s-%s-go_agent", split[1], strings.TrimPrefix(strings.TrimSuffix(split[0], "-go_agent"), "bosh-"))
-	parsed := boshio.ConvertFileNameToReference(value)
+	parsed := boshioindex.ConvertFileNameToReference(value)
 	if parsed == nil {
 		return fmt.Errorf("unable to parse stemcell: %s", value)
 	}

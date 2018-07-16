@@ -1,19 +1,20 @@
 package graphql
 
 import (
-	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
 )
 
 func NewListQuery(r datastore.Index) *graphql.Field {
 	return &graphql.Field{
-		Type: graphql.NewList(ListedRelease),
+		Type: graphql.NewList(ListedStemcell),
 		Args: graphql.FieldConfigArgument{
-			"name":     nameArgument,
-			"version":  versionArgument,
-			"checksum": checksumArgument,
-			"uri":      uriArgument,
+			"os":         osArgument,
+			"version":    versionArgument,
+			"iaas":       iaasArgument,
+			"hypervisor": hypervisorArgument,
+			"diskFormat": diskFormatArgument,
 		},
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)

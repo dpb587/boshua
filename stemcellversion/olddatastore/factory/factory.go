@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/stemcellversion/datastore/boshioindex"
+	"github.com/dpb587/boshua/stemcellversion/datastore/boshio"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -25,14 +25,14 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	logger := f.logger.WithField("datastore", fmt.Sprintf("stemcellversion:%s[%s]", provider, name))
 
 	switch provider {
-	case "boshioindex":
-		config := boshioindex.Config{}
+	case "boshio":
+		config := boshio.Config{}
 		err := config.Load(options)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return boshioindex.New(config, logger), nil
+		return boshio.New(config, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

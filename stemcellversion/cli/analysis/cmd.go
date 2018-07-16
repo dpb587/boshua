@@ -5,7 +5,6 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
 )
 
@@ -27,22 +26,23 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	index, err := o.AppOpts.GetStemcellIndex("default")
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading stemcell index")
-	}
-
-	scheduler, err := o.AppOpts.GetScheduler()
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-	}
-
-	_, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.StemcellOpts.Reference(), o.AnalysisOpts.Analyzer)
-	if err != nil {
-		return analysis.Artifact{}, err // intentional no Wrap
-	}
-
-	return subject, nil
+	return analysis.Artifact{}, errors.New("TODO resurrect functionality")
+	// index, err := o.AppOpts.GetStemcellIndex("default")
+	// if err != nil {
+	// 	return analysis.Artifact{}, errors.Wrap(err, "loading stemcell index")
+	// }
+	//
+	// scheduler, err := o.AppOpts.GetScheduler()
+	// if err != nil {
+	// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
+	// }
+	//
+	// _, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.StemcellOpts.Reference(), o.AnalysisOpts.Analyzer)
+	// if err != nil {
+	// 	return analysis.Artifact{}, err // intentional no Wrap
+	// }
+	//
+	// return subject, nil
 }
 
 func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {

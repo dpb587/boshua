@@ -9,21 +9,21 @@ import (
 )
 
 type Index struct {
-	datastores []datastore.Index
-}
-
-func New(datastores ...datastore.Index) *Index {
-	return &Index{
-		datastores: datastores,
-	}
+	indices []datastore.Index
 }
 
 var _ datastore.Index = &Index{}
 
+func New(indices ...datastore.Index) *Index {
+	return &Index{
+		indices: indices,
+	}
+}
+
 func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	aggregateResults := map[string][]releaseversion.Artifact{}
 
-	for _, index := range i.datastores {
+	for _, index := range i.indices {
 		results, err := index.Filter(f)
 		if err != nil {
 			return nil, err

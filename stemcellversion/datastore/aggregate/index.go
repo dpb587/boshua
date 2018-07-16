@@ -3,52 +3,28 @@ package aggregate
 import (
 	"fmt"
 
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/analysis/datastore/localcache"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
-type index struct {
-	aggregated []datastore.Index
+type Index struct {
+	indices []datastore.Index
 }
 
-var _ datastore.Index = &index{}
+var _ datastore.Index = &Index{}
 
-func New(aggregated ...datastore.Index) datastore.Index {
-	return &index{
-		aggregated: aggregated,
+func New(indices ...datastore.Index) *Index {
+	return &Index{
+		indices: indices,
 	}
 }
 
-func (i *index) Filter(ref stemcellversion.Reference) ([]stemcellversion.Artifact, error) {
+func (i *Index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+	// TODO merging behavior
 	var results []stemcellversion.Artifact
 
-	for idxIdx, idx := range i.aggregated {
-		found, err := idx.Filter(ref)
-		if err != nil {
-			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
-		}
-
-		results = append(results, found...)
-	}
-
-	return results, nil
-}
-
-func (i *index) Find(ref stemcellversion.Reference) (stemcellversion.Artifact, error) {
-	return datastore.FilterForOne(i, ref)
-}
-
-func (i *index) GetAnalysisDatastore() analysisdatastore.Index { // TODO aggregate probably requires err for Unsupported check
-	return localcache.New()
-}
-
-func (i *index) List() ([]stemcellversion.Artifact, error) {
-	var results []stemcellversion.Artifact
-
-	for idxIdx, idx := range i.aggregated {
-		found, err := idx.List()
+	for idxIdx, idx := range i.indices {
+		found, err := idx.Filter(f)
 		if err != nil {
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}

@@ -20,12 +20,10 @@ func (s Artifact) MetalinkFile() metalink.File {
 }
 
 func (s Artifact) Reference() interface{} {
-	ref := Reference{
+	return Reference{
 		Name:    s.Name,
 		Version: s.Version,
 	}
-
-	return ref
 }
 
 func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/dpb587/boshua/cli/cmd/opts"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
+	stemcellversiongraphql "github.com/dpb587/boshua/stemcellversion/graphql"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
 	// stemcellversionv2 "github.com/dpb587/boshua/stemcellversion/api/v2/server"
 	"github.com/gorilla/mux"
@@ -36,16 +37,22 @@ func (c *Cmd) Execute(extra []string) error {
 	r.HandleFunc("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) })).Methods(http.MethodGet)
 
 	{
-		datastore, err := c.AppOpts.GetReleaseIndex("default")
+		releaseIndex, err := c.AppOpts.GetReleaseIndex("default")
 		if err != nil {
 			return errors.Wrap(err, "loading release index")
+		}
+
+		stemcellIndex, err := c.AppOpts.GetStemcellIndex("default")
+		if err != nil {
+			return errors.Wrap(err, "loading stemcell index")
 		}
 
 		var rootQuery = graphql.NewObject(
 			graphql.ObjectConfig{
 				Name: "Query",
 				Fields: graphql.Fields{
-					"releases": releaseversiongraphql.NewReleaseListQuery(datastore),
+					"releases":  releaseversiongraphql.NewListQuery(releaseIndex),
+					"stemcells": stemcellversiongraphql.NewListQuery(stemcellIndex),
 				},
 			},
 		)

@@ -1,11 +1,6 @@
 package datastore
 
 import (
-	"fmt"
-	"path/filepath"
-
-	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/pkg/errors"
 )
 
@@ -22,39 +17,40 @@ type StoreAnalysisArgs struct {
 }
 
 func (c *StoreAnalysisCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("stemcell/datastore/store-analysis")
-
-	index, err := c.getDatastore()
-	if err != nil {
-		return errors.Wrap(err, "loading datastore")
-	}
-
-	subject, err := index.Find(c.StemcellOpts.Reference())
-	if err != nil {
-		return errors.Wrap(err, "filtering")
-	}
-
-	analysisIndex := index.GetAnalysisDatastore()
-
-	ref := analysis.Reference{
-		Subject:  subject,
-		Analyzer: analysis.AnalyzerName(c.Analyzer),
-	}
-
-	path, err := filepath.Abs(c.Args.Artifact)
-	if err != nil {
-		return errors.Wrap(err, "expanding artifact path")
-	}
-
-	meta4, err := metalinkutil.CreateFromFiles(fmt.Sprintf("file://%s", path))
-	if err != nil {
-		return errors.Wrap(err, "creating in-memory metalink")
-	}
-
-	err = analysisIndex.Store(ref, *meta4)
-	if err != nil {
-		return errors.Wrap(err, "storing artifact")
-	}
-
-	return nil
+	return errors.New("TODO resurrect functionality")
+	// c.AppOpts.ConfigureLogger("stemcell/datastore/store-analysis")
+	//
+	// index, err := c.getDatastore()
+	// if err != nil {
+	// 	return errors.Wrap(err, "loading datastore")
+	// }
+	//
+	// subject, err := index.Filter(c.StemcellOpts.FilterParams())
+	// if err != nil {
+	// 	return errors.Wrap(err, "filtering")
+	// }
+	//
+	// analysisIndex := index.GetAnalysisDatastore()
+	//
+	// ref := analysis.Reference{
+	// 	Subject:  subject,
+	// 	Analyzer: analysis.AnalyzerName(c.Analyzer),
+	// }
+	//
+	// path, err := filepath.Abs(c.Args.Artifact)
+	// if err != nil {
+	// 	return errors.Wrap(err, "expanding artifact path")
+	// }
+	//
+	// meta4, err := metalinkutil.CreateFromFiles(fmt.Sprintf("file://%s", path))
+	// if err != nil {
+	// 	return errors.Wrap(err, "creating in-memory metalink")
+	// }
+	//
+	// err = analysisIndex.Store(ref, *meta4)
+	// if err != nil {
+	// 	return errors.Wrap(err, "storing artifact")
+	// }
+	//
+	// return nil
 }

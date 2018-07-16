@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
 )
 
@@ -37,22 +36,6 @@ func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
 	}
 
 	return f, nil
-}
-
-func FilterParamsFromReference(ref releaseversion.Reference) *FilterParams {
-	return &FilterParams{
-		NameExpected: true,
-		Name:         ref.Name,
-
-		VersionExpected: true,
-		Version:         ref.Version,
-
-		// TODO strongest checksum
-		ChecksumExpected: true,
-		Checksum:         ref.Checksums[0].String(),
-
-		// TODO URI support
-	}
 }
 
 func (f *FilterParams) NameSatisfied(actual string) bool {

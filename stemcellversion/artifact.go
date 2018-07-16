@@ -6,16 +6,27 @@ import (
 )
 
 type Artifact struct {
-	reference    Reference
-	metalinkFile metalink.File
+	OS         string        `json:"os"`
+	Version    string        `json:"version"`
+	IaaS       string        `json:"iaas"`
+	Hypervisor string        `json:"hypervisor"`
+	DiskFormat string        `json:"diskFormat"`
+	Light      bool          `json:"light"`
+	Tarball    metalink.File `json:"tarball"`
 }
 
 var _ artifact.Artifact = &Artifact{}
 
 func (s Artifact) Reference() interface{} {
-	return s.reference
+	return Reference{
+		IaaS:       s.IaaS,
+		Hypervisor: s.Hypervisor,
+		OS:         s.OS,
+		Version:    s.Version,
+		Light:      s.Light,
+	}
 }
 
 func (s Artifact) MetalinkFile() metalink.File {
-	return s.metalinkFile
+	return s.Tarball
 }
