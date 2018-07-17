@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
 	"github.com/dpb587/boshua/cli/args"
@@ -80,7 +81,10 @@ func (o *Opts) getParsedConfig() (config.Config, error) {
 	return *o.parsedConfig, nil
 }
 
-func (o *Opts) GetAnalysisIndex(name string) (analysisdatastore.Index, error) {
+func (o *Opts) GetAnalysisIndex(_ analysis.Reference) (analysisdatastore.Index, error) {
+	// TODO decide between name and analysis reference
+	name := "default"
+
 	config, err := o.getParsedConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
@@ -160,7 +164,7 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 		var analysisIndex analysisdatastore.Index
 
 		if cfg.Analysis != nil {
-			analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+			analysisIndex, err = o.GetAnalysisIndex(analysis.Reference{})
 			if err != nil {
 				return nil, errors.Wrap(err, "loading compiled release analysis")
 			}

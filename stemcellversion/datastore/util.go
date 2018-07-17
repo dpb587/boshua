@@ -3,10 +3,12 @@ package datastore
 import (
 	"errors"
 	"fmt"
+
+	"github.com/dpb587/boshua/stemcellversion"
 )
 
-func RequireSingleResult(results interface{}) error {
-	l := len(results.([]interface{}))
+func RequireSingleResult(results []stemcellversion.Artifact) error {
+	l := len(results)
 
 	if l == 0 {
 		return errors.New("expected 1 result, found 0")

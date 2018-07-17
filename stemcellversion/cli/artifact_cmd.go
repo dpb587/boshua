@@ -16,7 +16,7 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("stemcell/artifact")
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		artifact, err := c.getStemcell()
+		artifact, err := c.StemcellOpts.Artifact()
 		if err != nil {
 			return metalink.File{}, errors.Wrap(err, "finding stemcell")
 		}

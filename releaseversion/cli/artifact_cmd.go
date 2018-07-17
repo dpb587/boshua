@@ -16,7 +16,7 @@ func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("release/artifact")
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
-		artifact, err := c.getRelease()
+		artifact, err := c.CmdOpts.ReleaseOpts.Artifact()
 		if err != nil {
 			return metalink.File{}, errors.Wrap(err, "finding release")
 		}

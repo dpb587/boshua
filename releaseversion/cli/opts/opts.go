@@ -2,41 +2,65 @@ package opts
 
 import (
 	"github.com/dpb587/boshua/cli/args"
+	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/pkg/errors"
 )
 
 type Opts struct {
-	Name     string         `long:"release-name" description:"The release name"`
-	Version  string         `long:"release-version" description:"The release version"`
-	Checksum *args.Checksum `long:"release-checksum" description:"The release checksum"`
+	AppOpts *cmdopts.Opts `no-flag:"true"`
+
+	NameVersion *args.Release  `long:"release" description:"The release in name/version format"`
+	Name        string         `long:"release-name" description:"The release name"`
+	Version     string         `long:"release-version" description:"The release version"`
+	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`
+	URI         string         `long:"release-url" description:"The release URL"`
 }
 
-func (o Opts) Reference() releaseversion.Reference {
-	ref := releaseversion.Reference{
-		Name:    o.Name,
-		Version: o.Version,
+func (o *Opts) Artifact() (releaseversion.Artifact, error) {
+	index, err := o.AppOpts.GetReleaseIndex("default")
+	if err != nil {
+		return releaseversion.Artifact{}, errors.Wrap(err, "loading release index")
 	}
 
-	if o.Checksum != nil {
-		ref.Checksums = append(ref.Checksums, o.Checksum.ImmutableChecksum)
+	results, err := index.Filter(o.FilterParams())
+	if err != nil {
+		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
 	}
 
-	return ref
+	result, err := datastore.RequireSingleResult(results)
+	if err != nil {
+		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
+	}
+
+	return result, err
 }
 
 func (o Opts) FilterParams() *datastore.FilterParams {
 	f := &datastore.FilterParams{}
 
-	if o.Name != "" {
-		f.NameExpected = true
-		f.Name = o.Name
-	}
+	if o.NameVersion != nil {
+		if o.Name != "" || o.Version != "" {
+			// TODO not panic
+			panic("cannot specify both --release and one of --release-name or --release-version")
+		}
 
-	if o.Version != "" {
+		f.NameExpected = true
+		f.Name = o.NameVersion.Name
+
 		f.VersionExpected = true
+		f.Version = o.NameVersion.Version
+	} else {
+		f.NameExpected = o.Name != ""
+		f.Name = o.Name
+
+		f.VersionExpected = o.Version != ""
 		f.Version = o.Version
 	}
+
+	f.URIExpected = o.URI != ""
+	f.URI = o.URI
 
 	if o.Checksum != nil {
 		f.ChecksumExpected = true

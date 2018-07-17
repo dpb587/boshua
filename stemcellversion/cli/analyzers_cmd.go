@@ -15,6 +15,6 @@ func (c *AnalyzersCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("stemcell/analyzers")
 
 	return c.AnalyzersCmd.Execute(func() (analysis.Subject, error) {
-		return c.CmdOpts.getStemcell()
+		return c.StemcellOpts.Artifact()
 	})
 }

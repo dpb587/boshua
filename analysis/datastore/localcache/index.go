@@ -41,7 +41,7 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	stat, err := os.Stat(cachePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, datastore.NoMatchErr
+			return nil, nil
 		}
 
 		return nil, errors.Wrap(err, "checking analysis file")

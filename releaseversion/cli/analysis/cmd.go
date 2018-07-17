@@ -1,8 +1,11 @@
 package analysis
 
 import (
+	"fmt"
+
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/pkg/errors"
@@ -26,44 +29,62 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	return analysis.Artifact{}, errors.New("TODO resurrect functionality")
+	subject, err := o.ReleaseOpts.Artifact()
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "loading release")
+	}
 
-	// index, err := o.AppOpts.GetReleaseIndex("default")
-	// if err != nil {
-	// 	return analysis.Artifact{}, errors.Wrap(err, "loading release index")
-	// }
-	//
-	// scheduler, err := o.AppOpts.GetScheduler()
-	// if err != nil {
-	// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-	// }
+	analysisRef := analysis.Reference{
+		Subject:  subject,
+		Analyzer: o.AnalysisOpts.Analyzer,
+	}
 
-	// _, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.ReleaseOpts.Reference(), o.AnalysisOpts.Analyzer)
-	// if err != nil {
-	// 	return analysis.Artifact{}, err // intentional no Wrap
-	// }
+	analysisIndex, err := o.AppOpts.GetAnalysisIndex(analysisRef)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
+	}
 
-	// return subject, nil
+	results, err := analysisIndex.Filter(analysisRef)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+	}
 
-	// return client.RequireReleaseVersionAnalysis(
-	// 	ref,
-	// 	analyzer,
-	// 	func(task scheduler.TaskStatus) {
-	// 		if o.AppOpts.Quiet {
-	// 			return
-	// 		}
-	//
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"boshua | %s | requesting release analysis: %s/%s: %s: task is %s\n",
-	// 			time.Now().Format("15:04:05"),
-	// 			ref.Name,
-	// 			ref.Version,
-	// 			analyzer,
-	// 			task.Status,
-	// 		)
-	// 	},
-	// )
+	if len(results) == 0 {
+		if o.AnalysisOpts.NoWait {
+			return analysis.Artifact{}, errors.New("no analysis found")
+		}
+
+		scheduler, err := o.AppOpts.GetScheduler()
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
+		}
+
+		err = analysisdatastore.CreateAnalysis(
+			scheduler,
+			analysisRef,
+			[]string{
+				"release",
+				fmt.Sprintf("--release-name=%s", subject.Name),
+				fmt.Sprintf("--release-version=%s", subject.Version),
+				// TODO more options; generate from subject
+			},
+		)
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
+		}
+
+		results, err = analysisIndex.Filter(analysisRef)
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
+		}
+	}
+
+	result, err := analysisdatastore.RequireSingleResult(results)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+	}
+
+	return result, nil
 }
 
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {

@@ -18,7 +18,7 @@ type UploadStemcellCmd struct {
 func (c *UploadStemcellCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("stemcell/upload-stemcell")
 
-	artifact, err := c.getStemcell()
+	artifact, err := c.StemcellOpts.Artifact()
 	if err != nil {
 		return errors.Wrap(err, "finding compiled stemcell")
 	}

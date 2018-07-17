@@ -29,7 +29,9 @@ func (c *Cmd) Execute(extra []string) error {
 
 func New(app *cmdopts.Opts) *Cmd {
 	cmd := &Cmd{
-		Opts: &opts.Opts{},
+		Opts: &opts.Opts{
+			AppOpts: app,
+		},
 	}
 
 	cmd.AnalysisCmd = analysis.New(app, cmd.Opts)

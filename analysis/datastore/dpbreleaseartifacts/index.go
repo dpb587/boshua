@@ -48,7 +48,7 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	analysisBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, analysisPath))
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, datastore.NoMatchErr
+			return nil, nil
 		}
 
 		return nil, errors.Wrap(err, "reading analysis meta4")

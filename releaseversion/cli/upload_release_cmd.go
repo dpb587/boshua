@@ -18,7 +18,7 @@ type UploadReleaseCmd struct {
 func (c *UploadReleaseCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("release/upload-release")
 
-	artifact, err := c.getRelease()
+	artifact, err := c.CmdOpts.ReleaseOpts.Artifact()
 	if err != nil {
 		return errors.Wrap(err, "finding compiled release")
 	}
