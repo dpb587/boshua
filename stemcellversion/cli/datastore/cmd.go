@@ -10,8 +10,7 @@ import (
 type Cmd struct {
 	*opts.Opts
 
-	FilterCmd        FilterCmd        `command:"filter" description:"For filtering results"`
-	StoreAnalysisCmd StoreAnalysisCmd `command:"store-analysis" description:"For storing analysis results"`
+	FilterCmd FilterCmd `command:"filter" description:"For filtering results"`
 }
 
 type CmdOpts struct {
@@ -35,7 +34,6 @@ func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {
 		DatastoreOpts: cmd.Opts,
 	}
 
-	cmd.StoreAnalysisCmd.CmdOpts = cmdOpts
 	cmd.FilterCmd.CmdOpts = cmdOpts
 
 	return cmd

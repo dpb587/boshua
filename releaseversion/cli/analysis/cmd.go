@@ -14,8 +14,9 @@ import (
 type Cmd struct {
 	*opts.Opts
 
-	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the analysis artifact"`
-	ResultsCmd  ResultsCmd  `command:"results" description:"For showing the results of an analysis"`
+	ArtifactCmd     ArtifactCmd     `command:"artifact" description:"For showing the analysis artifact"`
+	ResultsCmd      ResultsCmd      `command:"results" description:"For showing the results of an analysis"`
+	StoreResultsCmd StoreResultsCmd `command:"store-results" description:"For storing the results of an analysis"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
@@ -100,6 +101,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.ResultsCmd.CmdOpts = cmdOpts
+	cmd.StoreResultsCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

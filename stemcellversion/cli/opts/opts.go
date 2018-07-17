@@ -1,7 +1,6 @@
 package opts
 
 import (
-	"github.com/dpb587/boshua/cli/args"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -11,12 +10,12 @@ import (
 type Opts struct {
 	AppOpts *cmdopts.Opts `no-flag:"true"`
 
-	Stemcell   *args.Stemcell `long:"stemcell" description:"The stemcell name and version"`
-	OS         string         `long:"stemcell-os" description:"The stemcell OS"`
-	Version    string         `long:"stemcell-version" description:"The stemcell version"`
-	IaaS       string         `long:"stemcell-iaas" description:"The stemcell IaaS"`
-	Hypervisor string         `long:"stemcell-hypervisor" description:"The stemcell hypervisor"`
-	Flavor     string         `long:"stemcell-flavor" description:"The stemcell flavor (e.g. 'light')"`
+	Stemcell   *Stemcell `long:"stemcell" description:"The stemcell name and version"`
+	OS         string    `long:"stemcell-os" description:"The stemcell OS"`
+	Version    string    `long:"stemcell-version" description:"The stemcell version"`
+	IaaS       string    `long:"stemcell-iaas" description:"The stemcell IaaS"`
+	Hypervisor string    `long:"stemcell-hypervisor" description:"The stemcell hypervisor"`
+	Flavor     string    `long:"stemcell-flavor" description:"The stemcell flavor (e.g. 'light')"`
 }
 
 func (o *Opts) Artifact() (stemcellversion.Artifact, error) {

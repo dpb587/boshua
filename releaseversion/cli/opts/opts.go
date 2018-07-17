@@ -11,7 +11,7 @@ import (
 type Opts struct {
 	AppOpts *cmdopts.Opts `no-flag:"true"`
 
-	NameVersion *args.Release  `long:"release" description:"The release in name/version format"`
+	NameVersion *Release       `long:"release" description:"The release in name/version format"`
 	Name        string         `long:"release-name" description:"The release name"`
 	Version     string         `long:"release-version" description:"The release version"`
 	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`

@@ -33,8 +33,8 @@ func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Refer
 		Name: "storing",
 		Args: append(
 			storeArgs,
-			"datastore",
-			"store-analysis",
+			"analysis",
+			"store-results",
 			fmt.Sprintf("--analyzer=%s", analysisRef.Analyzer),
 			filepath.Join("input", "results.jsonl.gz"),
 		),

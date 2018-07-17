@@ -14,8 +14,9 @@ import (
 type Cmd struct {
 	*opts.Opts
 
-	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the analysis artifact"`
-	ResultsCmd  ResultsCmd  `command:"results" description:"For showing the results of an analysis"`
+	ArtifactCmd     ArtifactCmd     `command:"artifact" description:"For showing the analysis artifact"`
+	ResultsCmd      ResultsCmd      `command:"results" description:"For showing the results of an analysis"`
+	StoreResultsCmd StoreResultsCmd `command:"store-results" description:"For storing the results of an analysis"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
@@ -24,12 +25,12 @@ func (c *Cmd) Execute(extra []string) error {
 
 type CmdOpts struct {
 	AppOpts      *cmdopts.Opts `no-flag:"true"`
-	ReleaseOpts  *stemcellopts.Opts
+	StemcellOpts *stemcellopts.Opts
 	AnalysisOpts *opts.Opts
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	subject, err := o.ReleaseOpts.Artifact()
+	subject, err := o.StemcellOpts.Artifact()
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "loading stemcell")
 	}
@@ -98,12 +99,13 @@ func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {
 
 	cmdOpts := &CmdOpts{
 		AppOpts:      app,
-		ReleaseOpts:  stemcell,
+		StemcellOpts: stemcell,
 		AnalysisOpts: cmd.Opts,
 	}
 
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.ResultsCmd.CmdOpts = cmdOpts
+	cmd.StoreResultsCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

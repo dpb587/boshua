@@ -7,11 +7,12 @@ import (
 	"github.com/dpb587/boshua/compiledreleaseversion"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
+	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 )
 
 type Opts struct {
-	Release         args.Release   `long:"release" description:"The release name and version"`
-	ReleaseChecksum *args.Checksum `long:"release-checksum" description:"The release checksum"`
+	Release         releaseversionopts.Release `long:"release" description:"The release name and version"`
+	ReleaseChecksum *args.Checksum             `long:"release-checksum" description:"The release checksum"`
 
 	OS args.OS `long:"os" description:"The OS and version"`
 
