@@ -16,7 +16,7 @@ type Opts struct {
 	Version    string         `long:"stemcell-version" description:"The stemcell version"`
 	IaaS       string         `long:"stemcell-iaas" description:"The stemcell IaaS"`
 	Hypervisor string         `long:"stemcell-hypervisor" description:"The stemcell hypervisor"`
-	// Light      bool           `long:"stemcell-light" description:"The stemcell as a light version"` // TODO add filtering support; heavy?
+	Flavor     string         `long:"stemcell-flavor" description:"The stemcell flavor (e.g. 'light')"`
 }
 
 func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
@@ -25,19 +25,23 @@ func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}
 
-	res, err := index.Filter(o.FilterParams())
+	results, err := index.Filter(o.FilterParams())
 	if err != nil {
-		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
-	} else if err = datastore.RequireSingleResult(res); err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
 
-	return res[0], err
+	result, err := datastore.RequireSingleResult(results)
+	if err != nil {
+		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
+	}
+
+	return result, err
 }
 
 func (o Opts) FilterParams() *datastore.FilterParams {
 	f := &datastore.FilterParams{
-		// Light: o.Light,
+		FlavorExpected: o.Flavor != "",
+		Flavor:         o.Flavor,
 	}
 
 	if o.Stemcell != nil {

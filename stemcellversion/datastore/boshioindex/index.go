@@ -66,7 +66,7 @@ func (i *index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, e
 				continue
 			} else if !f.HypervisorSatisfied(result.Hypervisor) {
 				continue
-			} else if !f.LightSatisfied(result.Light) {
+			} else if !f.FlavorSatisfied(result.Flavor) {
 				continue
 			}
 

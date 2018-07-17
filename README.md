@@ -5,8 +5,6 @@ For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 
 ## Usage
 
-
-
 See the following for some specific examples of usage.
 
 
@@ -28,6 +26,11 @@ Showing the tarball of a release...
     sha1    0b08f569dc18b042845897a0490d541f96f96951
     ...
 
+Getting the manifest files of a release...
+
+    $ boshua release --release=openvpn/5.0.0 analysis --analyzer=releasemanifests.v1 results --raw
+
+
 
 ### Stemcells
 
@@ -41,7 +44,7 @@ Showing the tarball of a stemcell...
 
 Show the filesystem of a stemcell...
 
-    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 results --analyzer=stemcellimagefiles.v1 -- ls
+    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 analysis --analyzer=stemcellimagefiles.v1 results -- ls
     drwxr-xr-x - root root       0 Apr  6 18:43 /bin
     -rwxr-xr-x - root root 1021112 May 16  2017 /bin/bash
     -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bunzip2
@@ -55,7 +58,7 @@ Show the filesystem of a stemcell...
 
 Show the packages of a stemcell...
 
-    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 analysis --analyzer=stemcellpackages.v1
+    $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 --stemcell-flavor=light analysis --analyzer=stemcellpackages.v1 results -- contents
     Desired=Unknown/Install/Remove/Purge/Hold
     | Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
     |/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
@@ -65,6 +68,7 @@ Show the packages of a stemcell...
     ii  anacron                             2.3-20ubuntu1                              amd64        cron-like program that doesn't go by time
     ii  apparmor                            2.10.95-0ubuntu2.6~14.04.3                 amd64        user-space parser utility for AppArmor
     ii  apparmor-utils                      2.10.95-0ubuntu2.6~14.04.3                 amd64        utilities for controlling AppArmor
+    ii  apt                                 1.0.1ubuntu2.17                            amd64        commandline package manager
     ...
 
 

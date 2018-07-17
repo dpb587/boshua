@@ -11,14 +11,14 @@ type Reference struct {
 	Hypervisor string `json:"hypervisor"`
 	OS         string `json:"os"`
 	Version    string `json:"version"`
-	Light      bool   `json:"light"`
+	Flavor     string `json:"flavor"`
 	// DiskFormat string `json:"disk_format"`
 }
 
 func (r Reference) FullName() string {
 	var prefix string
 
-	if r.Light {
+	if r.Flavor == "light" {
 		prefix = "light-"
 	}
 

@@ -12,7 +12,7 @@ func ConvertFileNameToReference(name string) *stemcellversion.Artifact {
 	nameSplit := strings.Split(strings.TrimSuffix(name, ".tgz"), "-")
 
 	if nameSplit[0] == "light" {
-		ref.Light = true
+		ref.Flavor = "light"
 		nameSplit = nameSplit[1:]
 	}
 

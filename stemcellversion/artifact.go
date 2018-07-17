@@ -15,7 +15,7 @@ type Artifact struct {
 	IaaS       string        `json:"iaas"`
 	Hypervisor string        `json:"hypervisor"`
 	DiskFormat string        `json:"diskFormat"`
-	Light      bool          `json:"light"`
+	Flavor     string        `json:"flavor"`
 	Tarball    metalink.File `json:"tarball"`
 }
 
@@ -26,7 +26,7 @@ func (r Artifact) FullName() string {
 	// TODO breaks with light prefix; should match name from `bosh stemcells`
 	var prefix string
 
-	if r.Light {
+	if r.Flavor == "light" {
 		prefix = "light-"
 	}
 
@@ -44,7 +44,7 @@ func (s Artifact) Reference() interface{} {
 		Hypervisor: s.Hypervisor,
 		OS:         s.OS,
 		Version:    s.Version,
-		Light:      s.Light,
+		Flavor:     s.Flavor,
 	}
 }
 

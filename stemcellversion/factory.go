@@ -9,7 +9,7 @@ func New(ref Reference, meta4File metalink.File) Artifact {
 		Hypervisor: ref.Hypervisor,
 		OS:         ref.OS,
 		Version:    ref.Version,
-		Light:      ref.Light,
+		Flavor:     ref.Flavor,
 		Tarball:    meta4File,
 	}
 }

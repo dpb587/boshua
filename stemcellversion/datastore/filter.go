@@ -21,8 +21,8 @@ type FilterParams struct {
 	DiskFormatExpected bool
 	DiskFormat         string
 
-	LightExpected bool
-	Light         bool
+	FlavorExpected bool
+	Flavor         string
 }
 
 func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
@@ -32,7 +32,7 @@ func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
 	f.Version, f.VersionExpected = args["version"].(string)
 	f.IaaS, f.IaaSExpected = args["iaas"].(string)
 	f.Hypervisor, f.HypervisorExpected = args["hypervisor"].(string)
-	f.Light, f.LightExpected = args["light"].(bool)
+	f.Flavor, f.FlavorExpected = args["light"].(string)
 
 	if f.VersionExpected {
 		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
@@ -90,10 +90,10 @@ func (f *FilterParams) DiskFormatSatisfied(actual string) bool {
 	return f.DiskFormat == actual
 }
 
-func (f *FilterParams) LightSatisfied(actual bool) bool {
-	if !f.LightExpected {
+func (f *FilterParams) FlavorSatisfied(actual string) bool {
+	if !f.FlavorExpected {
 		return true
 	}
 
-	return f.Light == actual
+	return f.Flavor == actual
 }
