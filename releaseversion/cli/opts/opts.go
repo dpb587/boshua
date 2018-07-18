@@ -15,7 +15,7 @@ type Opts struct {
 	Name        string         `long:"release-name" description:"The release name"`
 	Version     string         `long:"release-version" description:"The release version"`
 	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`
-	URI         string         `long:"release-url" description:"The release URL"`
+	URI         string         `long:"release-url" description:"The release source URL"`
 }
 
 func (o *Opts) Artifact() (releaseversion.Artifact, error) {

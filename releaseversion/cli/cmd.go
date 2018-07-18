@@ -5,6 +5,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/cli/analysis"
 	"github.com/dpb587/boshua/releaseversion/cli/datastore"
 	"github.com/dpb587/boshua/releaseversion/cli/opts"
+	compilation "github.com/dpb587/boshua/releaseversion/compilation/cli"
 )
 
 type CmdOpts struct {
@@ -15,8 +16,9 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the release artifact"`
-	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with release datastores"`
+	AnalysisCmd    *analysis.Cmd    `command:"analysis" description:"For analyzing the release artifact"`
+	DatastoreCmd   *datastore.Cmd   `command:"datastore" description:"For interacting with release datastores"`
+	CompilationCmd *compilation.Cmd `command:"compilation" description:"For compilations of the release" subcommands-optional:"true"`
 
 	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`
@@ -36,6 +38,7 @@ func New(app *cmdopts.Opts) *Cmd {
 
 	cmd.AnalysisCmd = analysis.New(app, cmd.Opts)
 	cmd.DatastoreCmd = datastore.New(app, cmd.Opts)
+	cmd.CompilationCmd = compilation.New(app, cmd.Opts)
 
 	cmdOpts := &CmdOpts{
 		AppOpts:     app,

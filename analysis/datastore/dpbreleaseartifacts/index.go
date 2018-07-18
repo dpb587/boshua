@@ -13,7 +13,7 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
@@ -75,7 +75,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	subjectRef := ref.Subject.Reference()
 
 	switch subjectRef := subjectRef.(type) {
-	case compiledreleaseversion.Reference:
+	case compilation.Reference:
 		return filepath.Join(
 			"compiled-release",
 			i.config.Channel,

@@ -12,7 +12,7 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/compiledreleaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
@@ -112,7 +112,7 @@ func (i *index) cachePath(ref analysis.Reference) (string, error) {
 	pieces := []string{string(ref.Analyzer)}
 
 	switch subjectRef := subjectRef.(type) {
-	case compiledreleaseversion.Reference:
+	case compilation.Reference:
 		pieces = append(
 			pieces,
 			"compiled-release",
