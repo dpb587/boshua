@@ -32,6 +32,7 @@ func (c *Cmd) Execute(extra []string) error {
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	cmd := &Cmd{
 		Opts: &opts.Opts{
+			AppOpts: app,
 			Release: release,
 		},
 	}

@@ -1,9 +1,13 @@
 package analysis
 
 import (
+	"fmt"
+
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
 	"github.com/pkg/errors"
 )
@@ -11,8 +15,9 @@ import (
 type Cmd struct {
 	*opts.Opts
 
-	ArtifactCmd ArtifactCmd `command:"artifact" description:"For showing the analysis artifact"`
-	ResultsCmd  ResultsCmd  `command:"results" description:"For showing the results of an analysis"`
+	ArtifactCmd     ArtifactCmd     `command:"artifact" description:"For showing the analysis artifact"`
+	ResultsCmd      ResultsCmd      `command:"results" description:"For showing the results of an analysis"`
+	StoreResultsCmd StoreResultsCmd `command:"store-results" description:"For storing the results of an analysis"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
@@ -26,46 +31,66 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	return analysis.Artifact{}, errors.New("TODO resurrect functionality")
-	// index, err := o.AppOpts.GetCompiledReleaseIndex("default")
-	// if err != nil {
-	// 	return analysis.Artifact{}, errors.Wrap(err, "loading compiled release index")
-	// }
-	//
-	// scheduler, err := o.AppOpts.GetScheduler()
-	// if err != nil {
-	// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-	// }
-	//
-	// _, subject, err := datastore.FindOrCreateAnalysis(index, scheduler, o.CompiledReleaseOpts.Reference(), o.AnalysisOpts.Analyzer)
-	// if err != nil {
-	// 	return analysis.Artifact{}, err // intentional no Wrap
-	// }
-	//
-	// return subject, nil
+	subject, err := o.CompiledReleaseOpts.Artifact()
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "loading release")
+	}
 
-	// return client.RequireCompiledReleaseVersionAnalysis(
-	// 	ref.ReleaseVersion,
-	// 	ref.OSVersion,
-	// 	analyzer,
-	// 	func(task scheduler.TaskStatus) {
-	// 		if o.AppOpts.Quiet {
-	// 			return
-	// 		}
-	//
-	// 		fmt.Fprintf(
-	// 			os.Stderr,
-	// 			"boshua | %s | requesting compiled release analysis: %s/%s: %s/%s: %s: task is %s\n",
-	// 			time.Now().Format("15:04:05"),
-	// 			ref.OSVersion.Name,
-	// 			ref.OSVersion.Version,
-	// 			ref.ReleaseVersion.Name,
-	// 			ref.ReleaseVersion.Version,
-	// 			analyzer,
-	// 			task.Status,
-	// 		)
-	// 	},
-	// )
+	subjectRef := subject.Reference().(compilation.Reference)
+
+	analysisRef := analysis.Reference{
+		Subject:  subject,
+		Analyzer: o.AnalysisOpts.Analyzer,
+	}
+
+	analysisIndex, err := o.AppOpts.GetAnalysisIndex(analysisRef)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
+	}
+
+	results, err := analysisIndex.Filter(analysisRef)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+	}
+
+	if len(results) == 0 {
+		if o.AnalysisOpts.NoWait {
+			return analysis.Artifact{}, errors.New("no analysis found")
+		}
+
+		scheduler, err := o.AppOpts.GetScheduler()
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
+		}
+
+		err = analysisdatastore.CreateAnalysis(
+			scheduler,
+			analysisRef,
+			[]string{
+				"release",
+				fmt.Sprintf("--release-name=%s", subjectRef.ReleaseVersion.Name),
+				fmt.Sprintf("--release-version=%s", subjectRef.ReleaseVersion.Version),
+				"compilation",
+				fmt.Sprintf("--os=%s/%s", subjectRef.OSVersion.Name, subjectRef.OSVersion.Version),
+				// TODO more options; generate from subject
+			},
+		)
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
+		}
+
+		results, err = analysisIndex.Filter(analysisRef)
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
+		}
+	}
+
+	result, err := analysisdatastore.RequireSingleResult(results)
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+	}
+
+	return result, nil
 }
 
 func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
@@ -81,6 +106,7 @@ func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
 
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.ResultsCmd.CmdOpts = cmdOpts
+	cmd.StoreResultsCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

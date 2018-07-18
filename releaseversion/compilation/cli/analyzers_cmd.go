@@ -15,6 +15,6 @@ func (c *AnalyzersCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("compiledrelease/analyzers")
 
 	return c.AnalyzersCmd.Execute(func() (analysis.Subject, error) {
-		return c.CmdOpts.getCompiledRelease()
+		return c.CompiledReleaseOpts.Artifact()
 	})
 }
