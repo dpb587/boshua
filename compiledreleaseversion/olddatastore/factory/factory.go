@@ -3,9 +3,11 @@ package factory
 import (
 	"fmt"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/compiledreleaseversion/datastore"
-	"github.com/dpb587/boshua/compiledreleaseversion/datastore/contextualosmetalinkrepository"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore/dpbreleaseartifacts"
 	// "github.com/dpb587/boshua/compiledreleaseversion/datastore/legacybcr"
+	"github.com/dpb587/boshua/compiledreleaseversion/datastore/presentbcr"
 	"github.com/dpb587/boshua/config"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
@@ -19,32 +21,33 @@ type factory struct {
 
 var _ datastore.Factory = &factory{}
 
-func New(logger logrus.FieldLogger) datastore.Factory {
+func New(logger logrus.FieldLogger, releaseVersionsIndex releaseversiondatastore.Index) datastore.Factory {
 	return &factory{
-		logger: logger,
+		logger:               logger,
+		releaseVersionsIndex: releaseVersionsIndex,
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}, releaseVersionIndex releaseversiondatastore.Index) (datastore.Index, error) {
+func (f *factory) Create(provider, name string, options map[string]interface{}, analysisIndex analysisdatastore.Index) (datastore.Index, error) {
 	logger := f.logger.WithField("datastore", fmt.Sprintf("compiledreleaseversion:%s[%s]", provider, name))
 
 	switch provider {
-	case "contextualosmetalinkrepository":
-		cfg := contextualosmetalinkrepository.Config{}
+	case "dpbreleaseartifacts":
+		cfg := dpbreleaseartifacts.Config{}
 		err := config.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return contextualosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
-	// case "presentbcr":
-	// 	cfg := presentbcr.Config{}
-	// 	err := config.RemarshalYAML(options, &cfg)
-	// 	if err != nil {
-	// 		return nil, errors.Wrap(err, "loading options")
-	// 	}
-	//
-	// 	return presentbcr.New(cfg, logger), nil
+		return dpbreleaseartifacts.New(cfg, analysisIndex, logger), nil
+	case "presentbcr":
+		cfg := presentbcr.Config{}
+		err := config.RemarshalYAML(options, &cfg)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading options")
+		}
+
+		return presentbcr.New(cfg, logger), nil
 	// case "legacybcr":
 	// 	cfg := legacybcr.Config{}
 	// 	err := config.RemarshalYAML(options, &cfg)

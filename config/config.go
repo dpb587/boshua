@@ -1,10 +1,11 @@
 package config
 
 type Config struct {
-	General          GeneralConfig             `yaml:"general,omitempty"`
-	Scheduler        *AbstractComponentConfig  `yaml:"scheduler,omitempty"`
-	Stemcells        []AbstractComponentConfig `yaml:"stemcell_versions"`
-	Releases         []AbstractComponentConfig `yaml:"release_versions"`
+	General   GeneralConfig             `yaml:"general,omitempty"`
+	Scheduler *AbstractComponentConfig  `yaml:"scheduler,omitempty"`
+	Stemcells []AbstractComponentConfig `yaml:"stemcell_versions"`
+	Releases  []AbstractComponentConfig `yaml:"release_versions"`
+	// TODO release-specific indices for compiled release datastores
 	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"`
 	Analyses         []AbstractComponentConfig `yaml:"analyses"`
 	Server           ServerConfig              `yaml:"server"`
@@ -26,10 +27,9 @@ type ServerTLSConfig struct {
 }
 
 type AbstractComponentConfig struct {
-	Name     string                   `yaml:"name"`
-	Type     string                   `yaml:"type"`
-	Options  map[string]interface{}   `yaml:"options"`
-	Analysis *AbstractComponentConfig `yaml:"analysis"`
+	Name    string                 `yaml:"name"`
+	Type    string                 `yaml:"type"`
+	Options map[string]interface{} `yaml:"options"`
 }
 
 func (c *Config) ApplyDefaults() {

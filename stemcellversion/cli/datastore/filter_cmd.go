@@ -3,7 +3,6 @@ package datastore
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/pkg/errors"
 )
 
@@ -25,9 +24,7 @@ func (c *FilterCmd) Execute(_ []string) error {
 	}
 
 	for _, result := range results {
-		resultRef := result.Reference().(stemcellversion.Reference)
-
-		fmt.Printf("%s\t%s\t%s\t%s\n", resultRef.IaaS, resultRef.Hypervisor, resultRef.OS, resultRef.Version)
+		fmt.Printf("%s\t%s\t%s\t%s\n", result.IaaS, result.Hypervisor, result.OS, result.Version)
 	}
 
 	return nil
