@@ -11,7 +11,7 @@ import (
 )
 
 type StoreResultsCmd struct {
-	Analyzer string `long:"analyzer" description:"The analyzer used for the results"`
+	Analyzer analysis.AnalyzerName `long:"analyzer" description:"The analyzer used for the results"`
 
 	Args StoreResultsArgs `positional-args:"true"`
 }
@@ -20,7 +20,26 @@ type StoreResultsArgs struct {
 	Artifact string `positional-arg-name:"ARTIFACT-PATH" description:"Artifact to store"`
 }
 
-func (c *StoreResultsCmd) ExecuteStore(index datastore.Index, ref analysis.Reference) error {
+func (c *StoreResultsCmd) ExecuteStore(
+	analysisIndexLoader func(analysis.Reference) (datastore.Index, error),
+	subjectLoader func() (analysis.Subject, error),
+	analyzer analysis.AnalyzerName,
+) error {
+	subject, err := subjectLoader()
+	if err != nil {
+		return errors.Wrap(err, "finding release")
+	}
+
+	ref := analysis.Reference{
+		Subject:  subject,
+		Analyzer: analyzer,
+	}
+
+	index, err := analysisIndexLoader(ref)
+	if err != nil {
+		return errors.Wrap(err, "loading analysis datastore")
+	}
+
 	path, err := filepath.Abs(c.Args.Artifact)
 	if err != nil {
 		return errors.Wrap(err, "expanding artifact path")

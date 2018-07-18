@@ -1,6 +1,8 @@
 package opts
 
 import (
+	"fmt"
+
 	"github.com/dpb587/boshua/cli/args"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion"
@@ -16,6 +18,32 @@ type Opts struct {
 	Version     string         `long:"release-version" description:"The release version"`
 	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`
 	URI         string         `long:"release-url" description:"The release source URL"`
+}
+
+func (o *Opts) Opts() []string {
+	opts := []string{}
+
+	if o.NameVersion != nil {
+		opts = append(opts, fmt.Sprintf("--release=%s", o.NameVersion.String()))
+	}
+
+	if o.Name != "" {
+		opts = append(opts, fmt.Sprintf("--release-name=%s", o.Name))
+	}
+
+	if o.Version != "" {
+		opts = append(opts, fmt.Sprintf("--release-version=%s", o.Version))
+	}
+
+	if o.Checksum != nil {
+		opts = append(opts, fmt.Sprintf("--release-checksum=%s", o.Checksum.String()))
+	}
+
+	if o.URI != "" {
+		opts = append(opts, fmt.Sprintf("--release-url=%s", o.URI))
+	}
+
+	return opts
 }
 
 func (o *Opts) Artifact() (releaseversion.Artifact, error) {

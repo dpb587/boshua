@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -12,12 +11,12 @@ import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
 	"github.com/dpb587/boshua/cli/args"
-	compiledreleaseversiondatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	compiledreleaseversionaggregate "github.com/dpb587/boshua/releaseversion/compilation/datastore/aggregate"
-	compiledreleaseversionfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/factory"
 	"github.com/dpb587/boshua/config"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
+	compiledreleaseversiondatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	compiledreleaseversionaggregate "github.com/dpb587/boshua/releaseversion/compilation/datastore/aggregate"
+	compiledreleaseversionfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/factory"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
@@ -225,18 +224,7 @@ func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
 		return nil, errors.Wrap(err, "loading config")
 	}
 
-	factory := schedulerfactory.New(
-		o.GetLogger(),
-		func(args ...string) *exec.Cmd {
-			return exec.Command(
-				"boshua",
-				append([]string{
-					"--config", o.getConfigPath(),
-					// "--log-level", string(o.LogLevel), // TODO stringify
-				}, args...)...,
-			)
-		},
-	)
+	factory := schedulerfactory.New(o.GetLogger())
 
 	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
 }

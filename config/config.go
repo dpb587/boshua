@@ -36,6 +36,9 @@ func (c *Config) ApplyDefaults() {
 	if c.Scheduler == nil {
 		c.Scheduler = &AbstractComponentConfig{
 			Type: "localexec",
+			Options: map[string]interface{}{
+				"exec": "boshua",
+			},
 		}
 	}
 

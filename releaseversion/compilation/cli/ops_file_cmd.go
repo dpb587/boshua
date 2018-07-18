@@ -22,13 +22,25 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "finding compiled release")
 	}
 
+	var releaseName, releaseVersion string
+
+	if c.CompiledReleaseOpts.ReleaseOpts.NameVersion != nil {
+		nv := c.CompiledReleaseOpts.ReleaseOpts.NameVersion
+
+		releaseName = nv.Name
+		releaseVersion = nv.Version
+	} else {
+		releaseName = c.CompiledReleaseOpts.ReleaseOpts.Name
+		releaseVersion = c.CompiledReleaseOpts.ReleaseOpts.Version
+	}
+
 	opsBytes, err := yaml.Marshal([]map[string]interface{}{
 		{
-			"path": fmt.Sprintf("/releases/name=%s?", c.CompiledReleaseOpts.Release.Name),
+			"path": fmt.Sprintf("/releases/name=%s?", releaseName),
 			"type": "replace",
 			"value": map[string]interface{}{
-				"name":    c.CompiledReleaseOpts.Release.Name,
-				"version": c.CompiledReleaseOpts.Release.Version,
+				"name":    releaseName,
+				"version": releaseVersion,
 				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(artifact.MetalinkFile().Hashes[0]).String(), "sha1:"), // TODO .Preferred()
 				"url":     artifact.MetalinkFile().URLs[0].URL,
 				"stemcell": map[string]string{

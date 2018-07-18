@@ -1,27 +1,33 @@
 package localexec
 
 import (
+	"os/exec"
+
 	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/sirupsen/logrus"
 )
 
 type Scheduler struct {
-	config     Config
-	cmdFactory CmdFactory
-	logger     logrus.FieldLogger
+	config Config
+	logger logrus.FieldLogger
 }
 
 var _ scheduler.Scheduler = &Scheduler{}
 
-func New(config Config, cmdFactory CmdFactory, logger logrus.FieldLogger) scheduler.Scheduler {
+func New(config Config, logger logrus.FieldLogger) scheduler.Scheduler {
 	return Scheduler{
-		config:     config,
-		cmdFactory: cmdFactory,
-		logger:     logger,
+		config: config,
+		logger: logger,
 	}
 }
 
+func (s Scheduler) cmd(args ...string) *exec.Cmd {
+	cmd := exec.Command(s.config.Exec, append(s.config.Args, args...)...)
+
+	return cmd
+}
+
 func (s Scheduler) Schedule(tt task.Task) (scheduler.Task, error) {
-	return NewTask(s.cmdFactory, tt), nil
+	return NewTask(s.cmd, tt), nil
 }

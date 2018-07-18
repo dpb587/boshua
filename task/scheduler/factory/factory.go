@@ -12,16 +12,14 @@ import (
 )
 
 type factory struct {
-	logger     logrus.FieldLogger
-	cmdFactory localexec.CmdFactory
+	logger logrus.FieldLogger
 }
 
 var _ scheduler.Factory = &factory{}
 
-func New(logger logrus.FieldLogger, cmdFactory localexec.CmdFactory) scheduler.Factory {
+func New(logger logrus.FieldLogger) scheduler.Factory {
 	return &factory{
-		logger:     logger,
-		cmdFactory: cmdFactory,
+		logger: logger,
 	}
 }
 
@@ -44,7 +42,7 @@ func (f *factory) Create(provider string, options map[string]interface{}) (sched
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return localexec.New(cfg, f.cmdFactory, logger), nil
+		return localexec.New(cfg, logger), nil
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}

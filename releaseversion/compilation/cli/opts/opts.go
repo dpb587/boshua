@@ -15,8 +15,8 @@ import (
 type Opts struct {
 	AppOpts *cmdopts.Opts `no-flag:"true"`
 
-	Release *releaseversionopts.Opts `no-flag:"true"`
-	OS      args.OS                  `long:"os" description:"The OS and version"`
+	ReleaseOpts *releaseversionopts.Opts `no-flag:"true"`
+	OS          args.OS                  `long:"os" description:"The OS and version"`
 
 	NoWait      bool          `long:"no-wait" description:"Do not request and wait for compilation if not already available"`
 	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
@@ -43,7 +43,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 
 func (o Opts) FilterParams() *datastore.FilterParams {
 	return &datastore.FilterParams{
-		Release: o.Release.FilterParams(),
+		Release: o.ReleaseOpts.FilterParams(),
 		OS: &osversiondatastore.FilterParams{
 			NameExpected:    o.OS.Name != "",
 			Name:            o.OS.Name,

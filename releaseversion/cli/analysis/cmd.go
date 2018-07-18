@@ -1,14 +1,11 @@
 package analysis
 
 import (
-	"fmt"
-
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
-	"github.com/pkg/errors"
 )
 
 type Cmd struct {
@@ -30,62 +27,18 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	subject, err := o.ReleaseOpts.Artifact()
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading release")
-	}
-
-	analysisRef := analysis.Reference{
-		Subject:  subject,
-		Analyzer: o.AnalysisOpts.Analyzer,
-	}
-
-	analysisIndex, err := o.AppOpts.GetAnalysisIndex(analysisRef)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
-	}
-
-	results, err := analysisIndex.Filter(analysisRef)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
-	}
-
-	if len(results) == 0 {
-		if o.AnalysisOpts.NoWait {
-			return analysis.Artifact{}, errors.New("no analysis found")
-		}
-
-		scheduler, err := o.AppOpts.GetScheduler()
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-		}
-
-		err = analysisdatastore.CreateAnalysis(
-			scheduler,
-			analysisRef,
-			[]string{
-				"release",
-				fmt.Sprintf("--release-name=%s", subject.Name),
-				fmt.Sprintf("--release-version=%s", subject.Version),
-				// TODO more options; generate from subject
-			},
-		)
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
-		}
-
-		results, err = analysisIndex.Filter(analysisRef)
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
-		}
-	}
-
-	result, err := analysisdatastore.RequireSingleResult(results)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
-	}
-
-	return result, nil
+	return cliutil.LoadAnalysis(
+		o.AppOpts.GetAnalysisIndex,
+		func() (analysis.Subject, error) {
+			return o.ReleaseOpts.Artifact()
+		},
+		o.AnalysisOpts,
+		o.AppOpts.GetScheduler,
+		append(
+			[]string{"release"},
+			o.ReleaseOpts.Opts()...,
+		),
+	)
 }
 
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {

@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/releaseversion/compilation"
-	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
+	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
@@ -38,6 +38,10 @@ func New(releaseVersionIndex releaseversiondatastore.Index, config Config, logge
 }
 
 func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error) {
+	if !f.Release.NameSatisfied(i.config.Release) {
+		return nil, nil
+	}
+
 	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, "*", "*", "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
@@ -57,6 +61,10 @@ func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 		if err != nil {
 			// TODO warn and continue?
 			return nil, fmt.Errorf("unmarshalling %s: %v", compiledReleasePath, err)
+		}
+
+		if !f.Release.VersionSatisfied(compiledReleaseMeta4.Files[0].Version) {
+			continue
 		}
 
 		releases, err := i.releaseVersionIndex.Filter(f.Release)

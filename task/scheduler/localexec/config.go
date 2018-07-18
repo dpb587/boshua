@@ -1,5 +1,6 @@
 package localexec
 
 type Config struct {
-	// Docker bool `yaml:"docker"`
+	Exec string   `yaml:"exec"`
+	Args []string `yaml:"args"`
 }

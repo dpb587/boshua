@@ -5,10 +5,9 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
-	"github.com/pkg/errors"
 )
 
 type Cmd struct {
@@ -30,66 +29,23 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	subject, err := o.StemcellOpts.Artifact()
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading stemcell")
-	}
-
-	analysisRef := analysis.Reference{
-		Subject:  subject,
-		Analyzer: o.AnalysisOpts.Analyzer,
-	}
-
-	analysisIndex, err := o.AppOpts.GetAnalysisIndex(analysisRef)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
-	}
-
-	results, err := analysisIndex.Filter(analysisRef)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
-	}
-
-	if len(results) == 0 {
-		if o.AnalysisOpts.NoWait {
-			return analysis.Artifact{}, errors.New("no analysis found")
-		}
-
-		scheduler, err := o.AppOpts.GetScheduler()
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-		}
-
-		err = analysisdatastore.CreateAnalysis(
-			scheduler,
-			analysisRef,
-			[]string{
-				"stemcell",
-				fmt.Sprintf("--stemcell-os=%s", subject.OS),
-				fmt.Sprintf("--stemcell-version=%s", subject.Version),
-				fmt.Sprintf("--stemcell-iaas=%s", subject.IaaS),
-				fmt.Sprintf("--stemcell-hypervisor=%s", subject.Hypervisor),
-				fmt.Sprintf("--stemcell-flavor=%s", subject.Flavor),
-				// TODO disk format
-				// TODO more options; generate from subject
-			},
-		)
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
-		}
-
-		results, err = analysisIndex.Filter(analysisRef)
-		if err != nil {
-			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
-		}
-	}
-
-	result, err := analysisdatastore.RequireSingleResult(results)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
-	}
-
-	return result, nil
+	return cliutil.LoadAnalysis(
+		o.AppOpts.GetAnalysisIndex,
+		func() (analysis.Subject, error) {
+			return o.StemcellOpts.Artifact()
+		},
+		o.AnalysisOpts,
+		o.AppOpts.GetScheduler,
+		[]string{
+			"stemcell",
+			fmt.Sprintf("--stemcell-os=%s", o.StemcellOpts.OS),
+			fmt.Sprintf("--stemcell-version=%s", o.StemcellOpts.Version),
+			fmt.Sprintf("--stemcell-iaas=%s", o.StemcellOpts.IaaS),
+			fmt.Sprintf("--stemcell-hypervisor=%s", o.StemcellOpts.Hypervisor),
+			fmt.Sprintf("--stemcell-flavor=%s", o.StemcellOpts.Flavor),
+			// TODO more options; generate from subject
+		},
+	)
 }
 
 func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {
