@@ -16,11 +16,11 @@ import (
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type index struct {
@@ -96,17 +96,19 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 			string(ref.Analyzer),
 			fmt.Sprintf("%s.meta4", subjectRef.Version),
 		), nil
+	case stemcellversion.Reference:
+		return filepath.Join(
+			i.config.StemcellPrefix,
+			"analysis",
+			subjectRef.FullName(),
+			fmt.Sprintf("%s.meta4", subjectRef.Version),
+		), nil
 	}
 
 	return "", datastore.UnsupportedOperationErr
 }
 
 func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
-	config, err := i.loadConfig()
-	if err != nil {
-		return errors.Wrap(err, "loading release config")
-	}
-
 	logger := boshlog.NewLogger(boshlog.LevelError)
 	fs := boshsys.NewOsFileSystem(logger)
 
@@ -140,17 +142,18 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 
 	// not a good way to inject configs
 	priorAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	os.Setenv("AWS_ACCESS_KEY_ID", config.Blobstore.Options.AccessKeyID)
+	os.Setenv("AWS_ACCESS_KEY_ID", i.config.BlobstoreConfig.S3.AccessKey)
 	defer os.Setenv("AWS_ACCESS_KEY_ID", priorAccessKey)
 
 	priorSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", config.Blobstore.Options.SecretAccessKey)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", i.config.BlobstoreConfig.S3.SecretKey)
 	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
 
 	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
-		"s3://%s/%s/analysis/%s/%s",
-		config.Blobstore.Options.Host,
-		config.Blobstore.Options.BucketName,
+		"s3://%s/%s/%s%s/%s",
+		i.config.BlobstoreConfig.S3.Host,
+		i.config.BlobstoreConfig.S3.Bucket,
+		i.config.BlobstoreConfig.S3.Prefix,
 		sha1[0:2],
 		sha1[2:],
 	)})
@@ -196,50 +199,4 @@ func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) e
 			ref.Analyzer,
 		),
 	)
-}
-
-func (i *index) loadConfig() (releaseConfig, error) {
-	var finalConfig, privateConfig releaseConfig
-
-	if i.config.BlobstoreConfig.AWS.Host != "" {
-		finalConfig = releaseConfig{
-			Blobstore: releaseConfigBlobstore{
-				Provider: "s3",
-				Options: releaseConfigBlobstoreS3{
-					Host:            i.config.BlobstoreConfig.AWS.Host,
-					BucketName:      i.config.BlobstoreConfig.AWS.Bucket,
-					AccessKeyID:     i.config.BlobstoreConfig.AWS.AccessKey,
-					SecretAccessKey: i.config.BlobstoreConfig.AWS.SecretKey,
-				},
-			},
-		}
-	} else {
-		{ // final.yml
-			finalBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "final.yml"))
-			if err != nil {
-				return releaseConfig{}, errors.Wrap(err, "reading final.yml")
-			}
-
-			err = yaml.Unmarshal(finalBytes, &finalConfig)
-			if err != nil {
-				return releaseConfig{}, errors.Wrap(err, "unmarshalling final.yml")
-			}
-		}
-
-		{ // private.yml
-			privateBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, "config", "private.yml"))
-			if err != nil {
-				return releaseConfig{}, errors.Wrap(err, "reading private.yml")
-			}
-
-			err = yaml.Unmarshal(privateBytes, &privateConfig)
-			if err != nil {
-				return releaseConfig{}, errors.Wrap(err, "unmarshalling private.yml")
-			}
-		}
-
-		finalConfig.Merge(privateConfig)
-	}
-
-	return finalConfig, nil
 }

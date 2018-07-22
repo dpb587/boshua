@@ -1,12 +1,13 @@
 package blobstore
 
 type BlobstoreConfig struct {
-	AWS AWSBlobstoreConfig `yaml:"aws"`
+	S3 S3BlobstoreConfig `yaml:"s3"`
 }
 
-type AWSBlobstoreConfig struct {
+type S3BlobstoreConfig struct {
 	Host      string `yaml:"host"`
 	Bucket    string `yaml:"bucket"`
+	Prefix    string `yaml:"prefix"`
 	AccessKey string `yaml:"access_key"`
 	SecretKey string `yaml:"secret_key"`
 }

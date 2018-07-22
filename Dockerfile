@@ -14,5 +14,5 @@ RUN true \
 
 FROM alpine:3.4
 RUN apk --no-cache add bash ca-certificates curl git openssh-client
-COPY --from=build /tmp/binaries /usr/local/bin
 COPY --from=binaries /tmp/binaries /usr/local/bin
+COPY --from=build /tmp/binaries /usr/local/bin

@@ -12,13 +12,15 @@ import (
 
 type RepositoryConfig struct {
 	Repository    string                `yaml:"repository"`
-	Branch        *string               `yaml:"branch"`
+	Branch        string                `yaml:"branch"`
 	LocalPath     string                `yaml:"local_path"`
-	PrivateKey    *string               `yaml:"private_key"`
+	PrivateKey    string                `yaml:"private_key"`
 	PullInterval_ marshaltypes.Duration `yaml:"pull_interval"`
 	PullInterval  time.Duration         `yaml:"-"`
 	SkipPull      bool                  `yaml:"skip_pull"`
 	SkipPush      bool                  `yaml:"skip_push"`
+	AuthorName    string                `yaml:"author_name"`
+	AuthorEmail   string                `yaml:"author_email"`
 }
 
 func (c *RepositoryConfig) ApplyDefaults() {
@@ -28,6 +30,14 @@ func (c *RepositoryConfig) ApplyDefaults() {
 		hasher := sha1.New()
 		hasher.Write([]byte(c.Repository))
 		c.LocalPath = filepath.Join(os.TempDir(), fmt.Sprintf("boshua-%x", hasher.Sum(nil)))
+	}
+
+	if c.AuthorName == "" {
+		c.AuthorName = "boshua" // TODO w/ version?
+	}
+
+	if c.AuthorEmail == "" {
+		c.AuthorEmail = "boshua@localhost"
 	}
 
 	if c.PullInterval_ == 0 {

@@ -1,11 +1,12 @@
 package git
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -84,32 +85,33 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 			return fmt.Errorf("writing file %s: %v", path, err)
 		}
 
-		cmd := exec.Command("git", "add", path)
-		cmd.Dir = i.config.LocalPath
-
-		err = cmd.Run()
+		err = i.run("add", path)
 		if err != nil {
 			return errors.Wrap(err, "adding file")
 		}
 	}
 
 	{ // commit
-		cmd := exec.Command("git", "commit", "--file", "-")
-		cmd.Stdin = bytes.NewBuffer([]byte(message))
-		cmd.Dir = i.config.LocalPath
+		configs := map[string]string{
+			"user.name":  i.config.AuthorName,
+			"user.email": i.config.AuthorEmail,
+		}
 
-		err := cmd.Run()
+		for k, v := range configs {
+			err := i.run("config", k, v)
+			if err != nil {
+				return errors.Wrapf(err, "setting %s", k)
+			}
+		}
+
+		err := i.run("commit", "-m", message)
 		if err != nil {
 			return errors.Wrap(err, "committing")
 		}
 	}
 
 	if !i.config.SkipPush {
-		cmd := exec.Command("git", "commit", "--file", "-")
-		cmd.Stdin = bytes.NewBuffer([]byte(message))
-		cmd.Dir = i.config.LocalPath
-
-		err := cmd.Run()
+		err := i.run("push", i.config.Repository, fmt.Sprintf("HEAD:%s", i.config.Branch))
 		if err != nil {
 			return errors.Wrap(err, "pushing")
 		}
@@ -118,69 +120,115 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 	return nil
 }
 
-func (r *Repository) requireClone() error {
-	var execpath = "git"
+func (r Repository) requireClone() error {
+	var args []string
 
-	if r.config.PrivateKey != nil {
-		execpath = fmt.Sprintf("%s.git", r.config.LocalPath)
-		keyPath := fmt.Sprintf("%s.key", r.config.LocalPath)
+	if _, err := os.Stat(path.Join(r.config.LocalPath, ".git")); os.IsNotExist(err) {
+		args = []string{"clone", "--quiet", r.config.Repository}
 
-		err := ioutil.WriteFile(keyPath, []byte(*r.config.PrivateKey), 0600)
-		if err != nil {
-			return errors.Wrap(err, "writing private key")
+		if r.config.Branch != "" {
+			args = append(args, "--branch", r.config.Branch)
 		}
 
-		defer os.Remove(keyPath)
+		args = append(args, ".")
 
-		err = ioutil.WriteFile(execpath, []byte(fmt.Sprintf(`#!/bin/bash
-eval $(ssh-agent)
-trap "kill $SSH_AGENT_PID" 0
+		err = os.MkdirAll(r.config.LocalPath, 0700)
+		if err != nil {
+			return errors.Wrap(err, "mkdir local repo")
+		}
+	} else {
+		args = []string{"pull", "--ff-only", "--quiet", r.config.Repository}
+
+		if r.config.Branch != "" {
+			args = append(args, r.config.Branch)
+		}
+	}
+
+	err := r.run(args...)
+	if err != nil {
+		return errors.Wrap(err, "fetching repository")
+	}
+
+	// TODO reset to handle force push?
+
+	return nil
+}
+
+func (r Repository) run(args ...string) error {
+	return r.runRaw(os.Stderr, args...)
+}
+
+func (r Repository) runRaw(stdout io.Writer, args ...string) error {
+	var executable = "git"
+
+	if r.config.PrivateKey != "" && (args[0] == "clone" || args[0] == "pull" || args[0] == "push") {
+		privateKey, err := ioutil.TempFile("", "git-privateKey")
+		if err != nil {
+			return errors.Wrap(err, "tempfile for id_rsa")
+		}
+
+		defer os.RemoveAll(privateKey.Name())
+
+		err = os.Chmod(privateKey.Name(), 0600)
+		if err != nil {
+			return errors.Wrap(err, "chmod git wrapper")
+		}
+
+		err = ioutil.WriteFile(privateKey.Name(), []byte(r.config.PrivateKey), 0600)
+		if err != nil {
+			return errors.Wrap(err, "writing id_rsa")
+		}
+
+		executableWrapper, err := ioutil.TempFile("", "git-executable")
+		if err != nil {
+			return errors.Wrap(err, "tempfile for git wrapper")
+		}
+
+		defer os.RemoveAll(executableWrapper.Name())
+
+		_, err = executableWrapper.WriteString(fmt.Sprintf(`#!/bin/bash
+
 set -eu
-SSH_ASKPASS=false DISPLAY= ssh-add "%s"
-git "$@"
-`, keyPath)), 0700)
+
+mkdir -p ~/.ssh
+
+cat > ~/.ssh/config <<EOF
+StrictHostKeyChecking no
+LogLevel quiet
+EOF
+
+chmod 0600 ~/.ssh/config
+
+eval $(ssh-agent) > /dev/null
+
+trap "kill $SSH_AGENT_PID" 0
+
+SSH_ASKPASS=false DISPLAY= ssh-add "%s" 2>/dev/null # TODO suppresses real errors?
+
+exec git "$@"`, privateKey.Name()))
 		if err != nil {
 			return errors.Wrap(err, "writing git wrapper")
 		}
+
+		err = executableWrapper.Close()
+		if err != nil {
+			return errors.Wrap(err, "closing tempfile")
+		}
+
+		err = os.Chmod(executableWrapper.Name(), 0500)
+		if err != nil {
+			return errors.Wrap(err, "chmod git wrapper")
+		}
+
+		executable = executableWrapper.Name()
 	}
 
-	if _, err := os.Stat(r.config.LocalPath); os.IsNotExist(err) {
-		args := []string{
-			"clone",
-			"--single-branch",
-		}
+	// fmt.Fprintf(os.Stderr, "> %s %s\n", executable, strings.Join(args, " "))
 
-		if r.config.Branch != nil {
-			args = append(args, "--branch", *r.config.Branch)
-		}
+	cmd := exec.Command(executable, args...)
+	cmd.Dir = r.config.LocalPath
+	cmd.Stdout = stdout
+	cmd.Stderr = os.Stderr
 
-		args = append(args, r.config.Repository, r.config.LocalPath)
-
-		cmd := exec.Command(execpath, args...)
-		err = cmd.Run()
-		if err != nil {
-			return errors.Wrap(err, "cloning repository")
-		}
-	} else {
-		args := []string{
-			"pull",
-			"--ff-only",
-			r.config.Repository,
-		}
-
-		if r.config.Branch != nil {
-			args = append(args, *r.config.Branch)
-		}
-
-		cmd := exec.Command(execpath, args...)
-		cmd.Dir = r.config.LocalPath
-
-		err = cmd.Run()
-
-		if err != nil {
-			return errors.Wrap(err, "pulling repository")
-		}
-	}
-
-	return nil
+	return cmd.Run()
 }

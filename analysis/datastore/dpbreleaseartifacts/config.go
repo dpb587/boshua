@@ -11,6 +11,7 @@ type Config struct {
 
 	Release string `yaml:"release"`
 
-	ReleasePrefix         string `yaml:"release_prefix"`
 	CompiledReleasePrefix string `yaml:"compiled_release_prefix"`
+	ReleasePrefix         string `yaml:"release_prefix"`
+	StemcellPrefix        string `yaml:"stemcell_prefix"`
 }
