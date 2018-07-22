@@ -13,8 +13,7 @@ import (
 )
 
 type factory struct {
-	logger               logrus.FieldLogger
-	releaseVersionsIndex releaseversiondatastore.Index
+	logger logrus.FieldLogger
 }
 
 var _ datastore.Factory = &factory{}

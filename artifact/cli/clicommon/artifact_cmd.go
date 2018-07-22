@@ -32,6 +32,8 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 		log.Fatal(err)
 	}
 
+	artifactMetalinkFile := artifact.MetalinkFile()
+
 	if c.Download != nil {
 		logger := boshlog.NewLogger(boshlog.LevelError)
 		fs := boshsys.NewOsFileSystem(logger)
@@ -43,7 +45,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 		target := *c.Download
 
 		if target == "default" {
-			target = artifact.Name
+			target = artifactMetalinkFile.Name
 		}
 
 		targetPath, err := filepath.Abs(target)
@@ -56,29 +58,29 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 			return errors.Wrap(err, "loading download destination")
 		}
 
-		progress := pb.New64(int64(artifact.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+		progress := pb.New64(int64(artifactMetalinkFile.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
 
-		return transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(artifact, local, progress)
+		return transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(artifactMetalinkFile, local, progress)
 	}
 
 	if c.Format == "json" {
 		output := map[string]string{
-			"file": artifact.Name,
+			"file": artifactMetalinkFile.Name,
 		}
 
-		for _, url := range artifact.URLs { // TODO only first?
+		for _, url := range artifactMetalinkFile.URLs { // TODO only first?
 			output["url"] = url.URL
 
 			break
 		}
 
-		for _, metaurl := range artifact.MetaURLs { // TODO only first?
+		for _, metaurl := range artifactMetalinkFile.MetaURLs { // TODO only first?
 			output["metaurl"] = metaurl.URL
 
 			break
 		}
 
-		for _, cs := range metalinkutil.HashesToChecksums(artifact.Hashes) {
+		for _, cs := range metalinkutil.HashesToChecksums(artifactMetalinkFile.Hashes) {
 			output[cs.Algorithm().Name()] = fmt.Sprintf("%x", cs.Data())
 		}
 
@@ -91,7 +93,7 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 	} else if c.Format == "metalink" {
 		meta4 := metalink.Metalink{
 			Files: []metalink.File{
-				artifact,
+				artifactMetalinkFile,
 			},
 			Generator: "boshua/0.0.0",
 		}
@@ -103,17 +105,17 @@ func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
 
 		fmt.Printf("%s\n", meta4Bytes)
 	} else if c.Format == "tsv" {
-		fmt.Printf("file\t%s\n", artifact.Name)
+		fmt.Printf("file\t%s\n", artifactMetalinkFile.Name)
 
-		for _, url := range artifact.URLs {
+		for _, url := range artifactMetalinkFile.URLs {
 			fmt.Printf("url\t%s\n", url.URL)
 		}
 
-		for _, url := range artifact.MetaURLs {
+		for _, url := range artifactMetalinkFile.MetaURLs {
 			fmt.Printf("metaurl\t%s\t%s\n", url.URL, url.MediaType)
 		}
 
-		for _, cs := range metalinkutil.HashesToChecksums(artifact.Hashes) {
+		for _, cs := range metalinkutil.HashesToChecksums(artifactMetalinkFile.Hashes) {
 			fmt.Printf("%s\n", strings.Replace(cs.String(), ":", "\t", 1))
 		}
 	} else {

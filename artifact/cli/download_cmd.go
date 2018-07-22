@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"bytes"
@@ -18,19 +18,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DownloadMetalinkCmd struct {
+type DownloadCmd struct {
 	*CmdOpts `no-flag:"true"`
 
-	Args DownloadMetalinkCmdArgs `positional-args:"true" required:"true"`
+	Args DownloadCmdArgs `positional-args:"true" required:"true"`
 }
 
-type DownloadMetalinkCmdArgs struct {
+type DownloadCmdArgs struct {
 	Metalink  string  `positional-arg-name:"PATH" description:"Path to the metalink file"`
 	TargetDir *string `positional-arg-name:"TARGET-DIR" description:"Directory to download files"`
 }
 
-func (c *DownloadMetalinkCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("download-metalink")
+func (c *DownloadCmd) Execute(_ []string) error {
+	c.AppOpts.ConfigureLogger("artifact/download")
 
 	logger := boshlog.NewLogger(boshlog.LevelError)
 	fs := boshsys.NewOsFileSystem(logger)

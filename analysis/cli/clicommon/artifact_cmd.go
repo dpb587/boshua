@@ -1,8 +1,8 @@
 package clicommon
 
 import (
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
-	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
 )
 
@@ -11,12 +11,12 @@ type ArtifactCmd struct {
 }
 
 func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
-	return c.ArtifactCmd.ExecuteArtifact(func() (metalink.File, error) {
+	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
 		artifact, err := loader()
 		if err != nil {
-			return metalink.File{}, errors.Wrap(err, "finding artifact")
+			return nil, errors.Wrap(err, "finding artifact")
 		}
 
-		return artifact.MetalinkFile(), nil
+		return artifact, nil
 	})
 }

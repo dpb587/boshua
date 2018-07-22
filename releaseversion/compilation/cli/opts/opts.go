@@ -16,7 +16,7 @@ type Opts struct {
 	AppOpts *cmdopts.Opts `no-flag:"true"`
 
 	ReleaseOpts *releaseversionopts.Opts `no-flag:"true"`
-	OS          args.OS                  `long:"os" description:"The OS and version"`
+	OS          args.OS                  `long:"os" description:"The OS in name/version format"`
 
 	NoWait      bool          `long:"no-wait" description:"Do not request and wait for compilation if not already available"`
 	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`

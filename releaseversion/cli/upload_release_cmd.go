@@ -1,47 +1,26 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-
+	"github.com/dpb587/boshua/artifact"
+	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/pkg/errors"
 )
 
 type UploadReleaseCmd struct {
-	*CmdOpts `no-flag:"true"`
+	clicommon.UploadReleaseCmd
 
-	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
+	*CmdOpts `no-flag:"true"`
 }
 
 func (c *UploadReleaseCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("release/upload-release")
 
-	artifact, err := c.CmdOpts.ReleaseOpts.Artifact()
-	if err != nil {
-		return errors.Wrap(err, "finding compiled release")
-	}
+	return c.UploadReleaseCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
+		artifact, err := c.CmdOpts.ReleaseOpts.Artifact()
+		if err != nil {
+			return nil, errors.Wrap(err, "finding release")
+		}
 
-	if c.Cmd {
-		fmt.Printf("bosh upload-release --name=%s --version=%s \\\n", artifact.Name, artifact.Version)
-		fmt.Printf("  %s \\\n", artifact.MetalinkFile().URLs[0].URL)
-		fmt.Printf("  --sha1=%s\n", strings.TrimPrefix(artifact.PreferredChecksum().String(), "sha1:"))
-
-		return nil
-	}
-
-	cmd := exec.Command(
-		"bosh",
-		"upload-release",
-		fmt.Sprintf("--name=%s", artifact.Name),
-		fmt.Sprintf("--version=%s", artifact.Version),
-		artifact.MetalinkFile().URLs[0].URL,
-		fmt.Sprintf("--sha1=%s", strings.TrimPrefix(artifact.PreferredChecksum().String(), "sha1:")),
-	)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
+		return artifact, nil
+	})
 }

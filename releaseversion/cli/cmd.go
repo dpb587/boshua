@@ -18,7 +18,7 @@ type Cmd struct {
 
 	AnalysisCmd    *analysis.Cmd    `command:"analysis" description:"For analyzing the release artifact"`
 	DatastoreCmd   *datastore.Cmd   `command:"datastore" description:"For interacting with release datastores"`
-	CompilationCmd *compilation.Cmd `command:"compilation" description:"For compilations of the release" subcommands-optional:"true"`
+	CompilationCmd *compilation.Cmd `command:"compilation" description:"For working with compiled releases" subcommands-optional:"true"`
 
 	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`

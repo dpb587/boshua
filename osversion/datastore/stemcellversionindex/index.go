@@ -1,4 +1,4 @@
-package boshio
+package stemcellversionindex
 
 import (
 	"reflect"
