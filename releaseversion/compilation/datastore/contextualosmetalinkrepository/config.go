@@ -6,4 +6,5 @@ type Config struct {
 	git.RepositoryConfig `yaml:",inline"`
 
 	Release string `yaml:"release"`
+	Prefix  string `yaml:"prefix"`
 }

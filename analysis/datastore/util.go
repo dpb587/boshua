@@ -29,7 +29,7 @@ func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Refer
 		return errors.Wrap(err, "preparing task")
 	}
 
-	tt = append(tt, task.Step{
+	tt.Steps = append(tt.Steps, task.Step{
 		Name: "storing",
 		Args: append(
 			storeArgs,

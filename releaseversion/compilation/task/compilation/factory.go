@@ -1,9 +1,9 @@
 package compilation
 
 import (
-	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 )
 
 func New(releaseVersion releaseversion.Artifact, osVersion osversion.Artifact) *Task {

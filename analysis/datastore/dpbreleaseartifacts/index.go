@@ -13,9 +13,9 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/datastore/git"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/pkg/errors"
@@ -40,6 +40,11 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 }
 
 func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
+	_, err := i.repository.Reload()
+	if err != nil {
+		return nil, errors.Wrap(err, "reloading repository")
+	}
+
 	analysisPath, err := i.storagePath(ref)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding analysis path")
@@ -77,8 +82,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	switch subjectRef := subjectRef.(type) {
 	case compilation.Reference:
 		return filepath.Join(
-			"compiled-release",
-			i.config.Channel,
+			i.config.CompiledReleasePrefix,
 			subjectRef.OSVersion.Name,
 			subjectRef.OSVersion.Version,
 			"analysis",
@@ -87,8 +91,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 		), nil
 	case releaseversion.Reference:
 		return filepath.Join(
-			"release",
-			i.config.Channel,
+			i.config.ReleasePrefix,
 			"analysis",
 			string(ref.Analyzer),
 			fmt.Sprintf("%s.meta4", subjectRef.Version),

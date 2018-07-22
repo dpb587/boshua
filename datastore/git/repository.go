@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -36,35 +35,41 @@ func (i *Repository) Reload() (bool, error) {
 		return false, nil
 	} else if time.Now().Sub(i.lastReloaded) < i.config.PullInterval {
 		return false, nil
-	} else if !strings.HasPrefix(i.config.Repository, "git+") {
-		return false, nil
 	}
 
 	i.lastReloaded = time.Now()
 
-	cmd := exec.Command("git", "pull", "--ff-only")
-	cmd.Dir = i.config.LocalPath
+	err := i.requireClone()
+	return true, err
+	// cmd := exec.Command("git")
+	//
+	// outbuf := bytes.NewBuffer(nil)
+	// errbuf := bytes.NewBuffer(nil)
+	//
+	// cmd.Stdout = outbuf
+	// cmd.Stderr = errbuf
+	//
+	// if _, err := os.Stat(i.config.LocalPath); os.IsNotExist(err) {
+	// 	cmd.Args = []string{"clone", strings.TrimPrefix(i.config.Repository, "git+"), i.config.LocalPath}
+	// } else {
+	// 	cmd.Dir = i.config.LocalPath
+	// 	cmd.Args = []string{"pull", "--ff-only"}
+	// }
 
-	outbuf := bytes.NewBuffer(nil)
-	errbuf := bytes.NewBuffer(nil)
-
-	cmd.Stdout = outbuf
-	cmd.Stderr = errbuf
-
-	err := cmd.Run()
-	if err != nil {
-		return false, errors.Wrap(err, "pulling repository")
-	}
-
-	if strings.Contains(outbuf.String(), "Already up to date.") {
-		i.logger.Debugf("repository already up to date")
-
-		return false, nil
-	}
-
-	i.logger.Debugf("repository updated")
-
-	return true, nil
+	// err := cmd.Run()
+	// if err != nil {
+	// 	return false, errors.Wrap(err, "pulling repository")
+	// }
+	//
+	// if strings.Contains(outbuf.String(), "Already up to date.") {
+	// 	i.logger.Debugf("repository already up to date")
+	//
+	// 	return false, nil
+	// }
+	//
+	// i.logger.Debugf("repository updated")
+	//
+	// return true, nil
 }
 
 func (i *Repository) Commit(files map[string][]byte, message string) error {
@@ -107,6 +112,73 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 		err := cmd.Run()
 		if err != nil {
 			return errors.Wrap(err, "pushing")
+		}
+	}
+
+	return nil
+}
+
+func (r *Repository) requireClone() error {
+	var execpath = "git"
+
+	if r.config.PrivateKey != nil {
+		execpath = fmt.Sprintf("%s.git", r.config.LocalPath)
+		keyPath := fmt.Sprintf("%s.key", r.config.LocalPath)
+
+		err := ioutil.WriteFile(keyPath, []byte(*r.config.PrivateKey), 0600)
+		if err != nil {
+			return errors.Wrap(err, "writing private key")
+		}
+
+		defer os.Remove(keyPath)
+
+		err = ioutil.WriteFile(execpath, []byte(fmt.Sprintf(`#!/bin/bash
+eval $(ssh-agent)
+trap "kill $SSH_AGENT_PID" 0
+set -eu
+SSH_ASKPASS=false DISPLAY= ssh-add "%s"
+git "$@"
+`, keyPath)), 0700)
+		if err != nil {
+			return errors.Wrap(err, "writing git wrapper")
+		}
+	}
+
+	if _, err := os.Stat(r.config.LocalPath); os.IsNotExist(err) {
+		args := []string{
+			"clone",
+			"--single-branch",
+		}
+
+		if r.config.Branch != nil {
+			args = append(args, "--branch", *r.config.Branch)
+		}
+
+		args = append(args, r.config.Repository, r.config.LocalPath)
+
+		cmd := exec.Command(execpath, args...)
+		err = cmd.Run()
+		if err != nil {
+			return errors.Wrap(err, "cloning repository")
+		}
+	} else {
+		args := []string{
+			"pull",
+			"--ff-only",
+			r.config.Repository,
+		}
+
+		if r.config.Branch != nil {
+			args = append(args, *r.config.Branch)
+		}
+
+		cmd := exec.Command(execpath, args...)
+		cmd.Dir = r.config.LocalPath
+
+		err = cmd.Run()
+
+		if err != nil {
+			return errors.Wrap(err, "pulling repository")
 		}
 	}
 

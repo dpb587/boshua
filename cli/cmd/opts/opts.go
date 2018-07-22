@@ -59,32 +59,32 @@ func (o *Opts) getConfigPath() string {
 	return configPath
 }
 
-func (o *Opts) getParsedConfig() (config.Config, error) {
+func (o *Opts) GetConfig() (*config.Config, error) {
 	if o.parsedConfig != nil {
-		return *o.parsedConfig, nil
+		return o.parsedConfig, nil
 	}
 
 	configBytes, err := ioutil.ReadFile(o.getConfigPath())
 	if err != nil {
-		return config.Config{}, errors.Wrap(err, "reading config")
+		return nil, errors.Wrap(err, "reading config")
 	}
 
 	cfg := config.Config{}
 	err = config.UnmarshalYAML(configBytes, &cfg)
 	if err != nil {
-		return config.Config{}, errors.Wrap(err, "loading options")
+		return nil, errors.Wrap(err, "loading options")
 	}
 
 	o.parsedConfig = &cfg
 
-	return *o.parsedConfig, nil
+	return o.parsedConfig, nil
 }
 
 func (o *Opts) GetAnalysisIndex(_ analysis.Reference) (analysisdatastore.Index, error) {
 	// TODO decide between name and analysis reference
 	name := "default"
 
-	config, err := o.getParsedConfig()
+	config, err := o.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
 	}
@@ -112,7 +112,7 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 		panic("TODO")
 	}
 
-	config, err := o.getParsedConfig()
+	config, err := o.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
 	}
@@ -146,7 +146,7 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 		panic("TODO")
 	}
 
-	config, err := o.getParsedConfig()
+	config, err := o.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
 	}
@@ -176,7 +176,7 @@ func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, er
 		panic("TODO")
 	}
 
-	config, err := o.getParsedConfig()
+	config, err := o.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
 	}
@@ -219,18 +219,18 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 }
 
 func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
-	config, err := o.getParsedConfig()
+	config, err := o.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "loading config")
 	}
 
-	factory := schedulerfactory.New(o.GetLogger())
+	factory := schedulerfactory.New(o.GetConfig, o.GetLogger())
 
 	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
 }
 
 func (o *Opts) GetServerConfig() (config.ServerConfig, error) {
-	parsed, err := o.getParsedConfig()
+	parsed, err := o.GetConfig()
 	if err != nil {
 		return config.ServerConfig{}, errors.Wrap(err, "loading config")
 	}

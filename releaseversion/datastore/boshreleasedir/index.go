@@ -38,6 +38,11 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		return nil, nil
 	}
 
+	_, err := i.repository.Reload()
+	if err != nil {
+		return nil, errors.Wrap(err, "reloading repository")
+	}
+
 	var globReleaseName = "*"
 	if f.NameExpected {
 		globReleaseName = filepath.Base(f.Name)

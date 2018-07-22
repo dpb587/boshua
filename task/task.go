@@ -1,6 +1,11 @@
 package task
 
-type Task []Step
+type Type string
+
+type Task struct {
+	Type  Type
+	Steps []Step
+}
 
 type Step struct {
 	Name       string

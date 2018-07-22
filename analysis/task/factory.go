@@ -27,27 +27,30 @@ func New(subject analysis.Subject, analyzer analysis.AnalyzerName) (task.Task, e
 	}
 
 	return task.Task{
-		task.Step{
-			Name: "downloading",
-			Input: map[string][]byte{
-				"metalink.meta4": meta4Bytes,
+		Type: task.Type("analysis"),
+		Steps: []task.Step{
+			{
+				Name: "downloading",
+				Input: map[string][]byte{
+					"metalink.meta4": meta4Bytes,
+				},
+				Args: []string{
+					"download-metalink",
+					"input/metalink.meta4",
+					"output",
+				},
 			},
-			Args: []string{
-				"download-metalink",
-				"input/metalink.meta4",
-				"output",
+			{
+				Name: "analyzing",
+				Args: []string{
+					"analysis",
+					"generate",
+					fmt.Sprintf("--analyzer=%s", analyzer),
+					filepath.Join("input", file.Name),
+					filepath.Join("output", "results.jsonl.gz"),
+				},
+				Privileged: privileged,
 			},
-		},
-		task.Step{
-			Name: "analyzing",
-			Args: []string{
-				"analysis",
-				"generate",
-				fmt.Sprintf("--analyzer=%s", analyzer),
-				filepath.Join("input", file.Name),
-				filepath.Join("output", "results.jsonl.gz"),
-			},
-			Privileged: privileged,
 		},
 	}, nil
 }

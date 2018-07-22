@@ -42,7 +42,12 @@ func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 		return nil, nil
 	}
 
-	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, "*", "*", "*.meta4"))
+	_, err := i.repository.Reload()
+	if err != nil {
+		return nil, errors.Wrap(err, "reloading repository")
+	}
+
+	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, i.config.Prefix, "*", "*", "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}

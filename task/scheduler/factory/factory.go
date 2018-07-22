@@ -12,14 +12,16 @@ import (
 )
 
 type factory struct {
-	logger logrus.FieldLogger
+	configLoader concourse.ConfigLoader
+	logger       logrus.FieldLogger
 }
 
 var _ scheduler.Factory = &factory{}
 
-func New(logger logrus.FieldLogger) scheduler.Factory {
+func New(configLoader concourse.ConfigLoader, logger logrus.FieldLogger) scheduler.Factory {
 	return &factory{
-		logger: logger,
+		configLoader: configLoader,
+		logger:       logger,
 	}
 }
 
@@ -34,7 +36,7 @@ func (f *factory) Create(provider string, options map[string]interface{}) (sched
 			return nil, errors.Wrap(err, "loading options")
 		}
 
-		return concourse.New(cfg, logger), nil
+		return concourse.New(cfg, f.configLoader, logger), nil
 	case "localexec":
 		cfg := localexec.Config{}
 		err := config.RemarshalYAML(options, &cfg)

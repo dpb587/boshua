@@ -57,7 +57,7 @@ func (t *Task) run() (task.Status, error) {
 
 	defer os.RemoveAll(outputDir)
 
-	for stepIdx, step := range t.tt {
+	for stepIdx, step := range t.tt.Steps {
 		tmpdir, err := ioutil.TempDir("", "boshua-localexec-")
 		if err != nil {
 			return task.StatusFailed, errors.Wrap(err, "creating tmpdir")

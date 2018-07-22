@@ -10,5 +10,7 @@ type Config struct {
 	blobstore.BlobstoreConfig `yaml:"blobstore"`
 
 	Release string `yaml:"release"`
-	Channel string `yaml:"channel"`
+
+	ReleasePrefix         string `yaml:"release_prefix"`
+	CompiledReleasePrefix string `yaml:"compiled_release_prefix"`
 }
