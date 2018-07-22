@@ -33,12 +33,33 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 		return compilation.Artifact{}, errors.Wrap(err, "finding compiled release")
 	}
 
+	if len(results) == 0 {
+		if o.NoWait {
+			return compilation.Artifact{}, errors.New("no compiled release found")
+		}
+
+		// scheduler, err := schedulerLoader()
+		// if err != nil {
+		// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
+		// }
+		//
+		// err = analysisdatastore.CreateAnalysis(scheduler, analysisRef, contextArgs)
+		// if err != nil {
+		// 	return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
+		// }
+		//
+		// results, err := index.Filter(o.FilterParams())
+		// if err != nil {
+		// 	return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
+		// }
+	}
+
 	result, err := datastore.RequireSingleResult(results)
 	if err != nil {
 		return compilation.Artifact{}, errors.Wrap(err, "finding compiled release")
 	}
 
-	return result, err
+	return result, nil
 }
 
 func (o Opts) FilterParams() *datastore.FilterParams {

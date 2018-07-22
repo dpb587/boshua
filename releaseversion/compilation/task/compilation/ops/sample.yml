@@ -1,0 +1,32 @@
+- path: /jobs/name=task/plan/task=configure/on_success?
+  type: replace
+  value:
+    do:
+    - put: env
+      params:
+        acquire: true
+    - get: bosh-deployment
+    - task: create-director
+      file: bosh-compiled-releases/ci/tasks/create-bosh-director/task.yml
+- path: /jobs/name=task/ensure?
+  type: replace
+  value:
+    do:
+    - task: destroy-director
+      file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
+    - put: env
+      params:
+        release: env
+- path: /resources/-
+  type: replace
+  value:
+    name: env
+    type: pool
+    source: ((env_source))
+- path: /resources/-
+  type: replace
+  value:
+    name: bosh-deployment
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry/bosh-deployment.git

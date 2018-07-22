@@ -10,24 +10,23 @@ import (
 	"time"
 )
 
-type Lock struct {
-	Sponsor map[string]string      `json:"sponsor"`
-	IaaS    string                 `json:"iaas"`
-	Vars    map[string]interface{} `json:"vars"`
-	Ops     []string               `json:"ops"`
+type Env struct {
+	IaaS string                 `json:"iaas"`
+	Vars map[string]interface{} `json:"vars"`
+	Ops  []string               `json:"ops"`
 }
 
 func main() {
-	lockBytes, err := ioutil.ReadFile(os.Args[1])
+	envBytes, err := ioutil.ReadFile(os.Args[1])
 	if err != nil {
-		log.Panicf("reading lock: %v", err)
+		log.Panicf("reading env: %v", err)
 	}
 
-	var lock Lock
+	var env Env
 
-	err = json.Unmarshal(lockBytes, &lock)
+	err = json.Unmarshal(envBytes, &env)
 	if err != nil {
-		log.Panicf("parsing lock: %v", err)
+		log.Panicf("parsing env: %v", err)
 	}
 
 	var now = time.Now()
@@ -38,17 +37,17 @@ func main() {
 			"bosh-deployment/bosh.yml",
 			"--state", "bosh-director/state.json",
 			"--vars-store", "bosh-director/vars.yml",
-			"--ops-file", fmt.Sprintf("bosh-deployment/%s/cpi.yml", lock.IaaS),
+			"--ops-file", fmt.Sprintf("bosh-deployment/%s/cpi.yml", env.IaaS),
 			"--ops-file", "bosh-deployment/external-ip-not-recommended.yml",
 			"--ops-file", "bosh-deployment/bosh-lite.yml",
 			"--var", fmt.Sprintf("director_name=bosh-lite-%s", now.Format("20060102T150405")),
 		}
 
-		for varKey, varVal := range lock.Vars {
+		for varKey, varVal := range env.Vars {
 			cmdArgs = append(cmdArgs, "--var", fmt.Sprintf("%s=%s", varKey, varVal))
 		}
 
-		for _, opPath := range lock.Ops {
+		for _, opPath := range env.Ops {
 			cmdArgs = append(cmdArgs, "--ops-file", opPath)
 		}
 

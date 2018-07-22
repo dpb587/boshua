@@ -35,7 +35,8 @@ func New(subject analysis.Subject, analyzer analysis.AnalyzerName) (task.Task, e
 					"metalink.meta4": meta4Bytes,
 				},
 				Args: []string{
-					"download-metalink",
+					"artifact",
+					"download",
 					"input/metalink.meta4",
 					"output",
 				},

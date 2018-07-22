@@ -249,6 +249,7 @@ func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface
 				},
 			},
 			Params: atc.Params{
+				"PATH":          "$PWD/config/bin:$PATH",
 				"BOSHUA_CONFIG": configPath,
 			},
 		})
