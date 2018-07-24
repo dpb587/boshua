@@ -3,6 +3,7 @@ package datastore
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/pkg/errors"
 )
 
@@ -22,6 +23,8 @@ func (c *FilterCmd) Execute(_ []string) error {
 	if err != nil {
 		return errors.Wrap(err, "filtering")
 	}
+
+	releaseversion.Sort(results)
 
 	for _, result := range results {
 		fmt.Printf("%s\t%s\n", result.Name, result.Version)

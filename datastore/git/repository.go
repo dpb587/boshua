@@ -31,17 +31,54 @@ func NewRepository(
 	}
 }
 
-func (i *Repository) Reload() (bool, error) {
+func (i *Repository) Path(args ...string) string {
+	return path.Join(append([]string{i.config.LocalPath}, args...)...)
+}
+
+func (i *Repository) Reload() error {
 	if i.config.SkipPull {
-		return false, nil
+		return nil
 	} else if time.Now().Sub(i.lastReloaded) < i.config.PullInterval {
-		return false, nil
+		return nil
 	}
 
-	i.lastReloaded = time.Now()
+	return i.ForceReload()
+}
 
-	err := i.requireClone()
-	return true, err
+func (i *Repository) ForceReload() error {
+	i.lastReloaded = time.Now()
+	var args []string
+
+	if _, err := os.Stat(i.Path(".git")); os.IsNotExist(err) {
+		args = []string{"clone", "--quiet", i.config.Repository}
+
+		if i.config.Branch != "" {
+			args = append(args, "--branch", i.config.Branch)
+		}
+
+		args = append(args, ".")
+
+		err = os.MkdirAll(i.Path(), 0700)
+		if err != nil {
+			return errors.Wrap(err, "mkdir local repo")
+		}
+	} else {
+		args = []string{"pull", "--ff-only", "--quiet", i.config.Repository}
+
+		if i.config.Branch != "" {
+			args = append(args, i.config.Branch)
+		}
+	}
+
+	err := i.run(args...)
+
+	if err != nil {
+		return errors.Wrap(err, "fetching repository")
+	}
+
+	// TODO reset to handle force push?
+
+	return nil
 	// cmd := exec.Command("git")
 	//
 	// outbuf := bytes.NewBuffer(nil)
@@ -75,12 +112,12 @@ func (i *Repository) Reload() (bool, error) {
 
 func (i *Repository) Commit(files map[string][]byte, message string) error {
 	for path, data := range files {
-		err := os.MkdirAll(filepath.Dir(filepath.Join(i.config.LocalPath, path)), 0755)
+		err := os.MkdirAll(filepath.Dir(i.Path(path)), 0755)
 		if err != nil {
 			return errors.Wrap(err, "mkdir file dir")
 		}
 
-		err = ioutil.WriteFile(filepath.Join(i.config.LocalPath, path), data, 0644)
+		err = ioutil.WriteFile(i.Path(path), data, 0644)
 		if err != nil {
 			return fmt.Errorf("writing file %s: %v", path, err)
 		}
@@ -116,40 +153,6 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 			return errors.Wrap(err, "pushing")
 		}
 	}
-
-	return nil
-}
-
-func (r Repository) requireClone() error {
-	var args []string
-
-	if _, err := os.Stat(path.Join(r.config.LocalPath, ".git")); os.IsNotExist(err) {
-		args = []string{"clone", "--quiet", r.config.Repository}
-
-		if r.config.Branch != "" {
-			args = append(args, "--branch", r.config.Branch)
-		}
-
-		args = append(args, ".")
-
-		err = os.MkdirAll(r.config.LocalPath, 0700)
-		if err != nil {
-			return errors.Wrap(err, "mkdir local repo")
-		}
-	} else {
-		args = []string{"pull", "--ff-only", "--quiet", r.config.Repository}
-
-		if r.config.Branch != "" {
-			args = append(args, r.config.Branch)
-		}
-	}
-
-	err := r.run(args...)
-	if err != nil {
-		return errors.Wrap(err, "fetching repository")
-	}
-
-	// TODO reset to handle force push?
 
 	return nil
 }
@@ -226,7 +229,7 @@ exec git "$@"`, privateKey.Name()))
 	// fmt.Fprintf(os.Stderr, "> %s %s\n", executable, strings.Join(args, " "))
 
 	cmd := exec.Command(executable, args...)
-	cmd.Dir = r.config.LocalPath
+	cmd.Dir = r.Path()
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
 

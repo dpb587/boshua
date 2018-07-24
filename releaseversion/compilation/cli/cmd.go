@@ -23,6 +23,7 @@ type Cmd struct {
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the compiled release artifact"`
 	OpsFileCmd       OpsFileCmd       `command:"ops-file" description:"For showing a deployment manifest ops file for the compiled release"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the compiled release to BOSH"`
+	ExportReleaseCmd ExportReleaseCmd `command:"export-release" description:"For exporting a compiled release from BOSH"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
@@ -49,6 +50,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.OpsFileCmd.CmdOpts = cmdOpts
 	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
+	cmd.ExportReleaseCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

@@ -34,3 +34,18 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 
 	return results, nil
 }
+
+func (i *Index) Store(artifact compilation.Artifact) error {
+	for idxIdx, idx := range i.indices {
+		err := idx.Store(artifact)
+		if err == datastore.UnsupportedOperationErr {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("storing %d: %v", idxIdx, err)
+		}
+
+		return nil
+	}
+
+	return datastore.UnsupportedOperationErr
+}

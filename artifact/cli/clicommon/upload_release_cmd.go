@@ -71,7 +71,7 @@ func (c *UploadReleaseCmd) ExecuteArtifact(loader ArtifactLoader) error {
 		return nil
 	}
 
-	cmd := exec.Command("bosh", append(append(idArgs, url), args...)...)
+	cmd := exec.Command("bosh", append([]string{"upload-release"}, append(append(idArgs, url), args...)...)...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

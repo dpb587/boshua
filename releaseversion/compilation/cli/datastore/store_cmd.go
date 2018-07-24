@@ -1,14 +1,13 @@
 package datastore
 
 import (
+	"fmt"
 	"path/filepath"
 
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
-	"github.com/dpb587/metalink"
-	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
-	"github.com/dpb587/metalink/verification"
-	"github.com/dpb587/metalink/verification/hash"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/pkg/errors"
 )
 
@@ -21,94 +20,47 @@ type StoreCmd struct {
 }
 
 type StoreCmdArgs struct {
-	Local string `positional-arg-name:"PATH" description:"Path to the artifact"`
+	Artifact string `positional-arg-name:"PATH" description:"Path to the artifact"`
 }
 
 func (c *StoreCmd) Execute(_ []string) error {
-	return errors.New("TODO resurrect functionality")
-	// c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
-	//
-	// index, err := c.getDatastore()
-	// if err != nil {
-	// 	return errors.Wrap(err, "loading datastore")
-	// }
-	//
-	// rawCompiledReleaseRef := c.CompiledReleaseOpts.Reference()
-	//
-	// releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
-	// if err != nil {
-	// 	return errors.Wrap(err, "loading release index")
-	// }
-	//
-	// releaseVersion, err := releaseVersionIndex.Find(rawCompiledReleaseRef.ReleaseVersion)
-	// if err != nil {
-	// 	return errors.Wrap(err, "finding release")
-	// }
-	//
-	// osVersionIndex, err := c.AppOpts.GetOSIndex("default")
-	// if err != nil {
-	// 	return errors.Wrap(err, "loading os index")
-	// }
-	//
-	// osVersion, err := osVersionIndex.Find(rawCompiledReleaseRef.OSVersion)
-	// if err != nil {
-	// 	return errors.Wrap(err, "finding os")
-	// }
-	//
-	// meta4File, err := c.createMetalinkFile()
-	// if err != nil {
-	// 	return errors.Wrap(err, "building metalink")
-	// }
-	//
-	// return index.Store(compilation.New(
-	// 	compilation.Reference{
-	// 		ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
-	// 		OSVersion:      osVersion.Reference().(osversion.Reference),
-	// 	},
-	// 	*meta4File,
-	// ))
-}
+	c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
 
-func (c *StoreCmd) createMetalinkFile() (*metalink.File, error) {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
-
-	file := metalink.File{
-		Name:    filepath.Base(c.Args.Local),
-		Version: c.Version,
-		Hashes:  []metalink.Hash{},
-	}
-
-	origin, err := urlLoader.Load(metalink.URL{URL: c.Args.Local})
+	index, err := c.getDatastore()
 	if err != nil {
-		return nil, errors.Wrap(err, "Loading origin")
+		return errors.Wrap(err, "loading datastore")
 	}
 
-	file.Size, err = origin.Size()
+	releaseVersion, err := c.CompiledReleaseOpts.ReleaseOpts.Artifact()
 	if err != nil {
-		return nil, errors.Wrap(err, "Loading size")
+		return errors.Wrap(err, "finding release")
 	}
 
-	hashmap := map[string]verification.Signer{
-		"sha-512": hash.SHA512Verification,
-		"sha-256": hash.SHA256Verification,
-		"sha-1":   hash.SHA1Verification,
-		"md5":     hash.MD5Verification,
+	osVersionIndex, err := c.AppOpts.GetOSIndex("default")
+	if err != nil {
+		return errors.Wrap(err, "loading os index")
 	}
 
-	for _, signer := range hashmap {
-		verification, err := signer.Sign(origin)
-		if err != nil {
-			return nil, errors.Wrap(err, "Signing hash")
-		}
-
-		err = verification.Apply(&file)
-		if err != nil {
-			return nil, errors.Wrap(err, "Adding verification to file")
-		}
+	osVersion, err := osVersionIndex.Find(osversion.Reference{Name: c.CompiledReleaseOpts.OS.Name, Version: c.CompiledReleaseOpts.OS.Version})
+	if err != nil {
+		return errors.Wrap(err, "finding os")
 	}
 
-	return &file, nil
+	path, err := filepath.Abs(c.Args.Artifact)
+	if err != nil {
+		return errors.Wrap(err, "expanding artifact path")
+	}
+
+	meta4, err := metalinkutil.CreateFromFiles(fmt.Sprintf("file://%s", path))
+	if err != nil {
+		return errors.Wrap(err, "building metalink")
+	}
+
+	return index.Store(compilation.New(
+		compilation.Reference{
+			ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
+			OSVersion:      osVersion.Reference().(osversion.Reference),
+		},
+		meta4.Files[0],
+	))
 }

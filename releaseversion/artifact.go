@@ -1,6 +1,7 @@
 package releaseversion
 
 import (
+	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/util/checksum"
@@ -11,6 +12,9 @@ type Artifact struct {
 	Name          string        `json:"name"`
 	Version       string        `json:"version"`
 	SourceTarball metalink.File `json:"source_tarball"`
+
+	semver       *semver.Version
+	semverParsed bool
 }
 
 var _ artifact.Artifact = &Artifact{}
@@ -39,4 +43,19 @@ func (s Artifact) MatchesChecksum(cs checksum.Checksum) bool {
 	}
 
 	return false
+}
+
+func (s Artifact) Semver() *semver.Version {
+	if s.semverParsed {
+		return s.semver
+	}
+
+	semver, err := semver.NewVersion(s.Version)
+	if err == nil {
+		s.semver = semver
+	}
+
+	s.semverParsed = true
+
+	return s.semver
 }

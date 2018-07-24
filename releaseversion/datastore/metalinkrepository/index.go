@@ -35,12 +35,12 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		return nil, nil
 	}
 
-	_, err := i.repository.Reload()
+	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, i.config.Prefix, "*.meta4"))
+	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}

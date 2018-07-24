@@ -20,10 +20,10 @@ var hypervisorArgument = &graphql.ArgumentConfig{
 	Type: graphql.String,
 }
 
-var lightArgument = &graphql.ArgumentConfig{
-	Type: graphql.Boolean,
+var diskFormatArgument = &graphql.ArgumentConfig{
+	Type: graphql.String,
 }
 
-var diskFormatArgument = &graphql.ArgumentConfig{
+var flavorArgument = &graphql.ArgumentConfig{
 	Type: graphql.String,
 }

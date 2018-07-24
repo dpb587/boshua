@@ -3,6 +3,7 @@ package stemcellversion
 import (
 	"fmt"
 
+	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/util/checksum"
@@ -17,6 +18,9 @@ type Artifact struct {
 	DiskFormat string        `json:"diskFormat"`
 	Flavor     string        `json:"flavor"`
 	Tarball    metalink.File `json:"tarball"`
+
+	semver       *semver.Version
+	semverParsed bool
 }
 
 var _ artifact.Artifact = &Artifact{}
@@ -50,4 +54,19 @@ func (s Artifact) Reference() interface{} {
 
 func (s Artifact) MetalinkFile() metalink.File {
 	return s.Tarball
+}
+
+func (s Artifact) Semver() *semver.Version {
+	if s.semverParsed {
+		return s.semver
+	}
+
+	semver, err := semver.NewVersion(s.Version)
+	if err == nil {
+		s.semver = semver
+	}
+
+	s.semverParsed = true
+
+	return s.semver
 }

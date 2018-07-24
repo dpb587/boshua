@@ -40,7 +40,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 }
 
 func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
-	_, err := i.repository.Reload()
+	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
 	}
@@ -50,7 +50,7 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 		return nil, errors.Wrap(err, "finding analysis path")
 	}
 
-	analysisBytes, err := ioutil.ReadFile(filepath.Join(i.config.LocalPath, analysisPath))
+	analysisBytes, err := ioutil.ReadFile(i.repository.Path(analysisPath))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil

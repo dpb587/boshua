@@ -38,7 +38,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		return nil, nil
 	}
 
-	_, err := i.repository.Reload()
+	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
 	}
@@ -48,7 +48,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		globReleaseName = filepath.Base(f.Name)
 	}
 
-	indices, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, "releases", globReleaseName, "index.yml"))
+	indices, err := filepath.Glob(i.repository.Path("releases", globReleaseName, "index.yml"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}
@@ -71,7 +71,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		for _, build := range index.Builds {
 			releaseName := path.Base(path.Dir(indexPath))
 			releaseSubPath := filepath.Join("releases", releaseName, fmt.Sprintf("%s-%s.yml", releaseName, build.Version))
-			releasePath := filepath.Join(i.config.RepositoryConfig.LocalPath, releaseSubPath)
+			releasePath := i.repository.Path(releaseSubPath)
 
 			// TODO track with checksum of release manifest somewhere?
 			releaseBytes, err := ioutil.ReadFile(releasePath)

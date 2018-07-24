@@ -31,12 +31,12 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 }
 
 func (i *index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, error) {
-	_, err := i.repository.Reload()
+	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.config.RepositoryConfig.LocalPath))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.repository.Path(i.config.Prefix)))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}

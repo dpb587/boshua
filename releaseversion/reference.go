@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/util/checksum"
 )
 
@@ -13,6 +14,9 @@ type Reference struct {
 	Version   string                      `json:"version"`
 	Checksums checksum.ImmutableChecksums `json:"checksums"`
 	URLs      []string                    `json:"urls"`
+
+	semver       *semver.Version
+	semverParsed bool
 }
 
 func (r Reference) UniqueID() string {
@@ -34,4 +38,19 @@ func (r Reference) UniqueID() string {
 	id.Write([]byte(strings.Join(tokens, "\n")))
 
 	return fmt.Sprintf("%x", id.Sum(nil))
+}
+
+func (s Reference) Semver() *semver.Version {
+	if s.semverParsed {
+		return s.semver
+	}
+
+	semver, err := semver.NewVersion(s.Version)
+	if err == nil {
+		s.semver = semver
+	}
+
+	s.semverParsed = true
+
+	return s.semver
 }

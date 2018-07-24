@@ -25,6 +25,10 @@ var diskFormatField = &graphql.Field{
 	Type: graphql.String,
 }
 
+var flavorField = &graphql.Field{
+	Type: graphql.String,
+}
+
 var tarballField = &graphql.Field{
 	Type: artifactgraphql.ArtifactType,
 }

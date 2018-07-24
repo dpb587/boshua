@@ -9,6 +9,7 @@ import (
 	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
 )
 
@@ -25,38 +26,68 @@ type Opts struct {
 func (o *Opts) Artifact() (compilation.Artifact, error) {
 	index, err := o.AppOpts.GetCompiledReleaseIndex("default")
 	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "loading compiled release index")
+		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
 	results, err := index.Filter(o.FilterParams())
 	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "finding compiled release")
+		return compilation.Artifact{}, errors.Wrap(err, "filtering")
 	}
 
 	if len(results) == 0 {
 		if o.NoWait {
-			return compilation.Artifact{}, errors.New("no compiled release found")
+			return compilation.Artifact{}, errors.New("none found")
 		}
 
-		// scheduler, err := schedulerLoader()
-		// if err != nil {
-		// 	return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
-		// }
-		//
-		// err = analysisdatastore.CreateAnalysis(scheduler, analysisRef, contextArgs)
-		// if err != nil {
-		// 	return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
-		// }
-		//
-		// results, err := index.Filter(o.FilterParams())
-		// if err != nil {
-		// 	return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
-		// }
+		releaseVersion, err := o.ReleaseOpts.Artifact()
+		if err != nil {
+			return compilation.Artifact{}, errors.New("finding release")
+		}
+
+		stemcellVersionIndex, err := o.AppOpts.GetStemcellIndex("default")
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "loading stemcell index")
+		}
+
+		stemcellVersions, err := stemcellVersionIndex.Filter(&stemcellversiondatastore.FilterParams{
+			OSExpected:      true,
+			OS:              o.OS.Name,
+			VersionExpected: true,
+			Version:         o.OS.Version,
+			// TODO dynamic
+			IaaSExpected:   true,
+			IaaS:           "aws",
+			FlavorExpected: true,
+			Flavor:         "light",
+		})
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "filtering stemcell")
+		}
+
+		stemcellVersion, err := stemcellversiondatastore.RequireSingleResult(stemcellVersions)
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "filtering stemcell")
+		}
+
+		scheduler, err := o.AppOpts.GetScheduler()
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "loading scheduler")
+		}
+
+		err = datastore.CreateCompilation(scheduler, releaseVersion, stemcellVersion)
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
+		}
+
+		results, err = index.Filter(o.FilterParams())
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "finding finished compilation")
+		}
 	}
 
 	result, err := datastore.RequireSingleResult(results)
 	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "finding compiled release")
+		return compilation.Artifact{}, errors.Wrap(err, "filtering")
 	}
 
 	return result, nil

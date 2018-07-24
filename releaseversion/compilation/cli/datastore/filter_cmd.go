@@ -24,6 +24,8 @@ func (c *FilterCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "filtering")
 	}
 
+	compilation.Sort(results)
+
 	for _, result := range results {
 		resultRef := result.Reference().(compilation.Reference)
 

@@ -42,12 +42,12 @@ func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 		return nil, nil
 	}
 
-	_, err := i.repository.Reload()
+	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(filepath.Join(i.config.RepositoryConfig.LocalPath, i.config.Prefix, "*", "*", "*.meta4"))
+	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, "*", "*", "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}
@@ -118,7 +118,7 @@ func (i *index) Store(artifact compilation.Artifact) error {
 	path := filepath.Join(
 		artifactRef.OSVersion.Name,
 		artifactRef.OSVersion.Version,
-		fmt.Sprintf("%s.meta4", artifactRef.ReleaseVersion.Version),
+		fmt.Sprintf("v%s.meta4", artifactRef.ReleaseVersion.Version),
 	)
 
 	meta4 := metalink.Metalink{

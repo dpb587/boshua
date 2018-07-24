@@ -15,6 +15,7 @@ var Stemcell = graphql.NewObject(
 			"iaas":       iaasField,
 			"hypervisor": hypervisorField,
 			"diskFormat": diskFormatField,
+			"flavor":     flavorField,
 			"tarball":    tarballField,
 			"analyzers": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
@@ -40,6 +41,7 @@ var ListedStemcell = graphql.NewObject(
 			"iaas":       iaasField,
 			"hypervisor": hypervisorField,
 			"diskFormat": diskFormatField,
+			"flavor":     flavorField,
 			"tarball":    tarballField,
 		},
 	},

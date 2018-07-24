@@ -11,4 +11,5 @@ type Factory interface {
 
 type Index interface {
 	Filter(f *FilterParams) ([]compilation.Artifact, error)
+	Store(compilation.Artifact) error
 }

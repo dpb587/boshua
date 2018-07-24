@@ -1,6 +1,7 @@
-package compilation
+package task
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/dpb587/boshua/releaseversion"
@@ -58,11 +59,12 @@ func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (ta
 				Name: "compiling",
 				Args: []string{
 					"release",
-					// release opts
+					fmt.Sprintf("--release-name=%s", release.Name),
+					fmt.Sprintf("--release-version=%s", release.Version),
 					"compilation",
-					// compilation opts
+					fmt.Sprintf("--os=%s/%s", stemcell.OS, stemcell.Version),
 					"export-release",
-					filepath.Join("output", "results.jsonl.gz"),
+					filepath.Join("output", fmt.Sprintf("%s-%s-on-%s-stemcell-%s.tgz", release.Name, release.Version, stemcell.OS, stemcell.Version)),
 				},
 			},
 		},
