@@ -19,3 +19,7 @@ var checksumArgument = &graphql.ArgumentConfig{
 var uriArgument = &graphql.ArgumentConfig{
 	Type: graphql.String,
 }
+
+var labelsArgument = &graphql.ArgumentConfig{
+	Type: graphql.NewList(graphql.String),
+}

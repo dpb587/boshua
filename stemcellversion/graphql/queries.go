@@ -16,6 +16,7 @@ func NewListQuery(r datastore.Index) *graphql.Field {
 			"hypervisor": hypervisorArgument,
 			"diskFormat": diskFormatArgument,
 			"flavor":     flavorArgument,
+			"labels":     labelsArgument,
 		},
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)

@@ -12,6 +12,7 @@ var Stemcell = graphql.NewObject(
 		Fields: graphql.Fields{
 			"os":         osField,
 			"version":    versionField,
+			"labels":     labelsField,
 			"iaas":       iaasField,
 			"hypervisor": hypervisorField,
 			"diskFormat": diskFormatField,
@@ -38,6 +39,7 @@ var ListedStemcell = graphql.NewObject(
 		Fields: graphql.Fields{
 			"os":         osField,
 			"version":    versionField,
+			"labels":     labelsField,
 			"iaas":       iaasField,
 			"hypervisor": hypervisorField,
 			"diskFormat": diskFormatField,

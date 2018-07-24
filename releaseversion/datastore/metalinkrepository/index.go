@@ -33,6 +33,8 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	if !f.NameSatisfied(i.config.Release) {
 		return nil, nil
+	} else if !f.LabelsSatisfied(i.config.Labels) {
+		return nil, nil
 	}
 
 	err := i.repository.Reload()
@@ -78,6 +80,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 			Name:          i.config.Release,
 			Version:       releaseMeta4.Files[0].Version,
 			SourceTarball: releaseMeta4.Files[0],
+			Labels:        i.config.Labels,
 		})
 	}
 

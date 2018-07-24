@@ -36,6 +36,8 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	if f.ChecksumExpected {
 		return nil, nil
+	} else if !f.LabelsSatisfied(i.config.Labels) {
+		return nil, nil
 	}
 
 	err := i.repository.Reload()
@@ -110,6 +112,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 					Name:     fmt.Sprintf("%s-%s.tgz", release.Name, release.Version),
 					MetaURLs: metaurls,
 				},
+				Labels: i.config.Labels,
 			})
 		}
 	}

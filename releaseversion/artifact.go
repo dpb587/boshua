@@ -13,6 +13,8 @@ type Artifact struct {
 	Version       string        `json:"version"`
 	SourceTarball metalink.File `json:"source_tarball"`
 
+	Labels []string `json:"labels"`
+
 	semver       *semver.Version
 	semverParsed bool
 }

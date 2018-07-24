@@ -12,6 +12,7 @@ var Release = graphql.NewObject(
 		Fields: graphql.Fields{
 			"name":           nameField,
 			"version":        versionField,
+			"labels":         labelsField,
 			"source_tarball": sourceTarballField,
 			"analyzers": &graphql.Field{
 				Type: graphql.NewList(graphql.String),
@@ -34,6 +35,7 @@ var ListedRelease = graphql.NewObject(
 		Fields: graphql.Fields{
 			"name":           nameField,
 			"version":        versionField,
+			"labels":         labelsField,
 			"source_tarball": sourceTarballField,
 		},
 	},

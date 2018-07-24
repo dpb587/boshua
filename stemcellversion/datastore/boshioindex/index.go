@@ -31,6 +31,10 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 }
 
 func (i *index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+	if !f.LabelsSatisfied(i.config.Labels) {
+		return nil, nil
+	}
+
 	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
@@ -76,6 +80,7 @@ func (i *index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, e
 			}
 
 			result.Tarball = file
+			result.Labels = i.config.Labels
 
 			results = append(results, *result)
 		}

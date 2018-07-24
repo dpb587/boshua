@@ -13,6 +13,10 @@ var versionField = &graphql.Field{
 	Type: graphql.String,
 }
 
+var labelsField = &graphql.Field{
+	Type: graphql.NewList(graphql.String),
+}
+
 var iaasField = &graphql.Field{
 	Type: graphql.String,
 }

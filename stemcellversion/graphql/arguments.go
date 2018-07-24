@@ -27,3 +27,7 @@ var diskFormatArgument = &graphql.ArgumentConfig{
 var flavorArgument = &graphql.ArgumentConfig{
 	Type: graphql.String,
 }
+
+var labelsArgument = &graphql.ArgumentConfig{
+	Type: graphql.NewList(graphql.String),
+}

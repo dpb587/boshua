@@ -13,6 +13,10 @@ var versionField = &graphql.Field{
 	Type: graphql.String,
 }
 
+var labelsField = &graphql.Field{
+	Type: graphql.NewList(graphql.String),
+}
+
 var sourceTarballField = &graphql.Field{
 	Type: artifactgraphql.ArtifactType,
 }
