@@ -40,7 +40,7 @@
         <v-content>
           <v-container>
             <v-card-title>
-              <h2>Stemcells</h2>
+              <h2>Releases</h2>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -59,15 +59,14 @@
               :search="search"
             >
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.os | os_friendly}}</td>
+                <td>{{ props.item.name}}</td>
                 <td>{{ props.item.version }}</td>
-                <td>{{ props.item.iaas | iaas_friendly }}</td>
-                <td>{{ props.item.hypervisor | hypervisor_friendly }}</td>
-                <td>{{ props.item.flavor }}</td>
-                <td><a :href="props.item.tarball.urls[0].url">Download</a></td>
+                <td>
+                  <a :href="props.item.source_tarball.urls[0].url">Download</a>
+                </td>
               </template>
               <v-alert slot="no-results" :value="true" color="error" icon="warning">
-                No stemcells were found.
+                No releases were found.
               </v-alert>
             </v-data-table>
           </v-container>
@@ -82,46 +81,6 @@
     <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-      Vue.filter('os_friendly', function (value) {
-        switch (value) {
-          case 'ubuntu-trusty': return 'Ubuntu Trusty';
-          case 'ubuntu-xenial': return 'Ubuntu Xenial';
-          case 'centos-7': return 'CentOS 7';
-          case 'windows2012R2': return 'Windows 2012R2';
-          case 'windows2016': return 'Windows 2016';
-        }
-
-        return value;
-      })
-
-      Vue.filter('iaas_friendly', function (value) {
-        switch (value) {
-          case 'aws': return 'Amazon Web Services';
-          case 'azure': return 'Microsoft Azure';
-          case 'google': return 'Google Cloud Platform';
-          case 'openstack': return 'OpenStack';
-          case 'softlayer': return 'SoftLayer';
-          case 'vcloud': return 'VMware vCloud';
-          case 'vsphere': return 'VMware vSphere';
-          case 'warden': return 'Warden';
-        }
-
-        return value;
-      })
-
-      Vue.filter('hypervisor_friendly', function (value) {
-        switch (value) {
-          case 'xen-hvm': return 'Xen HVM';
-          case 'xen': return 'Xen';
-          case 'kvm': return 'KVM';
-          case 'hyperv': return 'Hyper-V';
-          case 'boshlite': return 'BOSH Lite';
-          case 'esxi': return 'ESXi';
-        }
-
-        return value;
-      })
-
       new Vue({
         el: '#app',
         data: function() {
@@ -130,9 +89,9 @@
             search: '',
             headers: [
               {
-                text: 'Operating System',
+                text: 'Name',
                 sortable: true,
-                value: 'os'
+                value: 'name'
               },
               {
                 text: 'Version',
@@ -140,24 +99,9 @@
                 value: 'version'
               },
               {
-                text: 'Infrastructure',
-                sortable: true,
-                value: 'iaas'
-              },
-              {
-                text: 'Hypervisor',
-                sortable: true,
-                value: 'hypervisor'
-              },
-              {
-                text: 'Flavor',
-                sortable: true,
-                value: 'flavor'
-              },
-              {
                 text: 'Download',
                 sortable: true,
-                value: 'tarball'
+                value: 'source_tarball'
               }
             ],
             loading: false,
@@ -174,12 +118,12 @@
               '/api/v2/graphql',
               {
                 params: {
-                  query: `{stemcells{os,version,iaas,hypervisor,flavor,tarball{name,hashes{type,hash},urls{url}}}}`
+                  query: `{releases{name,version,source_tarball{name,hashes{type,hash},urls{url}}}}`
                 }
               }
             )
             .then(function(response) {
-              that.results = response.data.data.stemcells;
+              that.results = response.data.data.releases;
             })
             .finally(function() {
               that.loading = false;

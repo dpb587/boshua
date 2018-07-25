@@ -213,6 +213,7 @@ Lookup a stemcell...
 
 TODO experimental/playing
 
+ * [releases.html](http://localhost:4508/webui/releases.html)
  * [stemcells.html](http://localhost:4508/webui/stemcells.html)
 
 
