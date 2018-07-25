@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/boshioreleasesindex"
 	"github.com/dpb587/boshua/releaseversion/datastore/boshreleasedir"
 	"github.com/dpb587/boshua/releaseversion/datastore/metalinkrepository"
 	"github.com/pkg/errors"
@@ -27,6 +28,14 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	logger := f.logger.WithField("datastore", fmt.Sprintf("releaseversion:%s[%s]", provider, name))
 
 	switch provider {
+	case "boshioreleasesindex":
+		cfg := boshioreleasesindex.Config{}
+		err := config.RemarshalYAML(options, &cfg)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading options")
+		}
+
+		return boshioreleasesindex.New(cfg, logger), nil
 	case "boshreleasedir":
 		cfg := boshreleasedir.Config{}
 		err := config.RemarshalYAML(options, &cfg)

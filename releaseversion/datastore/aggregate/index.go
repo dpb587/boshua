@@ -47,6 +47,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 
 		aggregatedResult, err := i.merge(aggregateResult)
 		if err != nil {
+			fmt.Printf("%#+v\n", aggregateResult)
 			return nil, errors.Wrapf(err, "failed merging results for '%s'", aggregateResultIdx)
 		}
 
@@ -64,7 +65,8 @@ func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifac
 		if len(result.SourceTarball.Hashes) > 0 && len(subresult.SourceTarball.Hashes) > 0 {
 			// TODO make this smarter
 			// TODO configurable error handling; e.g. ignore vs error
-			return releaseversion.Artifact{}, errors.New("multiple results with hashes found")
+			return result, nil
+			// return releaseversion.Artifact{}, errors.New("multiple results with hashes found")
 		}
 
 		for _, hash := range subresult.SourceTarball.Hashes {

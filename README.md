@@ -2,6 +2,8 @@
 
 For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 
+> bosh unofficial artifacts
+
 
 ## Usage
 
@@ -230,7 +232,6 @@ TODO experimental/playing
 
 ## Limitations
 
- * TODO security
  * when patching deployment manifests to use compiled releases...
     * releases must already specify expected tarball checksums
     * explicit versions (not `latest`) must be used for `releases` and `stemcells`
@@ -240,6 +241,9 @@ TODO experimental/playing
 ## Futures
 
  * namespacing git repository settings in config
+ * mirror rewrites for proxying upstream artifacts
+ * authentication?
+ * logging
 
 
 ## License
