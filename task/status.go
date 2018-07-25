@@ -10,3 +10,5 @@ var (
 	StatusFinishing Status = "finishing"
 	StatusSucceeded Status = "finished"
 )
+
+type StatusChangeCallback func(Status)

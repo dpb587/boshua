@@ -2,6 +2,7 @@ package formatter
 
 import (
 	releaseartifactfilesv1 "github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/cli"
+	releasemanifestsv1 "github.com/dpb587/boshua/analysis/analyzer/releasemanifests.v1/cli"
 	stemcellimagefilesv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/cli"
 	stemcellmanifestv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellmanifest.v1/cli"
 	stemcellpackagesv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellpackages.v1/cli"
@@ -9,6 +10,7 @@ import (
 )
 
 type Cmd struct {
+	ReleasemanifestsV1     *releasemanifestsv1.Cmd     `command:"releasemanifests.v1" subcommands-optional:"true"`
 	ReleaseartifactfilesV1 *releaseartifactfilesv1.Cmd `command:"releaseartifactfiles.v1" subcommands-optional:"true"`
 	StemcellimagefilesV1   *stemcellimagefilesv1.Cmd   `command:"stemcellimagefiles.v1" subcommands-optional:"true"`
 	StemcellpackagesV1     *stemcellpackagesv1.Cmd     `command:"stemcellpackages.v1" subcommands-optional:"true"`
@@ -22,6 +24,7 @@ type CmdOpts struct {
 func New(app *cmdopts.Opts) *Cmd {
 	cmd := &Cmd{
 		ReleaseartifactfilesV1: releaseartifactfilesv1.New(app),
+		ReleasemanifestsV1:     releasemanifestsv1.New(app),
 		StemcellimagefilesV1:   stemcellimagefilesv1.New(app),
 		StemcellpackagesV1:     stemcellpackagesv1.New(app),
 		StemcellmanifestV1:     stemcellmanifestv1.New(app),

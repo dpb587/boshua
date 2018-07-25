@@ -111,8 +111,13 @@ func (i *Repository) ForceReload() error {
 }
 
 func (i *Repository) Commit(files map[string][]byte, message string) error {
+	err := i.ForceReload()
+	if err != nil {
+		return errors.Wrap(err, "reloading")
+	}
+
 	for path, data := range files {
-		err := os.MkdirAll(filepath.Dir(i.Path(path)), 0755)
+		err = os.MkdirAll(filepath.Dir(i.Path(path)), 0755)
 		if err != nil {
 			return errors.Wrap(err, "mkdir file dir")
 		}

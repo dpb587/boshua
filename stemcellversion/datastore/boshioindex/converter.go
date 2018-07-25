@@ -14,6 +14,9 @@ func ConvertFileNameToReference(name string) *stemcellversion.Artifact {
 	if nameSplit[0] == "light" {
 		ref.Flavor = "light"
 		nameSplit = nameSplit[1:]
+	} else {
+		// TODO light-china?
+		ref.Flavor = "heavy"
 	}
 
 	if nameSplit[0] != "bosh" || nameSplit[1] != "stemcell" {

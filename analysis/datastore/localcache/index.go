@@ -12,8 +12,8 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
@@ -103,6 +103,10 @@ func (i *index) Store(ref analysis.Reference, source metalink.Metalink) error {
 		return errors.Wrap(err, "saving analysis")
 	}
 
+	return nil
+}
+
+func (i *index) FlushCache() error {
 	return nil
 }
 

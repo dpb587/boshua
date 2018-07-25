@@ -223,16 +223,24 @@ func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface
 			}
 		}
 
+		runConfig := atc.TaskRunConfig{
+			Path: "boshua",
+			Args: step.Args,
+		}
+
+		if step.Privileged {
+			runConfig.Path = "bash"
+			runConfig.Args = append([]string{"-c", fmt.Sprintf(`%s
+exec boshua "$@"`, privilegedMounts), "--"}, runConfig.Args...)
+		}
+
 		plan = append(plan, atc.PlanConfig{
 			Task:       step.Name,
 			Privileged: step.Privileged,
 			TaskConfig: &atc.TaskConfig{
 				Platform:      "linux",
 				ImageResource: imageResource,
-				Run: atc.TaskRunConfig{
-					Path: "boshua",
-					Args: step.Args,
-				},
+				Run:           runConfig,
 				Inputs: []atc.TaskInputConfig{
 					{
 						Name: "config",
@@ -249,7 +257,7 @@ func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface
 				},
 			},
 			Params: atc.Params{
-				"PATH":          "$PWD/config/bin:$PATH",
+				"PATH":          "config/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 				"BOSHUA_CONFIG": configPath,
 			},
 		})
@@ -267,7 +275,7 @@ func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface
 				Name: "trigger",
 				Type: "time",
 				Source: atc.Source{
-					"interval": "6h",
+					"interval": "672h", // some long period which will avoid rerunning
 				},
 			},
 		},
@@ -298,3 +306,41 @@ func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface
 
 	return pipelineBytes, pipelineVars, pipelineOpsFiles, nil
 }
+
+var privilegedMounts = `set -eu
+
+# This is copied from https://github.com/concourse/concourse/blob/3c070db8231294e4fd51b5e5c95700c7c8519a27/jobs/baggageclaim/templates/baggageclaim_ctl.erb#L23-L54
+# helps the /dev/mapper/control issue and lets us actually do scary things with the /dev mounts
+# This allows us to create device maps from partition tables in image_create/apply.sh
+function permit_device_control() {
+	local devices_mount_info=$(cat /proc/self/cgroup | grep devices)
+
+	local devices_subsytems=$(echo $devices_mount_info | cut -d: -f2)
+	local devices_subdir=$(echo $devices_mount_info | cut -d: -f3)
+
+	cgroup_dir=/mnt/tmp-todo-devices-cgroup
+
+	if [ ! -e ${cgroup_dir} ]; then
+		# mount our container's devices subsystem somewhere
+		mkdir ${cgroup_dir}
+	fi
+
+	if ! mountpoint -q ${cgroup_dir}; then
+		mount -t cgroup -o $devices_subsytems none ${cgroup_dir}
+	fi
+
+	# permit our cgroup to do everything with all devices
+	# ignore failure in case something has already done this; echo appears to
+	# return EINVAL, possibly because devices this affects are already in use
+	echo a > ${cgroup_dir}${devices_subdir}/devices.allow || true
+}
+
+permit_device_control
+
+# Also copied from baggageclaim_ctl.erb creates 64 loopback mappings. This fixes failures with losetup --show --find ${disk_image}
+for i in $(seq 0 64); do
+	if ! mknod -m 0660 /dev/loop$i b 7 $i; then
+		break
+	fi
+done
+`

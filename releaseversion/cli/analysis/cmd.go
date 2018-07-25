@@ -1,11 +1,17 @@
 package analysis
 
 import (
+	"fmt"
+	"os"
+	"time"
+
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/releaseversion"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
+	"github.com/dpb587/boshua/task"
 )
 
 type Cmd struct {
@@ -27,10 +33,14 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
+	var artifact releaseversion.Artifact
+
 	return cliutil.LoadAnalysis(
 		o.AppOpts.GetAnalysisIndex,
 		func() (analysis.Subject, error) {
-			return o.ReleaseOpts.Artifact()
+			var err error
+			artifact, err = o.ReleaseOpts.Artifact()
+			return artifact, err
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
@@ -38,6 +48,10 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 			[]string{"release"},
 			o.ReleaseOpts.Opts()...,
 		),
+		func(status task.Status) {
+			// TODO normalize opts
+			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifact.Name, artifact.Version, status)
+		},
 	)
 }
 

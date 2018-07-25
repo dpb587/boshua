@@ -10,7 +10,7 @@ type Task interface {
 	Status() (task.Status, error)
 }
 
-func WaitForTask(t Task, callback func(task.Status)) (task.Status, error) {
+func WaitForTask(t Task, callback task.StatusChangeCallback) (task.Status, error) {
 	currStatus := task.StatusUnknown
 
 	if callback == nil {
@@ -29,6 +29,6 @@ func WaitForTask(t Task, callback func(task.Status)) (task.Status, error) {
 			return status, err
 		}
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }

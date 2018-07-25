@@ -76,6 +76,11 @@ func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
 	return datastore.FilterForOne(i, ref)
 }
 
+func (i *index) FlushCache() error {
+	// TODO defer reload?
+	return i.repository.ForceReload()
+}
+
 func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	subjectRef := ref.Subject.Reference()
 

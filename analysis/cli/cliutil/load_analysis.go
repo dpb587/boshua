@@ -4,6 +4,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
@@ -14,6 +15,7 @@ func LoadAnalysis(
 	analysisOpts *opts.Opts,
 	schedulerLoader func() (scheduler.Scheduler, error),
 	contextArgs []string,
+	callback task.StatusChangeCallback,
 ) (analysis.Artifact, error) {
 	subject, err := subjectLoader()
 	if err != nil {
@@ -45,9 +47,14 @@ func LoadAnalysis(
 			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
 		}
 
-		err = analysisdatastore.CreateAnalysis(scheduler, analysisRef, contextArgs)
+		err = analysisdatastore.CreateAnalysis(scheduler, analysisRef, contextArgs, callback)
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
+		}
+
+		err = analysisIndex.FlushCache()
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "flushing cache")
 		}
 
 		results, err = analysisIndex.Filter(analysisRef)

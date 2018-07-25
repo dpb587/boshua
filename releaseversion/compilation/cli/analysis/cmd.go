@@ -2,12 +2,16 @@ package analysis
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
+	"github.com/dpb587/boshua/task"
 )
 
 type Cmd struct {
@@ -29,10 +33,14 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
+	var artifactRef compilation.Reference
+
 	return cliutil.LoadAnalysis(
 		o.AppOpts.GetAnalysisIndex,
 		func() (analysis.Subject, error) {
-			return o.CompiledReleaseOpts.Artifact()
+			artifact, err := o.CompiledReleaseOpts.Artifact()
+			artifactRef = artifact.Reference().(compilation.Reference)
+			return artifact, err
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
@@ -46,6 +54,9 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 			),
 			fmt.Sprintf("--os=%s", o.CompiledReleaseOpts.OS.String()),
 		),
+		func(status task.Status) {
+			fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifactRef.OSVersion.Name, artifactRef.OSVersion.Version, artifactRef.ReleaseVersion.Name, artifactRef.ReleaseVersion.Version, status)
+		},
 	)
 }
 

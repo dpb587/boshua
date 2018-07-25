@@ -23,7 +23,7 @@ func RequireSingleResult(results []analysis.Artifact) (analysis.Artifact, error)
 	return results[0], nil
 }
 
-func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Reference, storeArgs []string) error {
+func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Reference, storeArgs []string, callback task.StatusChangeCallback) error {
 	tt, err := analysistask.New(analysisRef.Subject, analysisRef.Analyzer)
 	if err != nil {
 		return errors.Wrap(err, "preparing task")
@@ -45,7 +45,7 @@ func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Refer
 		return errors.Wrap(err, "scheduling task")
 	}
 
-	status, err := schedulerpkg.WaitForTask(scheduledTask, nil) // TODO status reporter
+	status, err := schedulerpkg.WaitForTask(scheduledTask, callback)
 	if err != nil {
 		return errors.Wrap(err, "checking task")
 	} else if status != task.StatusSucceeded {

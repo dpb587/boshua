@@ -5,6 +5,8 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/metalink"
+	"github.com/pkg/errors"
 )
 
 type index struct {
@@ -38,9 +40,20 @@ func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
 	return datastore.FilterForOne(i, ref)
 }
 
-func (i *index) Store(artifact analysis.Artifact) error {
+func (i *index) FlushCache() error {
 	for idxIdx, idx := range i.aggregated {
-		err := idx.Store(artifact)
+		err := idx.FlushCache()
+		if err != nil {
+			return errors.Wrapf(err, "flushing %d", idxIdx)
+		}
+	}
+
+	return nil
+}
+
+func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
+	for idxIdx, idx := range i.aggregated {
+		err := idx.Store(ref, artifactMeta4)
 		if err == datastore.UnsupportedOperationErr {
 			continue
 		} else if err != nil {

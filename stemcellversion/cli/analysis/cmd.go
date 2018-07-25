@@ -2,12 +2,16 @@ package analysis
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/stemcellversion"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
+	"github.com/dpb587/boshua/task"
 )
 
 type Cmd struct {
@@ -29,21 +33,23 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
+	var artifact stemcellversion.Artifact
+
 	return cliutil.LoadAnalysis(
 		o.AppOpts.GetAnalysisIndex,
 		func() (analysis.Subject, error) {
-			return o.StemcellOpts.Artifact()
+			var err error
+			artifact, err = o.StemcellOpts.Artifact()
+			return artifact, err
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		[]string{
-			"stemcell",
-			fmt.Sprintf("--stemcell-os=%s", o.StemcellOpts.OS),
-			fmt.Sprintf("--stemcell-version=%s", o.StemcellOpts.Version),
-			fmt.Sprintf("--stemcell-iaas=%s", o.StemcellOpts.IaaS),
-			fmt.Sprintf("--stemcell-hypervisor=%s", o.StemcellOpts.Hypervisor),
-			fmt.Sprintf("--stemcell-flavor=%s", o.StemcellOpts.Flavor),
-			// TODO more options; generate from subject
+		append(
+			[]string{"stemcell"},
+			stemcellopts.ArgsFromFilterParams(o.StemcellOpts.FilterParams())...,
+		),
+		func(status task.Status) {
+			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifact.FullName(), artifact.Version, status)
 		},
 	)
 }

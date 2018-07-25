@@ -8,4 +8,5 @@ import (
 type Index interface {
 	Filter(analysis.Reference) ([]analysis.Artifact, error)
 	Store(analysis.Reference, metalink.Metalink) error
+	FlushCache() error // TODO rename; intent is force reload next time
 }
