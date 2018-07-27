@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/dpb587/boshua/cli/cmd/opts"
@@ -64,14 +65,32 @@ func (c *Cmd) Execute(extra []string) error {
 		)
 
 		r.HandleFunc("/api/v2/graphql", func(w http.ResponseWriter, r *http.Request) {
+			bodyBytes, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				// TODO !panic
+				panic(err)
+			}
+
+			var requestBodyObj struct {
+				Query     string                 `json:"query"`
+				Variables map[string]interface{} `json:"variables"`
+			}
+
+			err = json.Unmarshal(bodyBytes, &requestBodyObj)
+			if err != nil {
+				// TODO !panic
+				panic(err)
+			}
+
 			// TODO switch to post?
 			result := graphql.Do(graphql.Params{
-				Schema:        schema,
-				RequestString: r.URL.Query().Get("query"),
+				Schema:         schema,
+				RequestString:  requestBodyObj.Query,
+				VariableValues: requestBodyObj.Variables,
 			})
 
 			if len(result.Errors) > 0 {
-				fmt.Printf("wrong result, unexpected errors: %v", result.Errors)
+				fmt.Printf("wrong result, unexpected errors: %v\n", result.Errors)
 			}
 
 			w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -79,7 +98,7 @@ func (c *Cmd) Execute(extra []string) error {
 			encoder := json.NewEncoder(w)
 			encoder.SetIndent("", "  ")
 			encoder.Encode(result)
-		})
+		}).Methods(http.MethodPost)
 	}
 
 	// {

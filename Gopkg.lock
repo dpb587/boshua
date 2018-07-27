@@ -133,6 +133,12 @@
   revision = "2403248fa8cc9f7909862627aa7337f13f8e0bf1"
 
 [[projects]]
+  name = "github.com/machinebox/graphql"
+  packages = ["."]
+  revision = "05b17f3157491bbfa5d6fc2006443a272d960d15"
+  version = "v0.2.2"
+
+[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
@@ -254,6 +260,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0a102bdc43d84b0544d6e73835361ee5eb18f89190158a25d1f45cb4130c0565"
+  inputs-digest = "7d489eabc4be7837d89cc2e1986691814eaff7f111f983611e54e3588e17b904"
   solver-name = "gps-cdcl"
   solver-version = 1

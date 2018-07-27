@@ -18,6 +18,8 @@ type Opts struct {
 	Version     string         `long:"release-version" description:"The release version"`
 	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`
 	URI         string         `long:"release-url" description:"The release source URL"`
+
+	// TODO Label
 }
 
 func (o *Opts) Opts() []string {

@@ -1,7 +1,5 @@
-package boshuav2
+package boshuaV2
 
 type BoshuaConfig struct {
-	Host   string `yaml:"host"`
-	Port   string `yaml:"port"`
-	CACert string `yaml:"ca_cert"`
+	URL string `yaml:"url"`
 }

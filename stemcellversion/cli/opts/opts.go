@@ -19,7 +19,7 @@ type Opts struct {
 	Hypervisor string    `long:"stemcell-hypervisor" description:"The stemcell hypervisor"`
 	Flavor     string    `long:"stemcell-flavor" description:"The stemcell flavor (e.g. 'light')"`
 
-	Labels []string `long:"stemcell-label" description:"A label to filter stemcells by"`
+	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
 }
 
 func ArgsFromFilterParams(f *datastore.FilterParams) []string {

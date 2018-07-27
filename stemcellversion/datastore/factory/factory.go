@@ -6,6 +6,7 @@ import (
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/boshioindex"
+	boshuaV2 "github.com/dpb587/boshua/stemcellversion/datastore/boshua.v2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -26,6 +27,14 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	logger := f.logger.WithField("datastore", fmt.Sprintf("stemcellversion:%s[%s]", provider, name))
 
 	switch provider {
+	case "boshua.v2":
+		cfg := boshuaV2.Config{}
+		err := config.RemarshalYAML(options, &cfg)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading options")
+		}
+
+		return boshuaV2.New(cfg, logger), nil
 	case "boshioindex":
 		cfg := boshioindex.Config{}
 		err := config.RemarshalYAML(options, &cfg)
