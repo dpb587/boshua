@@ -12,7 +12,7 @@ type Sha256sumCmd struct {
 }
 
 func (c *Sha256sumCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/stemcellimagefiles.v1/sha256sum")
+	c.AppOpts.ConfigureLogger("analysis/formatter/stemcellimagefiles.v1/sha256sum")
 
 	f := formatter.Shasum{Algorithm: algorithm.MustLookupName("sha256")}
 	return f.Format(os.Stdout, os.Stdin)

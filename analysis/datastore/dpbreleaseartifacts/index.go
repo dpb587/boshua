@@ -106,7 +106,8 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 			i.config.StemcellPrefix,
 			"analysis",
 			subjectRef.FullName(),
-			fmt.Sprintf("%s.meta4", subjectRef.Version),
+			subjectRef.Version,
+			fmt.Sprintf("%s.meta4", ref.Analyzer),
 		), nil
 	}
 

@@ -74,6 +74,8 @@ func (a Analyzer) Analyze(results analysis.Writer) error {
 			}
 
 		} else if path == "image" {
+			// TODO cleanly exit for light stemcells?
+			// TODO other iaases
 			if strings.HasPrefix(stemcellMF["name"].(string), "bosh-aws-") {
 				err = a.handleIMG(results, tarReader)
 				if err != nil {

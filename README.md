@@ -10,13 +10,6 @@ For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 See the following for some specific examples of usage.
 
 
-### Deployment Manifests
-
-Convert a manifest referencing release sources to compiled releases...
-
-    $ bosh deployment use-compiled-releases < manifest.yml
-
-
 ### Releases
 
 Showing the tarball of a release...
@@ -101,11 +94,20 @@ Show the packages of a stemcell...
     ...
 
 
+### Deployment Manifests
+
+*TODO resurrecting post-refactor*
+
+Convert a manifest referencing release sources to compiled releases...
+
+    $ bosh deployment use-compiled-releases < manifest.yml
+
+
 ### GraphQL
 
  > http://localhost:4508/api/v2/graphql?query={...}
 
-TODO experimental/planning
+*TODO experimental/planning*
 
 Fetch tarball of a compiled release...
 
@@ -211,7 +213,7 @@ Lookup a stemcell...
 
 > http://localhost:4508/webui/
 
-TODO experimental/playing
+*TODO experimental/playing*
 
  * [releases.html](http://localhost:4508/webui/releases.html)
  * [stemcells.html](http://localhost:4508/webui/stemcells.html)
@@ -227,7 +229,7 @@ TODO experimental/playing
  * **Labels** - used to label/tag artifacts for logical categorization. Recommended to use path-style for hierarchical taxonomies. Examples...
     * `repo/*` - to identify source of the release; e.g. `repo/github.com/dpb587/openvpn-bosh-release`
     * `stability/(alpha|beta|rc|stable)` - identify stability of artifacts
-    * `tag/*` - tag-based navigation; e.g. `cpi`, `networking`
+    * `tag/*` - tag-based navigation; e.g. `tag/cpi`, `tag/networking`
     * `deprecated` - deprecated
 
 
@@ -241,6 +243,7 @@ TODO experimental/playing
 
 ## Futures
 
+ * clean. up.
  * namespacing git repository settings in config
  * mirror rewrites for proxying upstream artifacts
  * authentication?

@@ -13,7 +13,7 @@ type PropertiesCmd struct {
 }
 
 func (c *PropertiesCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/releasemanifests.v1/properties")
+	c.AppOpts.ConfigureLogger("analysis/formatter/releasemanifests.v1/properties")
 
 	f := formatter.Properties{
 		Jobs: c.Jobs,

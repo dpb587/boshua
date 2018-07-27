@@ -11,7 +11,7 @@ type LsCmd struct {
 }
 
 func (c *LsCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/releaseartifactfiles.v1/ls")
+	c.AppOpts.ConfigureLogger("analysis/formatter/releaseartifactfiles.v1/ls")
 
 	f := formatter.Ls{}
 	return f.Format(os.Stdout, os.Stdin)

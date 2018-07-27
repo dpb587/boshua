@@ -11,7 +11,7 @@ type PackagesCmd struct {
 }
 
 func (c *PackagesCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/stemcellpackages.v1/packages")
+	c.AppOpts.ConfigureLogger("analysis/formatter/stemcellpackages.v1/packages")
 
 	f := formatter.Packages{}
 	return f.Format(os.Stdout, os.Stdin)
