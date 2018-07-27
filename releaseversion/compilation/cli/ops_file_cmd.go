@@ -15,7 +15,7 @@ type OpsFileCmd struct {
 }
 
 func (c *OpsFileCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiled-release/ops-file")
+	c.AppOpts.ConfigureLogger("release/compilation/ops-file")
 
 	artifact, err := c.CompiledReleaseOpts.Artifact()
 	if err != nil {

@@ -17,7 +17,7 @@ import (
 	"github.com/dpb587/boshua/util/checksum"
 )
 
-type PatchManifestCmd struct {
+type UseCompiledReleasesCmd struct {
 	*CmdOpts `no-flag:"true"`
 
 	Release     []string `long:"release" description:"Only check the release(s) matching this name (glob-friendly)"`
@@ -30,7 +30,7 @@ type PatchManifestCmd struct {
 	WaitTimeout time.Duration `long:"wait-timeout" description:"Timeout duration when waiting for compilations" default:"30m"`
 }
 
-func (c *PatchManifestCmd) Execute(_ []string) error {
+func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("deployment/patch-manifest")
 
 	localStemcell := osversion.Reference{

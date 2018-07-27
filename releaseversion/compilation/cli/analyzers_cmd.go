@@ -12,7 +12,7 @@ type AnalyzersCmd struct {
 }
 
 func (c *AnalyzersCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiledrelease/analyzers")
+	c.AppOpts.ConfigureLogger("release/compilation/analyzers")
 
 	return c.AnalyzersCmd.Execute(func() (analysis.Subject, error) {
 		return c.CompiledReleaseOpts.Artifact()

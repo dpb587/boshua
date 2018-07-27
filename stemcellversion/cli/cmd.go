@@ -21,6 +21,7 @@ type Cmd struct {
 	AnalyzersCmd      AnalyzersCmd      `command:"analyzers" description:"For showing the supported analyzers"`
 	ArtifactCmd       ArtifactCmd       `command:"artifact" description:"For showing the stemcell artifact"`
 	UploadStemcellCmd UploadStemcellCmd `command:"upload-stemcell" description:"For uploading the stemcell to BOSH"`
+	DownloadCmd       DownloadCmd       `command:"download" description:"For downloading the stemcell locally"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
@@ -45,6 +46,7 @@ func New(app *cmdopts.Opts) *Cmd {
 	cmd.AnalyzersCmd.CmdOpts = cmdOpts
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
 	cmd.UploadStemcellCmd.CmdOpts = cmdOpts
+	cmd.DownloadCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

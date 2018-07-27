@@ -11,7 +11,7 @@ type ResultsCmd struct {
 }
 
 func (c *ResultsCmd) Execute(args []string) error {
-	c.AppOpts.ConfigureLogger("release/analysis/results")
+	c.AppOpts.ConfigureLogger("release/compilation/analysis/results")
 
 	return c.ResultsCmd.ExecuteAnalysis(c.CmdOpts.AnalysisOpts.Analyzer, c.CmdOpts.getAnalysis, args)
 }

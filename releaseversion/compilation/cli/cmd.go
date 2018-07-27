@@ -23,6 +23,7 @@ type Cmd struct {
 	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the compiled release artifact"`
 	OpsFileCmd       OpsFileCmd       `command:"ops-file" description:"For showing a deployment manifest ops file for the compiled release"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the compiled release to BOSH"`
+	DownloadCmd      DownloadCmd      `command:"download" description:"For downloading the compiled release locally"`
 	ExportReleaseCmd ExportReleaseCmd `command:"export-release" description:"For exporting a compiled release from BOSH"`
 }
 

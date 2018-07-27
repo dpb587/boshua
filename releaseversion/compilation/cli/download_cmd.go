@@ -6,16 +6,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-type UploadReleaseCmd struct {
-	clicommon.UploadReleaseCmd
+type DownloadCmd struct {
+	clicommon.DownloadCmd
 
 	*CmdOpts `no-flag:"true"`
 }
 
-func (c *UploadReleaseCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/compilation/upload-release")
+func (c *DownloadCmd) Execute(_ []string) error {
+	c.AppOpts.ConfigureLogger("release/compilation/download")
 
-	return c.UploadReleaseCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
+	return c.DownloadCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
 		artifact, err := c.CompiledReleaseOpts.Artifact()
 		if err != nil {
 			return nil, errors.Wrap(err, "finding compiled release")

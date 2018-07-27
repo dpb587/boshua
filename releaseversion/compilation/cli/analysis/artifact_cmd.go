@@ -11,7 +11,7 @@ type ArtifactCmd struct {
 }
 
 func (c *ArtifactCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/analysis/artifact")
+	c.AppOpts.ConfigureLogger("release/compilation/analysis/artifact")
 
 	return c.ArtifactCmd.ExecuteAnalysis(c.CmdOpts.getAnalysis)
 }

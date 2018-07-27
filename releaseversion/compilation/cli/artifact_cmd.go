@@ -13,7 +13,7 @@ type ArtifactCmd struct {
 }
 
 func (c *ArtifactCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/artifact")
+	c.AppOpts.ConfigureLogger("release/compilation/artifact")
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
 		artifact, err := c.CompiledReleaseOpts.Artifact()

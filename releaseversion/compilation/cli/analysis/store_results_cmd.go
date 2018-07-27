@@ -12,7 +12,7 @@ type StoreResultsCmd struct {
 }
 
 func (c *StoreResultsCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/analysis/store-results")
+	c.AppOpts.ConfigureLogger("release/compilation/analysis/store-results")
 
 	return c.StoreResultsCmd.ExecuteStore(
 		c.AppOpts.GetAnalysisIndex,
