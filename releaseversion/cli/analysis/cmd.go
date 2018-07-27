@@ -46,7 +46,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		o.AppOpts.GetScheduler,
 		append(
 			[]string{"release"},
-			o.ReleaseOpts.Opts()...,
+			releaseopts.ArgsFromFilterParams(o.ReleaseOpts.FilterParams())...,
 		),
 		func(status task.Status) {
 			// TODO normalize opts

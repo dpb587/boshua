@@ -9,5 +9,8 @@ type Factory interface {
 }
 
 type Index interface {
+	// TODO non-pointer FilterParams
+	// TODO rename to [Get]Artifacts?
 	Filter(f *FilterParams) ([]releaseversion.Artifact, error)
+	Labels() ([]string, error)
 }

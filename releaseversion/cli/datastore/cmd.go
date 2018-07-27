@@ -11,6 +11,7 @@ type Cmd struct {
 	*opts.Opts
 
 	FilterCmd FilterCmd `command:"filter" description:"For filtering results"`
+	LabelsCmd LabelsCmd `command:"labels" description:"For listing all labels"`
 }
 
 type CmdOpts struct {
@@ -35,6 +36,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	}
 
 	cmd.FilterCmd.CmdOpts = cmdOpts
+	cmd.LabelsCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

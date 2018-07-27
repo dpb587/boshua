@@ -86,3 +86,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 
 	return results, nil
 }
+
+func (i *Index) Labels() ([]string, error) {
+	return i.config.Labels, nil
+}

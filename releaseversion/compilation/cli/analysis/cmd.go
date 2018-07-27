@@ -9,6 +9,7 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
 	"github.com/dpb587/boshua/task"
@@ -48,7 +49,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 			append(
 				append(
 					[]string{"release"},
-					o.CompiledReleaseOpts.ReleaseOpts.Opts()...,
+					releaseopts.ArgsFromFilterParams(o.CompiledReleaseOpts.ReleaseOpts.FilterParams())...,
 				),
 				"compilation",
 			),

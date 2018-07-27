@@ -35,10 +35,6 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 }
 
 func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
-	if !f.LabelsSatisfied(i.config.Labels) {
-		return nil, nil
-	}
-
 	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
@@ -96,15 +92,44 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 		}
 
 		sourcePathSplit := strings.Split(sourcePath, string(filepath.Separator))
+		labels := append(i.config.Labels, fmt.Sprintf("repo/%s", strings.Join(sourcePathSplit[len(sourcePathSplit)-5:len(sourcePathSplit)-2], "/")))
+
+		if !f.LabelsSatisfied(labels) {
+			continue
+		}
 
 		// TODO sanity checks? version match? files = 1?
 		results = append(results, releaseversion.Artifact{
 			Name:          release.Name,
 			Version:       release.Version,
 			SourceTarball: sourceMeta4.Files[0],
-			Labels:        append(i.config.Labels, fmt.Sprintf("repo/%s", strings.Join(sourcePathSplit[len(sourcePathSplit)-5:len(sourcePathSplit)-2], "/"))),
+			Labels:        labels,
 		})
 	}
 
 	return results, nil
+}
+
+func (i *Index) Labels() ([]string, error) {
+	// TODO optimize; don't need to load all artifacts
+	all, err := i.Filter(&datastore.FilterParams{})
+	if err != nil {
+		return nil, errors.Wrap(err, "filtering")
+	}
+
+	labelsMap := map[string]struct{}{}
+
+	for _, one := range all {
+		for _, label := range one.Labels {
+			labelsMap[label] = struct{}{}
+		}
+	}
+
+	var labels []string
+
+	for label := range labelsMap {
+		labels = append(labels, label)
+	}
+
+	return labels, nil
 }

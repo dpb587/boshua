@@ -5,6 +5,25 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+var ReleaseLabel = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name:        "ReleaseLabel",
+		Description: "A release label.",
+		Fields: graphql.Fields{
+			"name": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if source, ok := p.Source.(string); ok {
+						return source, nil
+					}
+
+					return nil, nil
+				},
+			},
+		},
+	},
+)
+
 var Release = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name:        "Release",

@@ -53,8 +53,9 @@ func (c *Cmd) Execute(extra []string) error {
 			graphql.ObjectConfig{
 				Name: "Query",
 				Fields: graphql.Fields{
-					"releases":  releaseversiongraphql.NewListQuery(releaseIndex),
-					"stemcells": stemcellversiongraphql.NewListQuery(stemcellIndex),
+					"releases":       releaseversiongraphql.NewListQuery(releaseIndex),
+					"release_labels": releaseversiongraphql.NewLabelsQuery(releaseIndex),
+					"stemcells":      stemcellversiongraphql.NewListQuery(stemcellIndex),
 				},
 			},
 		)

@@ -19,33 +19,35 @@ type Opts struct {
 	Checksum    *args.Checksum `long:"release-checksum" description:"The release checksum"`
 	URI         string         `long:"release-url" description:"The release source URL"`
 
-	// TODO Label
+	Labels []string `long:"release-label" description:"The label(s) to filter releases by"`
 }
 
-func (o *Opts) Opts() []string {
-	opts := []string{}
+func ArgsFromFilterParams(f *datastore.FilterParams) []string {
+	args := []string{}
 
-	if o.NameVersion != nil {
-		opts = append(opts, fmt.Sprintf("--release=%s", o.NameVersion.String()))
+	if f.NameExpected {
+		args = append(args, fmt.Sprintf("--release-name=%s", f.Name))
 	}
 
-	if o.Name != "" {
-		opts = append(opts, fmt.Sprintf("--release-name=%s", o.Name))
+	if f.VersionExpected {
+		args = append(args, fmt.Sprintf("--release-version=%s", f.Version))
 	}
 
-	if o.Version != "" {
-		opts = append(opts, fmt.Sprintf("--release-version=%s", o.Version))
+	if f.ChecksumExpected {
+		args = append(args, fmt.Sprintf("--release-checksum=%s", f.Checksum))
 	}
 
-	if o.Checksum != nil {
-		opts = append(opts, fmt.Sprintf("--release-checksum=%s", o.Checksum.String()))
+	if f.URIExpected {
+		args = append(args, fmt.Sprintf("--release-url=%s", f.URI))
 	}
 
-	if o.URI != "" {
-		opts = append(opts, fmt.Sprintf("--release-url=%s", o.URI))
+	if f.LabelsExpected {
+		for _, label := range f.Labels {
+			args = append(args, fmt.Sprintf("--release-label=%s", label))
+		}
 	}
 
-	return opts
+	return args
 }
 
 func (o *Opts) Artifact() (releaseversion.Artifact, error) {
@@ -68,7 +70,10 @@ func (o *Opts) Artifact() (releaseversion.Artifact, error) {
 }
 
 func (o Opts) FilterParams() *datastore.FilterParams {
-	f := &datastore.FilterParams{}
+	f := &datastore.FilterParams{
+		LabelsExpected: len(o.Labels) > 0,
+		Labels:         o.Labels,
+	}
 
 	if o.NameVersion != nil {
 		if o.Name != "" || o.Version != "" {

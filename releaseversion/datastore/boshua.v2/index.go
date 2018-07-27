@@ -70,3 +70,7 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 
 	return resp.Releases, nil
 }
+
+func (i *Index) Labels() ([]string, error) {
+	return nil, errors.New("TODO")
+}

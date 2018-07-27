@@ -119,3 +119,26 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 
 	return results, nil
 }
+
+func (i *Index) Labels() ([]string, error) {
+	all, err := i.Filter(&datastore.FilterParams{})
+	if err != nil {
+		return nil, errors.Wrap(err, "filtering")
+	}
+
+	labelsMap := map[string]struct{}{}
+
+	for _, one := range all {
+		for _, label := range one.Labels {
+			labelsMap[label] = struct{}{}
+		}
+	}
+
+	var labels []string
+
+	for label := range labelsMap {
+		labels = append(labels, label)
+	}
+
+	return labels, nil
+}

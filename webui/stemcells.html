@@ -170,12 +170,10 @@
           that.loading = true;
 
           axios
-            .get(
+            .post(
               '/api/v2/graphql',
               {
-                params: {
-                  query: `{stemcells{os,version,iaas,hypervisor,flavor,tarball{name,hashes{type,hash},urls{url}}}}`
-                }
+                query: `{stemcells{os,version,iaas,hypervisor,flavor,tarball{name,hashes{type,hash},urls{url}}}}`
               }
             )
             .then(function(response) {

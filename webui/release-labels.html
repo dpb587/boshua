@@ -40,7 +40,7 @@
         <v-content>
           <v-container>
             <v-card-title>
-              <h2>Releases</h2>
+              <h2>Release Labels</h2>
               <v-spacer></v-spacer>
               <v-text-field
                 v-model="search"
@@ -60,10 +60,6 @@
             >
               <template slot="items" slot-scope="props">
                 <td>{{ props.item.name}}</td>
-                <td>{{ props.item.version }}</td>
-                <td>
-                  <a :href="props.item.source_tarball.urls[0].url">Download</a>
-                </td>
               </template>
               <v-alert slot="no-results" :value="true" color="error" icon="warning">
                 No releases were found.
@@ -89,19 +85,9 @@
             search: '',
             headers: [
               {
-                text: 'Name',
+                text: 'Label',
                 sortable: true,
                 value: 'name'
-              },
-              {
-                text: 'Version',
-                sortable: true,
-                value: 'version'
-              },
-              {
-                text: 'Download',
-                sortable: true,
-                value: 'source_tarball'
               }
             ],
             loading: false,
@@ -117,11 +103,11 @@
             .post(
               '/api/v2/graphql',
               {
-                query: `{releases{name,version,source_tarball{name,hashes{type,hash},urls{url}}}}`
+                query: `{release_labels{name}}`
               }
             )
             .then(function(response) {
-              that.results = response.data.data.releases;
+              that.results = response.data.data.release_labels;
             })
             .finally(function() {
               that.loading = false;

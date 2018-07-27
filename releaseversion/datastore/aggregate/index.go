@@ -23,10 +23,10 @@ func New(indices ...datastore.Index) *Index {
 func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	aggregateResults := map[string][]releaseversion.Artifact{}
 
-	for _, index := range i.indices {
+	for indexIdx, index := range i.indices {
 		results, err := index.Filter(f)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "filtering %d", indexIdx)
 		}
 
 		for _, result := range results {
@@ -88,4 +88,27 @@ func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifac
 	}
 
 	return result, nil
+}
+
+func (i *Index) Labels() ([]string, error) {
+	labelsMap := map[string]struct{}{}
+
+	for indexIdx, idx := range i.indices {
+		labels, err := idx.Labels()
+		if err != nil {
+			return nil, errors.Wrapf(err, "getting labels for %d", indexIdx)
+		}
+
+		for _, label := range labels {
+			labelsMap[label] = struct{}{}
+		}
+	}
+
+	var labels []string
+
+	for label := range labelsMap {
+		labels = append(labels, label)
+	}
+
+	return labels, nil
 }
