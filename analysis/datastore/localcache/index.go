@@ -32,7 +32,7 @@ func New() datastore.Index {
 	}
 }
 
-func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
+func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	cachePath, err := i.cachePath(ref)
 	if err != nil {
 		return nil, errors.Wrap(err, "generating cache path")
@@ -63,7 +63,7 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	}, nil
 }
 
-func (i *index) Store(ref analysis.Reference, source metalink.Metalink) error {
+func (i *index) StoreAnalysisResult(ref analysis.Reference, source metalink.Metalink) error {
 	cachePath, err := i.cachePath(ref)
 	if err != nil {
 		return errors.Wrap(err, "generating cache path")

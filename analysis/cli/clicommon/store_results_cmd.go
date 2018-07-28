@@ -50,7 +50,7 @@ func (c *StoreResultsCmd) ExecuteStore(
 		return errors.Wrap(err, "creating in-memory metalink")
 	}
 
-	err = index.Store(ref, *meta4)
+	err = index.StoreAnalysisResult(ref, *meta4)
 	if err != nil {
 		return errors.Wrap(err, "storing artifact")
 	}

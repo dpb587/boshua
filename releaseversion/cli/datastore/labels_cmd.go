@@ -19,7 +19,7 @@ func (c *LabelsCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading datastore")
 	}
 
-	results, err := index.Labels()
+	results, err := index.GetLabels()
 	if err != nil {
 		return errors.Wrap(err, "getting labels")
 	}

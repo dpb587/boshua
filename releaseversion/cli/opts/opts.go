@@ -22,7 +22,7 @@ type Opts struct {
 	Labels []string `long:"release-label" description:"The label(s) to filter releases by"`
 }
 
-func ArgsFromFilterParams(f *datastore.FilterParams) []string {
+func ArgsFromFilterParams(f datastore.FilterParams) []string {
 	args := []string{}
 
 	if f.NameExpected {
@@ -56,7 +56,7 @@ func (o *Opts) Artifact() (releaseversion.Artifact, error) {
 		return releaseversion.Artifact{}, errors.Wrap(err, "loading release index")
 	}
 
-	results, err := index.Filter(o.FilterParams())
+	results, err := index.GetArtifacts(o.FilterParams())
 	if err != nil {
 		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
 	}
@@ -69,8 +69,8 @@ func (o *Opts) Artifact() (releaseversion.Artifact, error) {
 	return result, err
 }
 
-func (o Opts) FilterParams() *datastore.FilterParams {
-	f := &datastore.FilterParams{
+func (o Opts) FilterParams() datastore.FilterParams {
+	f := datastore.FilterParams{
 		LabelsExpected: len(o.Labels) > 0,
 		Labels:         o.Labels,
 	}

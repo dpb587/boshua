@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
-	boshuaV2 "github.com/dpb587/boshua/datastore/boshua.v2"
+	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	datastoregraphql "github.com/dpb587/boshua/releaseversion/graphql"
@@ -30,7 +30,7 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 	}
 }
 
-func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
 	cmd := fmt.Sprintf(`query (%s) {
   releases (%s) {
@@ -71,6 +71,6 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 	return resp.Releases, nil
 }
 
-func (i *Index) Labels() ([]string, error) {
+func (i *Index) GetLabels() ([]string, error) {
 	return nil, errors.New("TODO")
 }

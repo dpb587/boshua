@@ -27,8 +27,8 @@ type FilterParams struct {
 	Labels         []string
 }
 
-func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
-	f := &FilterParams{}
+func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
+	f := FilterParams{}
 
 	f.Name, f.NameExpected = args["name"].(string)
 	f.Version, f.VersionExpected = args["version"].(string)
@@ -44,7 +44,7 @@ func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
 	for _, label := range labels {
 		labelStr, ok := label.(string)
 		if !ok {
-			return nil, errors.New("label: expected string")
+			return FilterParams{}, errors.New("label: expected string")
 		}
 
 		f.Labels = append(f.Labels, labelStr)

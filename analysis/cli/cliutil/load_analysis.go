@@ -32,7 +32,7 @@ func LoadAnalysis(
 		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
 	}
 
-	results, err := analysisIndex.Filter(analysisRef)
+	results, err := analysisIndex.GetAnalysisArtifacts(analysisRef)
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
 	}
@@ -57,7 +57,7 @@ func LoadAnalysis(
 			return analysis.Artifact{}, errors.Wrap(err, "flushing cache")
 		}
 
-		results, err = analysisIndex.Filter(analysisRef)
+		results, err = analysisIndex.GetAnalysisArtifacts(analysisRef)
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
 		}

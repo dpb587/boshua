@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 
-	boshuaV2 "github.com/dpb587/boshua/datastore/boshua.v2"
+	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	datastoregraphql "github.com/dpb587/boshua/stemcellversion/graphql"

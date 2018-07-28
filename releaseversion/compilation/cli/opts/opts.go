@@ -29,7 +29,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
-	results, err := index.Filter(o.FilterParams())
+	results, err := index.GetCompilationArtifacts(o.FilterParams())
 	if err != nil {
 		return compilation.Artifact{}, errors.Wrap(err, "filtering")
 	}
@@ -79,7 +79,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
 		}
 
-		results, err = index.Filter(o.FilterParams())
+		results, err = index.GetCompilationArtifacts(o.FilterParams())
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "finding finished compilation")
 		}
@@ -93,10 +93,10 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 	return result, nil
 }
 
-func (o Opts) FilterParams() *datastore.FilterParams {
-	return &datastore.FilterParams{
+func (o Opts) FilterParams() datastore.FilterParams {
+	return datastore.FilterParams{
 		Release: o.ReleaseOpts.FilterParams(),
-		OS: &osversiondatastore.FilterParams{
+		OS: osversiondatastore.FilterParams{
 			NameExpected:    o.OS.Name != "",
 			Name:            o.OS.Name,
 			VersionExpected: o.OS.Version != "",

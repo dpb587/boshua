@@ -2,7 +2,7 @@ package boshreleasedpb
 
 import (
 	"github.com/dpb587/boshua/blobstore"
-	"github.com/dpb587/boshua/datastore/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 )
 
 type Config struct {

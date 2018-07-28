@@ -21,11 +21,11 @@ func New(aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
-func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
+func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	var results []analysis.Artifact
 
 	for idxIdx, idx := range i.aggregated {
-		found, err := idx.Filter(ref)
+		found, err := idx.GetAnalysisArtifacts(ref)
 		if err != nil {
 			return nil, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
@@ -34,10 +34,6 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	}
 
 	return results, nil
-}
-
-func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
-	return datastore.FilterForOne(i, ref)
 }
 
 func (i *index) FlushCache() error {
@@ -51,9 +47,9 @@ func (i *index) FlushCache() error {
 	return nil
 }
 
-func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
+func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
 	for idxIdx, idx := range i.aggregated {
-		err := idx.Store(ref, artifactMeta4)
+		err := idx.StoreAnalysisResult(ref, artifactMeta4)
 		if err == datastore.UnsupportedOperationErr {
 			continue
 		} else if err != nil {

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/datastore/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -37,7 +37,7 @@ func New(releaseVersionIndex releaseversiondatastore.Index, config Config, logge
 	}
 }
 
-func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error) {
+func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	if !f.Release.NameSatisfied(i.config.Release) {
 		return nil, nil
 	}
@@ -72,7 +72,7 @@ func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 			continue
 		}
 
-		releases, err := i.releaseVersionIndex.Filter(f.Release)
+		releases, err := i.releaseVersionIndex.GetArtifacts(f.Release)
 		if err != nil {
 			// TODO warn and continue?
 			return nil, fmt.Errorf("finding release")
@@ -112,7 +112,7 @@ func (i *index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 	return results, nil
 }
 
-func (i *index) Store(artifact compilation.Artifact) error {
+func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	artifactRef := artifact.Reference().(compilation.Reference)
 
 	path := filepath.Join(

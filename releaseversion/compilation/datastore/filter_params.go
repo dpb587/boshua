@@ -6,6 +6,6 @@ import (
 )
 
 type FilterParams struct {
-	Release *releaseversiondatastore.FilterParams
-	OS      *osversiondatastore.FilterParams
+	Release releaseversiondatastore.FilterParams
+	OS      osversiondatastore.FilterParams
 }

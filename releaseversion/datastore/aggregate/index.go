@@ -20,11 +20,11 @@ func New(indices ...datastore.Index) *Index {
 	}
 }
 
-func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	aggregateResults := map[string][]releaseversion.Artifact{}
 
 	for indexIdx, index := range i.indices {
-		results, err := index.Filter(f)
+		results, err := index.GetArtifacts(f)
 		if err != nil {
 			return nil, errors.Wrapf(err, "filtering %d", indexIdx)
 		}
@@ -90,11 +90,11 @@ func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifac
 	return result, nil
 }
 
-func (i *Index) Labels() ([]string, error) {
+func (i *Index) GetLabels() ([]string, error) {
 	labelsMap := map[string]struct{}{}
 
 	for indexIdx, idx := range i.indices {
-		labels, err := idx.Labels()
+		labels, err := idx.GetLabels()
 		if err != nil {
 			return nil, errors.Wrapf(err, "getting labels for %d", indexIdx)
 		}

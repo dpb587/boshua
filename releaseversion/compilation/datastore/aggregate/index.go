@@ -19,12 +19,12 @@ func New(indices ...datastore.Index) *Index {
 	}
 }
 
-func (i *Index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error) {
+func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO merging behavior?
 	var results []compilation.Artifact
 
 	for idxIdx, idx := range i.indices {
-		found, err := idx.Filter(f)
+		found, err := idx.GetCompilationArtifacts(f)
 		if err != nil {
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
@@ -35,9 +35,9 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]compilation.Artifact, error
 	return results, nil
 }
 
-func (i *Index) Store(artifact compilation.Artifact) error {
+func (i *Index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	for idxIdx, idx := range i.indices {
-		err := idx.Store(artifact)
+		err := idx.StoreCompilationArtifact(artifact)
 		if err == datastore.UnsupportedOperationErr {
 			continue
 		} else if err != nil {

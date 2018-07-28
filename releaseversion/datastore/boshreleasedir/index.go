@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/datastore/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
@@ -33,7 +33,7 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 	}
 }
 
-func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	if f.ChecksumExpected {
 		return nil, nil
 	} else if !f.LabelsSatisfied(i.config.Labels) {
@@ -120,8 +120,8 @@ func (i *Index) Filter(f *datastore.FilterParams) ([]releaseversion.Artifact, er
 	return results, nil
 }
 
-func (i *Index) Labels() ([]string, error) {
-	all, err := i.Filter(&datastore.FilterParams{})
+func (i *Index) GetLabels() ([]string, error) {
+	all, err := i.GetArtifacts(datastore.FilterParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "filtering")
 	}

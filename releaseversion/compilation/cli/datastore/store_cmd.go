@@ -56,7 +56,7 @@ func (c *StoreCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "building metalink")
 	}
 
-	return index.Store(compilation.New(
+	return index.StoreCompilationArtifact(compilation.New(
 		compilation.Reference{
 			ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
 			OSVersion:      osVersion.Reference().(osversion.Reference),

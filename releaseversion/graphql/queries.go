@@ -22,7 +22,7 @@ func NewListQuery(r datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			return r.Filter(f)
+			return r.GetArtifacts(f)
 		},
 	}
 }
@@ -31,7 +31,7 @@ func NewLabelsQuery(r datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Type: graphql.NewList(ReleaseLabel),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			return r.Labels()
+			return r.GetLabels()
 		},
 	}
 }

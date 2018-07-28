@@ -10,6 +10,6 @@ type Factory interface {
 }
 
 type Index interface {
-	Filter(f *FilterParams) ([]compilation.Artifact, error)
-	Store(compilation.Artifact) error
+	GetCompilationArtifacts(f FilterParams) ([]compilation.Artifact, error)
+	StoreCompilationArtifact(compilation.Artifact) error
 }

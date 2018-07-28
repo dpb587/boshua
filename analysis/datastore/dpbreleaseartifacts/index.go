@@ -13,7 +13,7 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/datastore/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -39,7 +39,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	}
 }
 
-func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
+func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
@@ -70,10 +70,6 @@ func (i *index) Filter(ref analysis.Reference) ([]analysis.Artifact, error) {
 	return []analysis.Artifact{
 		analysis.New(ref, analysisMeta4.Files[0]),
 	}, nil
-}
-
-func (i *index) Find(ref analysis.Reference) (analysis.Artifact, error) {
-	return datastore.FilterForOne(i, ref)
 }
 
 func (i *index) FlushCache() error {
@@ -114,7 +110,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	return "", datastore.UnsupportedOperationErr
 }
 
-func (i *index) Store(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
+func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
 	logger := boshlog.NewLogger(boshlog.LevelError)
 	fs := boshsys.NewOsFileSystem(logger)
 

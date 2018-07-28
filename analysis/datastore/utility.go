@@ -5,7 +5,7 @@ import (
 )
 
 func FilterForOne(index Index, ref analysis.Reference) (analysis.Artifact, error) {
-	results, err := index.Filter(ref)
+	results, err := index.GetAnalysisArtifacts(ref)
 	if err != nil {
 		return analysis.Artifact{}, err
 	} else if len(results) == 0 {
