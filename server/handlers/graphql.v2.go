@@ -36,6 +36,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 				"releases":       releaseversiongraphql.NewListQuery(h.releaseIndex),
 				"release_labels": releaseversiongraphql.NewLabelsQuery(h.releaseIndex),
 				"stemcells":      stemcellversiongraphql.NewListQuery(h.stemcellIndex),
+				"stemcell":       stemcellversiongraphql.NewQuery(h.stemcellIndex),
 			},
 		},
 	)
@@ -79,5 +80,5 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 		encoder := json.NewEncoder(w)
 		encoder.SetIndent("", "  ")
 		encoder.Encode(result)
-	}).Methods(http.MethodGet)
+	}).Methods(http.MethodPost)
 }

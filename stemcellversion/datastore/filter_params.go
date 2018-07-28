@@ -1,8 +1,6 @@
 package datastore
 
 import (
-	"errors"
-
 	"github.com/Masterminds/semver"
 )
 
@@ -28,33 +26,6 @@ type FilterParams struct {
 
 	LabelsExpected bool // TODO unnecessary? implied by len > 0
 	Labels         []string
-}
-
-func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
-	f := &FilterParams{}
-
-	f.OS, f.OSExpected = args["os"].(string)
-	f.Version, f.VersionExpected = args["version"].(string)
-	f.IaaS, f.IaaSExpected = args["iaas"].(string)
-	f.Hypervisor, f.HypervisorExpected = args["hypervisor"].(string)
-	f.Flavor, f.FlavorExpected = args["light"].(string)
-
-	if f.VersionExpected {
-		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
-	}
-
-	var labels []interface{}
-	labels, f.LabelsExpected = args["labels"].([]interface{})
-	for _, label := range labels {
-		labelStr, ok := label.(string)
-		if !ok {
-			return nil, errors.New("label: expected string")
-		}
-
-		f.Labels = append(f.Labels, labelStr)
-	}
-
-	return f, nil
 }
 
 func (f *FilterParams) OSSatisfied(actual string) bool {

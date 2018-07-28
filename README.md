@@ -122,7 +122,7 @@ Fetch tarball of a compiled release...
       }
     }
 
-Fetch jobs and packages of a release...
+Fetch jobs and packages of a release (this would need to error if the analysis had not been performed? better to recommend analysis?)...
 
     {
       release(name: "openvpn", version: "5.1.0") {
@@ -141,15 +141,18 @@ Fetch jobs and packages of a release...
       }
     }
 
-Fetch raw analysis results of a release...
+Fetch analysis artifacts of a release...
 
     {
       release(name: "openvpn", version: "5.1.0") {
-        analysis(analyzer: "releaseartifactfiles.v1") {
-          status
-          artifact {
-            hash(type: "sha1"),
-            url
+        analysis {
+          results(analyzers: ["releaseartifactfiles.v1", "releasemanifests.v1"]) {
+            analyzer
+            status
+            artifact {
+              hash(type: "sha1"),
+              url
+            }
           }
         }
       }
@@ -159,22 +162,23 @@ Fetch specialized analysis results...
 
     {
       release(name: "openvpn", version: "5.1.0") {
-        releaseartifactfilesV1 {
-          status
-          results {
-            totalCount
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-            nodes {
-              artifact
-              result {
-                type
-                path
-                link
-                size
-                mode
+        analysis {
+          releaseartifactfilesV1 {
+            results {
+              totalCount
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
+              nodes {
+                artifact
+                result {
+                  type
+                  path
+                  link
+                  size
+                  mode
+                }
               }
             }
           }

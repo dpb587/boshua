@@ -3,6 +3,7 @@ package cli
 import (
 	"net/http"
 
+	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/server/handlers"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
@@ -38,7 +39,12 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading stemcell index")
 	}
 
-	stemcellversionserver.NewHandlers(stemcellIndex).Mount(r)
+	analysisIndex, err := c.AppOpts.GetAnalysisIndex(analysis.Reference{}) // TODO
+	if err != nil {
+		return errors.Wrap(err, "loading analysis index")
+	}
+
+	stemcellversionserver.NewHandlers(stemcellIndex, analysisIndex).Mount(r)
 	handlers.NewGraphqlV2(releaseIndex, stemcellIndex).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)
