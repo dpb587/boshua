@@ -11,6 +11,7 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/metalink"
@@ -26,7 +27,7 @@ type ArtifactCmd struct {
 	Format   string  `long:"format" description:"Output format for the release reference" value-name:"json|metalink|tsv" default:"tsv"`
 }
 
-func (c *ArtifactCmd) ExecuteArtifact(loader ArtifactLoader) error {
+func (c *ArtifactCmd) ExecuteArtifact(loader artifact.Loader) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)

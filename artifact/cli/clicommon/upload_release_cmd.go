@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -16,7 +17,7 @@ type UploadReleaseCmd struct {
 	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
 }
 
-func (c *UploadReleaseCmd) ExecuteArtifact(loader ArtifactLoader) error {
+func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)

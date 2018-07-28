@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/stemcellversion"
 )
@@ -15,7 +16,7 @@ type UploadStemcellCmd struct {
 	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
 }
 
-func (c *UploadStemcellCmd) ExecuteArtifact(loader ArtifactLoader) error {
+func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
