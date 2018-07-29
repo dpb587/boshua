@@ -1,12 +1,26 @@
 package graphql
 
 import (
+	analysisgraphql "github.com/dpb587/boshua/analysis/graphql"
 	artifactgraphql "github.com/dpb587/boshua/artifact/graphql"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
 )
+
+func newStemcellAnalysis(index datastore.AnalysisIndex) *graphql.Object {
+	return graphql.NewObject(
+		graphql.ObjectConfig{
+			Name:        "Analysis",
+			Description: "Analysis results of a stemcell.",
+			Fields: graphql.Fields{
+				"results": analysisgraphql.NewResultsField(index),
+				// "stemcellmanifestV1": github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/graphql.NewField(index),
+			},
+		},
+	)
+}
 
 func newStemcellObject(index datastore.Index) *graphql.Object {
 	return graphql.NewObject(
@@ -57,6 +71,13 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 						}
 
 						return nil, nil
+					},
+				},
+				"analysis": &graphql.Field{
+					Type: newStemcellAnalysis(index.(datastore.AnalysisIndex)), // TODO unsafe
+					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+						// better way?
+						return p.Source, nil
 					},
 				},
 			},

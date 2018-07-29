@@ -9,9 +9,15 @@ import (
 
 	"github.com/concourse/atc"
 	"github.com/cppforlife/go-patch/patch"
+	"github.com/dpb587/boshua/analysis"
+	"github.com/dpb587/boshua/analysis/analyzer/factory"
 	"github.com/dpb587/boshua/config"
+	"github.com/dpb587/boshua/releaseversion"
+	compilationtask "github.com/dpb587/boshua/releaseversion/compilation/task"
+	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
+	"github.com/dpb587/boshua/task/scheduler/storecommon"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -35,15 +41,37 @@ func New(config Config, boshuaConfigLoader ConfigLoader, logger logrus.FieldLogg
 	}
 }
 
-func (s *Scheduler) Schedule(t *task.Task) (scheduler.Task, error) {
+func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.ScheduledTask, error) {
+	tt, err := factory.SoonToBeDeprecatedFactory.BuildTask(analysisRef.Analyzer, analysisRef.Subject)
+	if err != nil {
+		return nil, errors.Wrap(err, "preparing task")
+	}
+
+	tt = storecommon.AppendAnalysisStore(tt, analysisRef)
+
+	return s.schedule(tt)
+}
+
+func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.ScheduledTask, error) {
+	tt, err := compilationtask.New(release, stemcell)
+	if err != nil {
+		return nil, errors.Wrap(err, "preparing task")
+	}
+
+	tt = storecommon.AppendCompilationStore(tt, release, stemcell)
+
+	return s.schedule(tt)
+}
+
+func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
 	fly := NewFly(s.config)
 
-	pipelineBytes, pipelineVars, pipelineOpsFiles, err := s.buildBasePipeline(t)
+	pipelineBytes, pipelineVars, pipelineOpsFiles, err := s.buildBasePipeline(tt)
 	if err != nil {
 		return nil, errors.Wrap(err, "building pipeline")
 	}
 
-	pipelineName := s.pipelineName(t, pipelineBytes)
+	pipelineName := s.pipelineName(tt, pipelineBytes)
 
 	pipelineBytes, err = s.buildFinalPipeline(pipelineBytes, pipelineOpsFiles)
 	if err != nil {

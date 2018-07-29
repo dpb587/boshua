@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewListQuery(r datastore.Index) *graphql.Field {
+func NewListQuery(index datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Type: graphql.NewList(ListedStemcell),
 		Args: graphql.FieldConfigArgument{
@@ -24,7 +24,7 @@ func NewListQuery(r datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			return r.GetArtifacts(f)
+			return index.GetArtifacts(f)
 		},
 	}
 }

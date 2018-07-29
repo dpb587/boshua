@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/task"
-	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -13,7 +12,7 @@ type Task struct {
 	pipelineName string
 }
 
-var _ scheduler.Task = &Task{}
+var _ task.ScheduledTask = &Task{}
 
 func NewTask(fly *Fly, pipelineName string) *Task {
 	return &Task{

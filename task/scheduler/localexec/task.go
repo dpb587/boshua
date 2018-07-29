@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/task"
-	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -19,7 +18,7 @@ type Task struct {
 	status *task.Status
 }
 
-var _ scheduler.Task = &Task{}
+var _ task.ScheduledTask = &Task{}
 
 func NewTask(cmdFactory cmdFactory, tt *task.Task) *Task {
 	return &Task{

@@ -1,12 +1,13 @@
 package cliutil
 
 import (
+	"fmt"
+
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/task"
-	"github.com/dpb587/boshua/task/scheduler"
-	"github.com/dpb587/boshua/task/scheduler/schedulerutil"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +15,7 @@ func LoadAnalysis(
 	analysisIndexLoader func(analysis.Reference) (analysisdatastore.Index, error),
 	subjectLoader func() (analysis.Subject, error),
 	analysisOpts *opts.Opts,
-	schedulerLoader func() (scheduler.Scheduler, error),
+	schedulerLoader func() (schedulerpkg.Scheduler, error),
 	callback task.StatusChangeCallback,
 ) (analysis.Artifact, error) {
 	subject, err := subjectLoader()
@@ -47,9 +48,16 @@ func LoadAnalysis(
 			return analysis.Artifact{}, errors.Wrap(err, "loading scheduler")
 		}
 
-		err = schedulerutil.CreateAnalysis(scheduler, analysisRef, callback)
+		scheduledTask, err := scheduler.ScheduleAnalysis(analysisRef)
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
+		}
+
+		status, err := task.WaitForScheduledTask(scheduledTask, callback)
+		if err != nil {
+			return analysis.Artifact{}, errors.Wrap(err, "checking task")
+		} else if status != task.StatusSucceeded {
+			return analysis.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 
 		err = analysisIndex.FlushCache()

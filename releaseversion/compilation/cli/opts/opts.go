@@ -1,6 +1,8 @@
 package opts
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/dpb587/boshua/cli/args"
@@ -10,7 +12,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/task/scheduler/schedulerutil"
+	"github.com/dpb587/boshua/task"
 	"github.com/pkg/errors"
 )
 
@@ -75,9 +77,18 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "loading scheduler")
 		}
 
-		err = schedulerutil.CreateCompilation(scheduler, releaseVersion, stemcellVersion)
+		scheduledTask, err := scheduler.ScheduleCompilation(releaseVersion, stemcellVersion)
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
+		}
+
+		status, err := task.WaitForScheduledTask(scheduledTask, func(status task.Status) {
+			fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] compilation is %s\n", time.Now().Format("15:04:05"), stemcellVersion.OS, stemcellVersion.Version, releaseVersion.Name, releaseVersion.Version, status)
+		})
+		if err != nil {
+			return compilation.Artifact{}, errors.Wrap(err, "checking task")
+		} else if status != task.StatusSucceeded {
+			return compilation.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 
 		results, err = index.GetCompilationArtifacts(o.FilterParams())

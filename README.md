@@ -148,7 +148,6 @@ Fetch analysis artifacts of a release...
         analysis {
           results(analyzers: ["releaseartifactfiles.v1", "releasemanifests.v1"]) {
             analyzer
-            status
             artifact {
               hash(type: "sha1"),
               url

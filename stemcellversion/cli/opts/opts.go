@@ -1,8 +1,6 @@
 package opts
 
 import (
-	"fmt"
-
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -20,38 +18,6 @@ type Opts struct {
 	Flavor     string    `long:"stemcell-flavor" description:"The stemcell flavor (e.g. 'light')"`
 
 	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
-}
-
-func ArgsFromFilterParams(f datastore.FilterParams) []string {
-	var args []string
-
-	if f.OSExpected {
-		args = append(args, fmt.Sprintf("--stemcell-os=%s", f.OS))
-	}
-
-	if f.VersionExpected {
-		args = append(args, fmt.Sprintf("--stemcell-version=%s", f.Version))
-	}
-
-	if f.IaaSExpected {
-		args = append(args, fmt.Sprintf("--stemcell-iaas=%s", f.IaaS))
-	}
-
-	if f.HypervisorExpected {
-		args = append(args, fmt.Sprintf("--stemcell-hypervisor=%s", f.Hypervisor))
-	}
-
-	if f.FlavorExpected {
-		args = append(args, fmt.Sprintf("--stemcell-flavor=%s", f.Flavor))
-	}
-
-	if f.LabelsExpected {
-		for _, label := range f.Labels {
-			args = append(args, fmt.Sprintf("--stemcell-label=%s", label))
-		}
-	}
-
-	return args
 }
 
 func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
