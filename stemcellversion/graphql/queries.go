@@ -24,7 +24,7 @@ func NewListQuery(r datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			return r.Filter(f)
+			return r.GetArtifacts(f)
 		},
 	}
 }
@@ -47,7 +47,7 @@ func NewQuery(index datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			results, err := index.Filter(f)
+			results, err := index.GetArtifacts(f)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding stemcell")
 			}

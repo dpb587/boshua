@@ -44,10 +44,6 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		append(
-			[]string{"release"},
-			releaseopts.ArgsFromFilterParams(o.ReleaseOpts.FilterParams())...,
-		),
 		func(status task.Status) {
 			// TODO normalize opts
 			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifact.Name, artifact.Version, status)

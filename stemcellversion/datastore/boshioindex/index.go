@@ -30,7 +30,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	}
 }
 
-func (i *index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifact, error) {
 	if !f.LabelsSatisfied(i.config.Labels) {
 		return nil, nil
 	}

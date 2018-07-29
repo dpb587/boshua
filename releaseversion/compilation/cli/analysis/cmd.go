@@ -9,7 +9,6 @@ import (
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
-	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
 	"github.com/dpb587/boshua/task"
@@ -45,16 +44,6 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		append(
-			append(
-				append(
-					[]string{"release"},
-					releaseopts.ArgsFromFilterParams(o.CompiledReleaseOpts.ReleaseOpts.FilterParams())...,
-				),
-				"compilation",
-			),
-			fmt.Sprintf("--os=%s", o.CompiledReleaseOpts.OS.String()),
-		),
 		func(status task.Status) {
 			fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifactRef.OSVersion.Name, artifactRef.OSVersion.Version, artifactRef.ReleaseVersion.Name, artifactRef.ReleaseVersion.Version, status)
 		},

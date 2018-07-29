@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion"
 )
 
@@ -9,5 +10,10 @@ type Factory interface {
 }
 
 type Index interface {
-	Filter(f *FilterParams) ([]stemcellversion.Artifact, error)
+	GetArtifacts(f FilterParams) ([]stemcellversion.Artifact, error)
+}
+
+type AnalysisIndex interface {
+	Index
+	analysisdatastore.Index
 }

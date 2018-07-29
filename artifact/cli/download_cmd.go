@@ -6,7 +6,7 @@ import (
 )
 
 type DownloadCmd struct {
-	clicommon.DownloadCmd
+	clicommon.DownloadCmd `no-flag:"true"`
 
 	*CmdOpts `no-flag:"true"`
 
@@ -14,11 +14,15 @@ type DownloadCmd struct {
 }
 
 type DownloadCmdArgs struct {
-	Metalink string `positional-arg-name:"PATH" description:"Path to the metalink file"`
+	Metalink  string  `positional-arg-name:"PATH" description:"Path to the metalink file"`
+	TargetDir *string `positional-arg-name:"TARGET-DIR" description:"Directory to download files (default: .)"`
 }
 
 func (c *DownloadCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("artifact/download")
+
+	// cheat and inject targetdir
+	c.DownloadCmd.Args.TargetDir = c.Args.TargetDir
 
 	return c.DownloadCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink))
 }

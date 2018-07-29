@@ -49,7 +49,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "loading stemcell index")
 		}
 
-		stemcellVersions, err := stemcellVersionIndex.Filter(&stemcellversiondatastore.FilterParams{
+		stemcellVersions, err := stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{
 			OSExpected:      true,
 			OS:              o.OS.Name,
 			VersionExpected: true,

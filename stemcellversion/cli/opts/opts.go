@@ -22,7 +22,7 @@ type Opts struct {
 	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
 }
 
-func ArgsFromFilterParams(f *datastore.FilterParams) []string {
+func ArgsFromFilterParams(f datastore.FilterParams) []string {
 	var args []string
 
 	if f.OSExpected {
@@ -60,7 +60,7 @@ func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}
 
-	results, err := index.Filter(o.FilterParams())
+	results, err := index.GetArtifacts(o.FilterParams())
 	if err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
@@ -73,8 +73,8 @@ func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
 	return result, err
 }
 
-func (o Opts) FilterParams() *datastore.FilterParams {
-	f := &datastore.FilterParams{
+func (o Opts) FilterParams() datastore.FilterParams {
+	f := datastore.FilterParams{
 		FlavorExpected: o.Flavor != "",
 		Flavor:         o.Flavor,
 

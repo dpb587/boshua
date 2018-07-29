@@ -7,15 +7,15 @@ import (
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
-func FilterParamsFromQuery(r *http.Request) (*datastore.FilterParams, error) {
+func FilterParamsFromQuery(r *http.Request) (datastore.FilterParams, error) {
 	q := r.URL.Query()
 
-	f := &datastore.FilterParams{}
+	f := datastore.FilterParams{}
 
 	v, ok := q["stemcell-os"]
 	if ok {
 		if len(v) != 1 {
-			return nil, errors.New("stemcell-os: expected single value")
+			return datastore.FilterParams{}, errors.New("stemcell-os: expected single value")
 		}
 
 		f.OSExpected = true
@@ -25,7 +25,7 @@ func FilterParamsFromQuery(r *http.Request) (*datastore.FilterParams, error) {
 	v, ok = q["stemcell-version"]
 	if ok {
 		if len(v) != 1 {
-			return nil, errors.New("stemcell-version: expected single value")
+			return datastore.FilterParams{}, errors.New("stemcell-version: expected single value")
 		}
 
 		f.VersionExpected = true
@@ -35,7 +35,7 @@ func FilterParamsFromQuery(r *http.Request) (*datastore.FilterParams, error) {
 	v, ok = q["stemcell-iaas"]
 	if ok {
 		if len(v) != 1 {
-			return nil, errors.New("stemcell-iaas: expected single value")
+			return datastore.FilterParams{}, errors.New("stemcell-iaas: expected single value")
 		}
 
 		f.IaaSExpected = true
@@ -45,7 +45,7 @@ func FilterParamsFromQuery(r *http.Request) (*datastore.FilterParams, error) {
 	v, ok = q["stemcell-hypervisor"]
 	if ok {
 		if len(v) != 1 {
-			return nil, errors.New("stemcell-hypervisor: expected single value")
+			return datastore.FilterParams{}, errors.New("stemcell-hypervisor: expected single value")
 		}
 
 		f.HypervisorExpected = true
@@ -55,7 +55,7 @@ func FilterParamsFromQuery(r *http.Request) (*datastore.FilterParams, error) {
 	v, ok = q["stemcell-flavor"]
 	if ok {
 		if len(v) != 1 {
-			return nil, errors.New("stemcell-flavor: expected single value")
+			return datastore.FilterParams{}, errors.New("stemcell-flavor: expected single value")
 		}
 
 		f.FlavorExpected = true

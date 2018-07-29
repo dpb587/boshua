@@ -29,7 +29,7 @@ func (h *DownloadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic(errors.Wrap(err, "parsing request")) // TODO !panic
 	}
 
-	results, err := h.index.Filter(filterParams)
+	results, err := h.index.GetArtifacts(filterParams)
 	if err != nil {
 		panic(errors.Wrap(err, "finding stemcell")) // TODO !panic
 	}

@@ -171,7 +171,7 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 	return compiledreleaseversionaggregate.New(all...), nil
 }
 
-func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, error) {
+func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.AnalysisIndex, error) {
 	if name != "default" {
 		panic("TODO")
 	}
@@ -185,19 +185,25 @@ func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, er
 	factory := stemcellversionfactory.New(o.GetLogger())
 
 	for _, cfg := range config.Stemcells {
-		// var analysisIndex analysisdatastore.Index
-		//
-		// if cfg.Analysis != nil {
-		// 	analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		// 	if err != nil {
-		// 		return nil, errors.Wrap(err, "loading compiled release analysis")
-		// 	}
-		// }
+		var idx stemcellversiondatastore.Index
+		var err error
 
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating stemcell version datastore")
 		}
+
+		// if cfg.Analysis != nil { // TODO configurable
+		var analysisIdx analysisdatastore.Index
+
+		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
+		if err != nil {
+			return nil, errors.Wrap(err, "loading compiled release analysis")
+		}
+
+		idx = stemcellversiondatastore.NewAnalysisIndex(idx, analysisIdx)
+		// }
 
 		all = append(all, idx)
 	}

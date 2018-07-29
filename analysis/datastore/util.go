@@ -2,12 +2,8 @@ package datastore
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
-	analysistask "github.com/dpb587/boshua/analysis/task"
-	"github.com/dpb587/boshua/task"
-	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -21,36 +17,4 @@ func RequireSingleResult(results []analysis.Artifact) (analysis.Artifact, error)
 	}
 
 	return results[0], nil
-}
-
-func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Reference, storeArgs []string, callback task.StatusChangeCallback) error {
-	tt, err := analysistask.New(analysisRef.Subject, analysisRef.Analyzer)
-	if err != nil {
-		return errors.Wrap(err, "preparing task")
-	}
-
-	tt.Steps = append(tt.Steps, task.Step{
-		Name: "storing",
-		Args: append(
-			storeArgs,
-			"analysis",
-			"store-results",
-			fmt.Sprintf("--analyzer=%s", analysisRef.Analyzer),
-			filepath.Join("input", "results.jsonl.gz"),
-		),
-	})
-
-	scheduledTask, err := scheduler.Schedule(tt)
-	if err != nil {
-		return errors.Wrap(err, "scheduling task")
-	}
-
-	status, err := schedulerpkg.WaitForTask(scheduledTask, callback)
-	if err != nil {
-		return errors.Wrap(err, "checking task")
-	} else if status != task.StatusSucceeded {
-		return fmt.Errorf("task did not succeed: %s", status)
-	}
-
-	return nil
 }

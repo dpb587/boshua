@@ -35,7 +35,7 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 						f := datastore.FilterParamsFromArtifact(source)
 						f.Flavor = "light"
 
-						results, err := index.Filter(f)
+						results, err := index.GetArtifacts(f)
 						if err != nil {
 							return nil, errors.Wrap(err, "finding light stemcell")
 						}

@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
-func BuildListQueryArgs(f *datastore.FilterParams) (string, string, map[string]interface{}) {
+func BuildListQueryArgs(f datastore.FilterParams) (string, string, map[string]interface{}) {
 	var queryFilter, queryVarsTypes []string
 	var queryVars = map[string]interface{}{}
 

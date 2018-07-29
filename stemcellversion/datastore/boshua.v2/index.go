@@ -30,7 +30,7 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 	}
 }
 
-func (i *Index) Filter(f *datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifact, error) {
 	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
 	cmd := fmt.Sprintf(`query (%s) {
   stemcells (%s) {

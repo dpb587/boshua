@@ -7,8 +7,8 @@ import (
 	"github.com/dpb587/boshua/stemcellversion"
 )
 
-func FilterParamsFromArtifact(artifact stemcellversion.Artifact) *FilterParams {
-	return &FilterParams{
+func FilterParamsFromArtifact(artifact stemcellversion.Artifact) FilterParams {
+	return FilterParams{
 		OSExpected: true,
 		OS:         artifact.OS,
 
@@ -26,11 +26,13 @@ func FilterParamsFromArtifact(artifact stemcellversion.Artifact) *FilterParams {
 
 		FlavorExpected: true,
 		Flavor:         artifact.Flavor,
+
+		// Labels are relative/subjective; irrelevant to artifact identity
 	}
 }
 
-func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
-	f := &FilterParams{}
+func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
+	f := FilterParams{}
 
 	f.OS, f.OSExpected = args["os"].(string)
 	f.Version, f.VersionExpected = args["version"].(string)
@@ -47,7 +49,7 @@ func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
 	for _, label := range labels {
 		labelStr, ok := label.(string)
 		if !ok {
-			return nil, errors.New("label: expected string")
+			return FilterParams{}, errors.New("label: expected string")
 		}
 
 		f.Labels = append(f.Labels, labelStr)

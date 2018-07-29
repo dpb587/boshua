@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -25,32 +24,6 @@ type FilterParams struct {
 
 	LabelsExpected bool // TODO unnecessary? implied by len > 0
 	Labels         []string
-}
-
-func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
-	f := FilterParams{}
-
-	f.Name, f.NameExpected = args["name"].(string)
-	f.Version, f.VersionExpected = args["version"].(string)
-	f.Checksum, f.ChecksumExpected = args["checksum"].(string)
-	f.URI, f.URIExpected = args["uri"].(string)
-
-	if f.VersionExpected {
-		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
-	}
-
-	var labels []interface{}
-	labels, f.LabelsExpected = args["labels"].([]interface{})
-	for _, label := range labels {
-		labelStr, ok := label.(string)
-		if !ok {
-			return FilterParams{}, errors.New("label: expected string")
-		}
-
-		f.Labels = append(f.Labels, labelStr)
-	}
-
-	return f, nil
 }
 
 func (f *FilterParams) NameSatisfied(actual string) bool {
