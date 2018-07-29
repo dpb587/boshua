@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/dpb587/boshua/analysis"
-	analysistask "github.com/dpb587/boshua/analysis/task"
+	"github.com/dpb587/boshua/analysis/analyzer/factory"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -48,7 +48,7 @@ func CreateAnalysis(scheduler schedulerpkg.Scheduler, analysisRef analysis.Refer
 		return errors.New("unsupported analysis subject")
 	}
 
-	tt, err := analysistask.New(analysisRef.Subject, analysisRef.Analyzer)
+	tt, err := factory.SoonToBeDeprecatedFactory.BuildTask(analysisRef.Analyzer, analysisRef.Subject)
 	if err != nil {
 		return errors.Wrap(err, "preparing task")
 	}

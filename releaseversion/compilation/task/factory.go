@@ -11,14 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.Task, error) {
+func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (*task.Task, error) {
 	releaseFile := release.MetalinkFile()
 
 	meta4ReleaseBytes, err := metalink.MarshalXML(metalink.Metalink{
 		Files: []metalink.File{releaseFile},
 	})
 	if err != nil {
-		return task.Task{}, errors.Wrap(err, "marshaling release metalink")
+		return nil, errors.Wrap(err, "marshaling release metalink")
 	}
 
 	stemcellFile := stemcell.MetalinkFile()
@@ -27,10 +27,10 @@ func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (ta
 		Files: []metalink.File{stemcellFile},
 	})
 	if err != nil {
-		return task.Task{}, errors.Wrap(err, "marshaling stemcell metalink")
+		return nil, errors.Wrap(err, "marshaling stemcell metalink")
 	}
 
-	return task.Task{
+	return &task.Task{
 		Type: task.Type("compilation"),
 		Steps: []task.Step{
 			{

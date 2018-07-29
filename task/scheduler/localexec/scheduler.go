@@ -28,6 +28,6 @@ func (s Scheduler) cmd(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func (s Scheduler) Schedule(tt task.Task) (scheduler.Task, error) {
+func (s Scheduler) Schedule(tt *task.Task) (scheduler.Task, error) {
 	return NewTask(s.cmd, tt), nil
 }

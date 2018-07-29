@@ -1,12 +1,12 @@
 package formatter
 
 import (
-	releaseartifactfilesv1 "github.com/dpb587/boshua/analysis/analyzer/releaseartifactfiles.v1/cli"
-	releasemanifestsv1 "github.com/dpb587/boshua/analysis/analyzer/releasemanifests.v1/cli"
-	stemcellimagefilesv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellimagefiles.v1/cli"
-	stemcellmanifestv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellmanifest.v1/cli"
-	stemcellpackagesv1 "github.com/dpb587/boshua/analysis/analyzer/stemcellpackages.v1/cli"
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	releaseartifactfilesv1 "github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/cli"
+	releasemanifestsv1 "github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/cli"
+	stemcellimagefilesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellimagefiles.v1/cli"
+	stemcellmanifestv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/cli"
+	stemcellpackagesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/cli"
 )
 
 type Cmd struct {

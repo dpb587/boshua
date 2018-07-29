@@ -10,6 +10,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/task/scheduler/schedulerutil"
 	"github.com/pkg/errors"
 )
 
@@ -74,7 +75,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "loading scheduler")
 		}
 
-		err = datastore.CreateCompilation(scheduler, releaseVersion, stemcellVersion)
+		err = schedulerutil.CreateCompilation(scheduler, releaseVersion, stemcellVersion)
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
 		}

@@ -14,14 +14,14 @@ import (
 
 type Task struct {
 	cmdFactory cmdFactory
-	tt         task.Task
+	tt         *task.Task
 
 	status *task.Status
 }
 
 var _ scheduler.Task = &Task{}
 
-func NewTask(cmdFactory cmdFactory, tt task.Task) *Task {
+func NewTask(cmdFactory cmdFactory, tt *task.Task) *Task {
 	return &Task{
 		cmdFactory: cmdFactory,
 		tt:         tt,

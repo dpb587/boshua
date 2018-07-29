@@ -15,8 +15,8 @@ import (
 type GenerateCmd struct {
 	*CmdOpts `no-flag:"true"`
 
-	Analyzer   string `long:"analyzer" description:"The analyzer to use"`
-	NoCompress bool   `long:"no-compress" description:"Skip gzip compression when writing results to file"`
+	Analyzer   analysis.AnalyzerName `long:"analyzer" description:"The analyzer to use"`
+	NoCompress bool                  `long:"no-compress" description:"Skip gzip compression when writing results to file"`
 
 	Args GenerateArgs `positional-args:"true"`
 }

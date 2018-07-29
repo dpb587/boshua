@@ -35,7 +35,7 @@ func New(config Config, boshuaConfigLoader ConfigLoader, logger logrus.FieldLogg
 	}
 }
 
-func (s *Scheduler) Schedule(t task.Task) (scheduler.Task, error) {
+func (s *Scheduler) Schedule(t *task.Task) (scheduler.Task, error) {
 	fly := NewFly(s.config)
 
 	pipelineBytes, pipelineVars, pipelineOpsFiles, err := s.buildBasePipeline(t)
@@ -111,7 +111,7 @@ func (s *Scheduler) Schedule(t task.Task) (scheduler.Task, error) {
 	return NewTask(fly, pipelineName), nil
 }
 
-func (s *Scheduler) pipelineName(t task.Task, pipelineBytes []byte) string {
+func (s *Scheduler) pipelineName(t *task.Task, pipelineBytes []byte) string {
 	return fmt.Sprintf("boshua:%s:%x", t.Type, sha1.Sum(pipelineBytes))
 }
 
@@ -150,7 +150,7 @@ func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opsFiles []string) 
 	return pipelineBytes, nil
 }
 
-func (s *Scheduler) buildBasePipeline(t task.Task) ([]byte, map[string]interface{}, []string, error) {
+func (s *Scheduler) buildBasePipeline(t *task.Task) ([]byte, map[string]interface{}, []string, error) {
 	var plan atc.PlanSequence
 
 	configPath := "config/boshua.yml"
