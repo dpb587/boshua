@@ -3,24 +3,27 @@ package aggregate
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/analysis"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
 )
 
-type Index struct {
+type index struct {
 	indices []datastore.Index
 }
 
-var _ datastore.Index = &Index{}
+var _ datastore.Index = &index{}
 
-func New(indices ...datastore.Index) *Index {
-	return &Index{
+func New(indices ...datastore.Index) datastore.AnalysisIndex {
+	return &index{
 		indices: indices,
 	}
 }
 
-func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	aggregateResults := map[string][]releaseversion.Artifact{}
 
 	for indexIdx, index := range i.indices {
@@ -57,7 +60,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 	return results, nil
 }
 
-func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifact, error) {
+func (i *index) merge(results []releaseversion.Artifact) (releaseversion.Artifact, error) {
 	// assume Name and Version already match
 	result := results[0]
 
@@ -90,7 +93,7 @@ func (i *Index) merge(results []releaseversion.Artifact) (releaseversion.Artifac
 	return result, nil
 }
 
-func (i *Index) GetLabels() ([]string, error) {
+func (i *index) GetLabels() ([]string, error) {
 	labelsMap := map[string]struct{}{}
 
 	for indexIdx, idx := range i.indices {
@@ -111,4 +114,68 @@ func (i *Index) GetLabels() ([]string, error) {
 	}
 
 	return labels, nil
+}
+
+func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
+	var results []analysis.Artifact
+	var supported bool
+
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		supported = true
+
+		found, err := analysisIdx.GetAnalysisArtifacts(ref)
+		if err != nil {
+			return nil, fmt.Errorf("analysis %d: %v", idxIdx, err)
+		}
+
+		if len(found) > 0 {
+			// TODO merging behavior instead?
+			return found, nil
+		}
+	}
+
+	if !supported {
+		return nil, analysisdatastore.UnsupportedOperationErr
+	}
+
+	return results, nil
+}
+
+func (i *index) StoreAnalysisResult(ref analysis.Reference, meta4 metalink.Metalink) error {
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		err := analysisIdx.StoreAnalysisResult(ref, meta4)
+		if err != nil {
+			return fmt.Errorf("storing %d: %v", idxIdx, err)
+		}
+
+		return nil
+	}
+
+	return analysisdatastore.UnsupportedOperationErr
+}
+
+func (i *index) FlushCache() error {
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		err := analysisIdx.FlushCache()
+		if err != nil {
+			return fmt.Errorf("flushing %d: %v", idxIdx, err)
+		}
+	}
+
+	return nil
 }

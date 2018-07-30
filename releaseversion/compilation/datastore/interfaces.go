@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 )
@@ -12,4 +13,9 @@ type Factory interface {
 type Index interface {
 	GetCompilationArtifacts(f FilterParams) ([]compilation.Artifact, error)
 	StoreCompilationArtifact(compilation.Artifact) error
+}
+
+type AnalysisIndex interface {
+	Index
+	analysisdatastore.Index
 }

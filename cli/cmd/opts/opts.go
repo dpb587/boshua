@@ -121,10 +121,25 @@ func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, erro
 	factory := releaseversionfactory.New(o.GetLogger())
 
 	for _, cfg := range config.Releases {
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
+		var idx releaseversiondatastore.Index
+		var err error
+
+		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating release version datastore")
 		}
+
+		// if cfg.Analysis != nil { // TODO configurable
+		var analysisIdx analysisdatastore.Index
+
+		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
+		if err != nil {
+			return nil, errors.Wrap(err, "loading release analysis")
+		}
+
+		idx = releaseversiondatastore.NewAnalysisIndex(idx, analysisIdx)
+		// }
 
 		all = append(all, idx)
 	}

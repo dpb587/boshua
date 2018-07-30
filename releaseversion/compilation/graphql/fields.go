@@ -5,7 +5,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
-var nameField = &graphql.Field{
+var osField = &graphql.Field{
 	Type: graphql.String,
 }
 

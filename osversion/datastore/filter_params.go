@@ -13,19 +13,6 @@ type FilterParams struct {
 	VersionConstraint *semver.Constraints
 }
 
-func FilterParamsFromMap(args map[string]interface{}) (*FilterParams, error) {
-	f := &FilterParams{}
-
-	f.Name, f.NameExpected = args["name"].(string)
-	f.Version, f.VersionExpected = args["version"].(string)
-
-	if f.VersionExpected {
-		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
-	}
-
-	return f, nil
-}
-
 func (f *FilterParams) NameSatisfied(actual string) bool {
 	if !f.NameExpected {
 		return true

@@ -3,23 +3,26 @@ package aggregate
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/analysis"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	"github.com/dpb587/metalink"
 )
 
-type Index struct {
+type index struct {
 	indices []datastore.Index
 }
 
-var _ datastore.Index = &Index{}
+var _ datastore.Index = &index{}
 
-func New(indices ...datastore.Index) *Index {
-	return &Index{
+func New(indices ...datastore.Index) datastore.AnalysisIndex {
+	return &index{
 		indices: indices,
 	}
 }
 
-func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
+func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO merging behavior?
 	var results []compilation.Artifact
 
@@ -35,7 +38,7 @@ func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 	return results, nil
 }
 
-func (i *Index) StoreCompilationArtifact(artifact compilation.Artifact) error {
+func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	for idxIdx, idx := range i.indices {
 		err := idx.StoreCompilationArtifact(artifact)
 		if err == datastore.UnsupportedOperationErr {
@@ -48,4 +51,68 @@ func (i *Index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	}
 
 	return datastore.UnsupportedOperationErr
+}
+
+func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
+	var results []analysis.Artifact
+	var supported bool
+
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		supported = true
+
+		found, err := analysisIdx.GetAnalysisArtifacts(ref)
+		if err != nil {
+			return nil, fmt.Errorf("analysis %d: %v", idxIdx, err)
+		}
+
+		if len(found) > 0 {
+			// TODO merging behavior instead?
+			return found, nil
+		}
+	}
+
+	if !supported {
+		return nil, analysisdatastore.UnsupportedOperationErr
+	}
+
+	return results, nil
+}
+
+func (i *index) StoreAnalysisResult(ref analysis.Reference, meta4 metalink.Metalink) error {
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		err := analysisIdx.StoreAnalysisResult(ref, meta4)
+		if err != nil {
+			return fmt.Errorf("storing %d: %v", idxIdx, err)
+		}
+
+		return nil
+	}
+
+	return analysisdatastore.UnsupportedOperationErr
+}
+
+func (i *index) FlushCache() error {
+	for idxIdx, idx := range i.indices {
+		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
+		if !analysisSupported {
+			continue
+		}
+
+		err := analysisIdx.FlushCache()
+		if err != nil {
+			return fmt.Errorf("flushing %d: %v", idxIdx, err)
+		}
+	}
+
+	return nil
 }

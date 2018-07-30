@@ -17,7 +17,7 @@ type index struct {
 var _ datastore.Index = &index{}
 var _ analysisdatastore.Index = &index{}
 
-func New(indices ...datastore.Index) *index {
+func New(indices ...datastore.Index) datastore.AnalysisIndex {
 	return &index{
 		indices: indices,
 	}
@@ -63,7 +63,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	}
 
 	if !supported {
-		return nil, datastore.UnsupportedOperationErr
+		return nil, analysisdatastore.UnsupportedOperationErr
 	}
 
 	return results, nil
@@ -84,7 +84,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, meta4 metalink.Metal
 		return nil
 	}
 
-	return datastore.UnsupportedOperationErr
+	return analysisdatastore.UnsupportedOperationErr
 }
 
 func (i *index) FlushCache() error {

@@ -31,6 +31,30 @@ func FilterParamsFromArtifact(artifact stemcellversion.Artifact) FilterParams {
 	}
 }
 
+func FilterParamsFromReference(ref stemcellversion.Reference) FilterParams {
+	return FilterParams{
+		OSExpected: true,
+		OS:         ref.OS,
+
+		VersionExpected: true,
+		Version:         ref.Version,
+
+		IaaSExpected: true,
+		IaaS:         ref.IaaS,
+
+		HypervisorExpected: true,
+		Hypervisor:         ref.Hypervisor,
+
+		DiskFormatExpected: true,
+		DiskFormat:         ref.DiskFormat,
+
+		FlavorExpected: true,
+		Flavor:         ref.Flavor,
+
+		// Labels are relative/subjective; irrelevant to artifact identity
+	}
+}
+
 func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
 	f := FilterParams{}
 

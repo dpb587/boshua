@@ -11,7 +11,7 @@ import (
 type Artifact struct {
 	Name          string        `json:"name"`
 	Version       string        `json:"version"`
-	SourceTarball metalink.File `json:"source_tarball"`
+	SourceTarball metalink.File `json:"tarball"` // TODO rename to Tarball
 
 	Labels []string `json:"labels"`
 

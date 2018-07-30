@@ -12,10 +12,10 @@ import (
 func newStemcellAnalysis(index datastore.AnalysisIndex) *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
-			Name:        "Analysis",
+			Name:        "StemcellAnalysis",
 			Description: "Analysis results of a stemcell.",
 			Fields: graphql.Fields{
-				"results": analysisgraphql.NewResultsField(index),
+				"results": analysisgraphql.NewResultsField("Stemcell", index),
 				// "stemcellmanifestV1": github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/graphql.NewField(index),
 			},
 		},
@@ -64,6 +64,7 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 				},
 				"tarball": tarballField,
 				"analyzers": &graphql.Field{
+					Name: "StemcellAnalyzersField",
 					Type: graphql.NewList(graphql.String),
 					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 						if source, ok := p.Source.(stemcellversion.Artifact); ok {
@@ -74,6 +75,7 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 					},
 				},
 				"analysis": &graphql.Field{
+					Name: "StemcellAnalysisField",
 					Type: newStemcellAnalysis(index.(datastore.AnalysisIndex)), // TODO unsafe
 					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 						// better way?
@@ -87,7 +89,7 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 
 var ListedStemcell = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name:        "Stemcell",
+		Name:        "StemcellSummary",
 		Description: "A specific version of a stemcell.",
 		Fields: graphql.Fields{
 			"os":         osField,

@@ -5,14 +5,15 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis"
+	"github.com/dpb587/boshua/analysis/datastore"
 	artifactgraphql "github.com/dpb587/boshua/artifact/graphql"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/metalink"
 	"github.com/graphql-go/graphql"
 )
 
-func NewResultsField(index datastore.AnalysisIndex) *graphql.Field {
+func NewResultsField(namespace string, index datastore.Index) *graphql.Field {
 	return &graphql.Field{
+		Name: fmt.Sprintf("%sAnalysisResults", namespace),
 		Args: graphql.FieldConfigArgument{
 			"analyzers": &graphql.ArgumentConfig{
 				Type: graphql.NewNonNull(graphql.NewList(graphql.String)),
@@ -20,7 +21,7 @@ func NewResultsField(index datastore.AnalysisIndex) *graphql.Field {
 		},
 		Type: graphql.NewList(graphql.NewObject(
 			graphql.ObjectConfig{
-				Name:        "Stemcell",
+				Name:        fmt.Sprintf("%sAnalysisResult", namespace),
 				Description: "A specific version of a stemcell.",
 				Fields: graphql.Fields{
 					"analyzer": analyzerField,

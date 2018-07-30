@@ -34,6 +34,11 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading release index")
 	}
 
+	releaseComilationIndex, err := c.AppOpts.GetCompiledReleaseIndex("default")
+	if err != nil {
+		return errors.Wrap(err, "loading release index")
+	}
+
 	stemcellIndex, err := c.AppOpts.GetStemcellIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading stemcell index")
@@ -44,8 +49,13 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading analysis index")
 	}
 
+	scheduler, err := c.AppOpts.GetScheduler()
+	if err != nil {
+		return errors.Wrap(err, "loading scheduler")
+	}
+
 	stemcellversionserver.NewHandlers(stemcellIndex, analysisIndex).Mount(r)
-	handlers.NewGraphqlV2(releaseIndex, stemcellIndex).Mount(r)
+	handlers.NewGraphqlV2(releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)
 }

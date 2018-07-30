@@ -36,6 +36,7 @@ func (s Scheduler) cmd(args ...string) *exec.Cmd {
 }
 
 func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
+	// definitely not parallel-safe
 	return NewTask(s.cmd, tt), nil
 }
 

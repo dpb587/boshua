@@ -61,7 +61,7 @@ var ArtifactType = graphql.NewObject(
 
 var ArtifactHashType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name:        "Hash",
+		Name:        "ArtifactHash",
 		Description: "A checksum hash which can be used to verify a download.",
 		Fields: graphql.Fields{
 			"type": &graphql.Field{
@@ -76,7 +76,7 @@ var ArtifactHashType = graphql.NewObject(
 
 var ArtifactURLType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name:        "URL",
+		Name:        "ArtifactURL",
 		Description: "A URL for downloading the asset.",
 		Fields: graphql.Fields{
 			"url": &graphql.Field{
@@ -88,7 +88,7 @@ var ArtifactURLType = graphql.NewObject(
 
 var ArtifactMetaURLType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name:        "MetaURL",
+		Name:        "ArtifactMetaURL",
 		Description: "A Meta URL for downloading the asset.",
 		Fields: graphql.Fields{
 			"url": &graphql.Field{

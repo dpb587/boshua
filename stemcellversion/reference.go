@@ -12,7 +12,7 @@ type Reference struct {
 	OS         string `json:"os"`
 	Version    string `json:"version"`
 	Flavor     string `json:"flavor"`
-	// DiskFormat string `json:"disk_format"`
+	DiskFormat string `json:"disk_format"`
 }
 
 func (r Reference) FullName() string {

@@ -37,7 +37,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
     name
 		version
 		labels
-		source_tarball {
+		tarball {
 			name
 			size
 			hashes {
