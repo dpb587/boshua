@@ -20,7 +20,7 @@ var FilterArgs = graphql.FieldConfigArgument{
 func NewQuery(index datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Name: "ReleaseCompilationQuery",
-		Type: newCompilationObject(index),
+		Type: graphql.NewList(newCompilationObject(index)),
 		Args: FilterArgs,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			release, ok := p.Source.(releaseversion.Artifact)
@@ -43,12 +43,7 @@ func NewQuery(index datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "finding compilation")
 			}
 
-			result, err := datastore.RequireSingleResult(results)
-			if err != nil {
-				return nil, errors.Wrap(err, "finding compilation")
-			}
-
-			return result, err
+			return results, err
 		},
 	}
 }

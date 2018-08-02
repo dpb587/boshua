@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/cheggaaa/pb"
@@ -101,9 +102,10 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 		return filepath.Join(
 			i.config.StemcellPrefix,
 			"analysis",
-			subjectRef.FullName(),
+			subjectRef.OS,
 			subjectRef.Version,
-			fmt.Sprintf("%s.meta4", ref.Analyzer),
+			strings.TrimSuffix(fmt.Sprintf("%s-%s-%s", subjectRef.IaaS, subjectRef.Hypervisor, subjectRef.DiskFormat), "-"),
+			fmt.Sprintf("%s.%s.meta4", ref.Analyzer, subjectRef.Flavor),
 		), nil
 	}
 

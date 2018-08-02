@@ -10,21 +10,21 @@ import (
 )
 
 func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *graphql.Field {
+	args := stemcellversiongraphql.NewFilterArgs()
+	args["analyzer"] = &graphql.ArgumentConfig{
+		Type: graphql.String,
+	}
+
 	return &graphql.Field{
-		Type: graphql.NewObject(
-			graphql.ObjectConfig{
-				Name:        "ScheduledTask",
-				Description: "A scheduled task status.",
-				Fields: graphql.Fields{
-					"status": &graphql.Field{
-						Type: graphql.String,
-					},
-				},
-			},
-		),
+		Type:        scheduledTask,
 		Description: "Schedule stemcell analysis",
-		Args:        stemcellversiongraphql.FilterArgs,
+		Args:        args,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			analyzer, ok := p.Args["analyzer"].(string)
+			if !ok {
+				return nil, errors.New("parsing args: analyzer: invalid")
+			}
+
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {
 				return nil, errors.Wrap(err, "parsing args")
@@ -42,18 +42,23 @@ func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *gra
 
 			analysisRef := analysis.Reference{
 				Subject:  result,
-				Analyzer: analysis.AnalyzerName("stemcellpackages.v1"), // TODO arg
+				Analyzer: analysis.AnalyzerName(analyzer),
 			}
 
-			task, err := s.ScheduleAnalysis(analysisRef)
+			scheduledTask, err := s.ScheduleAnalysis(analysisRef)
 			if err != nil {
 				return nil, errors.Wrap(err, "scheduling task")
 			}
 
-			status, err := task.Status()
+			status, err := scheduledTask.Status()
 			if err != nil {
 				return nil, errors.Wrap(err, "checking status")
 			}
+
+			// // TODO flush cache?
+			// if status == task.StatusSucceeded {
+			// 	index.FlushCache()
+			// }
 
 			return map[string]interface{}{
 				"status": status,

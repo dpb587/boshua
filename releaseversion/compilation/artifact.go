@@ -1,12 +1,18 @@
 package compilation
 
 import (
+	"github.com/dpb587/boshua/osversion"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/metalink"
 )
 
 type Artifact struct {
-	reference Reference
-	Tarball   metalink.File `json:"tarball"`
+	Release releaseversion.Reference `json:"release"`
+	OS      osversion.Reference      `json:"os"`
+
+	Labels []string `json:"labels"`
+
+	Tarball metalink.File `json:"tarball"`
 }
 
 func (s Artifact) MetalinkFile() metalink.File {
@@ -14,5 +20,8 @@ func (s Artifact) MetalinkFile() metalink.File {
 }
 
 func (s Artifact) Reference() interface{} {
-	return s.reference
+	return Reference{
+		ReleaseVersion: s.Release,
+		OSVersion:      s.OS,
+	}
 }

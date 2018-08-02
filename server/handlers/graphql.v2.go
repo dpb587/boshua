@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
@@ -52,6 +51,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 	var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
+			"scheduleReleaseAnalysis":  schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex),
 			"scheduleStemcellAnalysis": schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex),
 		},
 	})
@@ -68,15 +68,13 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 	}
 
 	m.HandleFunc("/api/v2/graphql", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("")
-
 		requestBytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			// TODO !panic
 			panic(err)
 		}
 
-		fmt.Printf("< %s\n", strings.TrimSpace(string(requestBytes)))
+		// fmt.Printf("< %s\n", strings.TrimSpace(string(requestBytes)))
 
 		var requestBodyObj struct {
 			Query     string                 `json:"query"`
@@ -102,12 +100,13 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		responseBytes, err := json.MarshalIndent(result, "", "  ")
+		// responseBytes, err := json.MarshalIndent(result, "", "  ")
+		responseBytes, err := json.Marshal(result)
 		if err != nil {
 			panic(err) // TODO !panic
 		}
 
-		fmt.Printf("> %s\n", responseBytes)
+		// fmt.Printf("> %s\n", responseBytes)
 
 		w.Write(responseBytes)
 		w.Write([]byte("\n"))

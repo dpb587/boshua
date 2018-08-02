@@ -22,7 +22,7 @@ type Cmd struct {
 	AnalysisCmd *analysis.Cmd       `command:"analysis" description:"For analyzing artifacts"`
 	ArtifactCmd *artifact.Cmd       `command:"artifact" description:"For referencing artifacts"`
 	ReleaseCmd  *releaseversion.Cmd `command:"release" description:"For working with releases" subcommands-optional:"true"`
-	// DeploymentCmd      *deployment.Cmd             `command:"deployment" description:"For working with deployments"`
+	// DeploymentCmd *deployment.Cmd      `command:"deployment" description:"For working with deployments"`
 	StemcellCmd *stemcellversion.Cmd `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 
 	ServerCmd server.Cmd `command:"server" description:"For running an API server for remote access"`

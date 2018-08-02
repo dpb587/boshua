@@ -214,12 +214,12 @@ Lookup a stemcell...
 
 ### Web UI
 
-> http://localhost:4508/webui/
+> http://localhost:4508/ui/
 
 *TODO experimental/playing*
 
- * [releases.html](http://localhost:4508/webui/releases.html)
- * [stemcells.html](http://localhost:4508/webui/stemcells.html)
+ * [releases.html](http://localhost:4508/ui/releases.html)
+ * [stemcells.html](http://localhost:4508/ui/stemcells.html)
 
 
 ## Concepts

@@ -9,9 +9,11 @@ import (
 	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
 	"github.com/dpb587/boshua/stemcellversion"
-	"github.com/dpb587/boshua/stemcellversion/datastore"
-	datastoregraphql "github.com/dpb587/boshua/stemcellversion/graphql"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	stemcellversiongraphql "github.com/dpb587/boshua/stemcellversion/graphql"
 	"github.com/dpb587/boshua/task"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/machinebox/graphql"
@@ -36,25 +38,16 @@ func New(config Config, logger logrus.FieldLogger) schedulerpkg.Scheduler {
 }
 
 func (s scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.ScheduledTask, error) {
-	var mutationFilter, mutationVarsTypes string
-	var mutationVars map[string]interface{}
-
-	switch analysisSubject := analysisRef.Subject.(type) {
+	switch subject := analysisRef.Subject.(type) {
 	case stemcellversion.Artifact:
-		mutationFilter, mutationVarsTypes, mutationVars = datastoregraphql.BuildListQueryArgs(datastore.FilterParamsFromArtifact(analysisSubject))
+		return s.scheduleStemcellAnalysis(subject, analysisRef.Analyzer)
 	case releaseversion.Artifact:
-		panic("TODO")
+		return s.scheduleReleaseAnalysis(subject, analysisRef.Analyzer)
 	case compilation.Artifact:
 		panic("TODO")
 	default:
 		panic(errors.New("unsupported analysis subject")) // TODO panic?
 	}
-
-	return s.schedule(
-		// TODO analysis
-		fmt.Sprintf(`mutation ScheduleAnalysis(%s) { scheduleStemcellAnalysis(%s) { status } }`, mutationVarsTypes, mutationFilter),
-		mutationVars,
-	)
 }
 
 func (s scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.ScheduledTask, error) {
@@ -71,14 +64,34 @@ func (s scheduler) schedule(mutationQuery string, mutationVars map[string]interf
 				req.Var(k, v)
 			}
 
-			var resp mutationScheduleStemcellAnalysis
+			var resp mutationScheduleAnalysis
 
 			err := s.client.Execute(req, &resp)
 			if err != nil {
 				return task.StatusUnknown, errors.Wrap(err, "executing remote request")
 			}
 
-			return resp.ScheduledTask.Status, nil
+			return resp.Status(), nil
 		},
 	), nil
+}
+
+func (s scheduler) scheduleStemcellAnalysis(subject stemcellversion.Artifact, analyzer analysis.AnalyzerName) (task.ScheduledTask, error) {
+	mutationFilter, mutationVarsTypes, mutationVars := stemcellversiongraphql.BuildListQueryArgs(stemcellversiondatastore.FilterParamsFromArtifact(subject))
+	mutationVars["analyzer"] = analyzer
+
+	return s.schedule(
+		fmt.Sprintf(`mutation _(%s, $analyzer: String!) { scheduleStemcellAnalysis(%s, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
+		mutationVars,
+	)
+}
+
+func (s scheduler) scheduleReleaseAnalysis(subject releaseversion.Artifact, analyzer analysis.AnalyzerName) (task.ScheduledTask, error) {
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromArtifact(subject))
+	mutationVars["analyzer"] = analyzer
+
+	return s.schedule(
+		fmt.Sprintf(`mutation _(%s, $analyzer: String!) { scheduleReleaseAnalysis(%s, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
+		mutationVars,
+	)
 }

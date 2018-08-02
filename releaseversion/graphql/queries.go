@@ -7,19 +7,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-var FilterArgs = graphql.FieldConfigArgument{
-	"name":     nameArgument,
-	"version":  versionArgument,
-	"checksum": checksumArgument,
-	"uri":      uriArgument,
-	"labels":   labelsArgument,
+func NewFilterArgs() graphql.FieldConfigArgument {
+	return graphql.FieldConfigArgument{
+		"name":     nameArgument,
+		"version":  versionArgument,
+		"checksum": checksumArgument,
+		"uri":      uriArgument,
+		"labels":   labelsArgument,
+	}
 }
 
 func NewListQuery(index datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Name: "ReleaseListQuery",
 		Type: graphql.NewList(ListedRelease),
-		Args: FilterArgs,
+		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {
@@ -36,7 +38,7 @@ func NewQuery(index datastore.Index, compilationIndex compilationdatastore.Index
 	return &graphql.Field{
 		Name: "ReleaseQuery",
 		Type: newReleaseObject(index, compilationIndex),
-		Args: FilterArgs,
+		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {

@@ -71,7 +71,7 @@ func newReleaseObject(index datastore.Index, compilationIndex compilationdatasto
 					},
 				},
 				// TODO compilations for multiple
-				"compilation": compilationgraphql.NewQuery(compilationIndex),
+				"compilations": compilationgraphql.NewQuery(compilationIndex),
 			},
 		},
 	)

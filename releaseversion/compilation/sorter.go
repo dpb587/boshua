@@ -21,18 +21,18 @@ func (s sorter) Swap(i, j int) {
 }
 
 func (s sorter) Less(i, j int) bool {
-	arn, brn := s[i].reference.ReleaseVersion.Name, s[j].reference.ReleaseVersion.Name
+	arn, brn := s[i].Release.Name, s[j].Release.Name
 	if arn == brn {
-		arv, brv := s[i].reference.ReleaseVersion.Version, s[j].reference.ReleaseVersion.Version
+		arv, brv := s[i].Release.Version, s[j].Release.Version
 		if arv == brv {
-			aon, bon := s[i].reference.OSVersion.Name, s[j].reference.OSVersion.Name
+			aon, bon := s[i].OS.Name, s[j].OS.Name
 			if aon == bon {
-				aov := s[i].reference.OSVersion.Semver()
+				aov := s[i].OS.Semver()
 				if aov == nil {
 					return false
 				}
 
-				bov := s[j].reference.OSVersion.Semver()
+				bov := s[j].OS.Semver()
 				if bov == nil {
 					return true
 				}
@@ -43,12 +43,12 @@ func (s sorter) Less(i, j int) bool {
 			return strings.Compare(aon, bon) < 0
 		}
 
-		av := s[i].reference.ReleaseVersion.Semver()
+		av := s[i].Release.Semver()
 		if av == nil {
 			return false
 		}
 
-		bv := s[j].reference.ReleaseVersion.Semver()
+		bv := s[j].Release.Semver()
 		if bv == nil {
 			return true
 		}

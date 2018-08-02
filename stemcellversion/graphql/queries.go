@@ -6,21 +6,23 @@ import (
 	"github.com/pkg/errors"
 )
 
-var FilterArgs = graphql.FieldConfigArgument{
-	"os":         osArgument,
-	"version":    versionArgument,
-	"iaas":       iaasArgument,
-	"hypervisor": hypervisorArgument,
-	"diskFormat": diskFormatArgument,
-	"flavor":     flavorArgument,
-	"labels":     labelsArgument,
+func NewFilterArgs() graphql.FieldConfigArgument {
+	return graphql.FieldConfigArgument{
+		"os":         osArgument,
+		"version":    versionArgument,
+		"iaas":       iaasArgument,
+		"hypervisor": hypervisorArgument,
+		"diskFormat": diskFormatArgument,
+		"flavor":     flavorArgument,
+		"labels":     labelsArgument,
+	}
 }
 
 func NewListQuery(index datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Name: "StemcellListQuery",
 		Type: graphql.NewList(ListedStemcell),
-		Args: FilterArgs,
+		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {
@@ -36,7 +38,7 @@ func NewQuery(index datastore.Index) *graphql.Field {
 	return &graphql.Field{
 		Name: "StemcellQuery",
 		Type: newStemcellObject(index),
-		Args: FilterArgs,
+		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {

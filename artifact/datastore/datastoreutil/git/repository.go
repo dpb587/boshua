@@ -47,7 +47,10 @@ func (i *Repository) Reload() error {
 
 func (i *Repository) ForceReload() error {
 	i.lastReloaded = time.Now()
+
 	var args []string
+
+	i.logger.Debug("reloading repository")
 
 	if _, err := os.Stat(i.Path(".git")); os.IsNotExist(err) {
 		args = []string{"clone", "--quiet", i.config.Repository}
@@ -78,39 +81,14 @@ func (i *Repository) ForceReload() error {
 
 	// TODO reset to handle force push?
 
-	return nil
-	// cmd := exec.Command("git")
-	//
-	// outbuf := bytes.NewBuffer(nil)
-	// errbuf := bytes.NewBuffer(nil)
-	//
-	// cmd.Stdout = outbuf
-	// cmd.Stderr = errbuf
-	//
-	// if _, err := os.Stat(i.config.LocalPath); os.IsNotExist(err) {
-	// 	cmd.Args = []string{"clone", strings.TrimPrefix(i.config.Repository, "git+"), i.config.LocalPath}
-	// } else {
-	// 	cmd.Dir = i.config.LocalPath
-	// 	cmd.Args = []string{"pull", "--ff-only"}
-	// }
+	i.logger.Info("reloaded repository")
 
-	// err := cmd.Run()
-	// if err != nil {
-	// 	return false, errors.Wrap(err, "pulling repository")
-	// }
-	//
-	// if strings.Contains(outbuf.String(), "Already up to date.") {
-	// 	i.logger.Debugf("repository already up to date")
-	//
-	// 	return false, nil
-	// }
-	//
-	// i.logger.Debugf("repository updated")
-	//
-	// return true, nil
+	return nil
 }
 
 func (i *Repository) Commit(files map[string][]byte, message string) error {
+	i.logger.Debug("committing changes")
+
 	err := i.ForceReload()
 	if err != nil {
 		return errors.Wrap(err, "reloading")
@@ -152,11 +130,17 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 		}
 	}
 
+	i.logger.Info("committed changes")
+
 	if !i.config.SkipPush {
+		i.logger.Debug("pushing repository")
+
 		err := i.run("push", i.config.Repository, fmt.Sprintf("HEAD:%s", i.config.Branch))
 		if err != nil {
 			return errors.Wrap(err, "pushing")
 		}
+
+		i.logger.Info("pushed repository")
 	}
 
 	return nil

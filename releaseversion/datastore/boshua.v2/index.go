@@ -32,8 +32,16 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 
 func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
-	cmd := fmt.Sprintf(`query (%s) {
-  releases (%s) {
+	if len(fQueryVarsTypes) > 0 {
+		fQueryVarsTypes = fmt.Sprintf(`(%s)`, fQueryVarsTypes)
+	}
+
+	if len(fQueryFilter) > 0 {
+		fQueryFilter = fmt.Sprintf(`(%s)`, fQueryFilter)
+	}
+
+	cmd := fmt.Sprintf(`query %s {
+  releases %s {
     name
 		version
 		labels

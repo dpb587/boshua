@@ -226,7 +226,7 @@
                 <td>{{ props.item.name}}</td>
                 <td>{{ props.item.version }}</td>
                 <td>
-                  <a :href="props.item.source_tarball.urls[0].url">Download</a>
+                  <a :href="props.item.tarball.urls[0].url">Download</a>
                 </td>
               </template>
               <v-alert slot="no-results" :value="true" color="error" icon="warning">
@@ -252,7 +252,7 @@
               {
                 text: 'Download',
                 sortable: true,
-                value: 'source_tarball'
+                value: 'tarball'
               }
             ],
             loading: false,
@@ -268,7 +268,7 @@
             .post(
               '/api/v2/graphql',
               {
-                query: `{releases{name,version,source_tarball{name,hashes{type,hash},urls{url}}}}`
+                query: `{releases{name,version,tarball{name,hashes{type,hash},urls{url}}}}`
               }
             )
             .then(function(response) {

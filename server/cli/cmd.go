@@ -27,7 +27,7 @@ func (c *Cmd) Execute(extra []string) error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) })).Methods(http.MethodGet)
-	r.PathPrefix("/webui/").Handler(http.StripPrefix("/webui/", http.FileServer(http.Dir("webui")))).Methods(http.MethodGet) // TODO path assumptions
+	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", http.FileServer(http.Dir("ui")))).Methods(http.MethodGet) // TODO path assumptions
 
 	releaseIndex, err := c.AppOpts.GetReleaseIndex("default")
 	if err != nil {

@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
+	"github.com/dpb587/boshua/osversion"
 	osversiongraphql "github.com/dpb587/boshua/osversion/graphql"
+	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
@@ -34,28 +37,51 @@ func New(config Config, logger logrus.FieldLogger) *Index {
 func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO this should be using "compilations", not singular compilation
 	fReleaseQueryFilter, fReleaseQueryVarsTypes, fReleaseQueryVars := releaseversiongraphql.BuildListQueryArgs(f.Release)
-	fOSQueryFilter, fOSQueryVarsTypes, fOSQueryVars := osversiongraphql.BuildListQueryArgs(f.OS)
-	cmd := fmt.Sprintf(`query (%s, %s) {
-  release (%s) {
-		compilation (%s) {
-			tarball {
-				name
-				size
-				hashes {
-					type
-					hash
-				}
-				urls {
-					url
-				}
-				metaurls {
-					url
-					mediatype
-				}
-			}
-		}
+	if len(fReleaseQueryFilter) > 0 {
+		fReleaseQueryFilter = fmt.Sprintf(`(%s)`, fReleaseQueryFilter)
 	}
-}`, fReleaseQueryVarsTypes, fOSQueryVarsTypes, fReleaseQueryFilter, fOSQueryFilter)
+
+	fOSQueryFilter, fOSQueryVarsTypes, fOSQueryVars := osversiongraphql.BuildListQueryArgs(f.OS)
+	if len(fOSQueryFilter) > 0 {
+		fOSQueryFilter = fmt.Sprintf(`(%s)`, fOSQueryFilter)
+	}
+
+	fQueryVarsTypes := strings.Join([]string{fReleaseQueryVarsTypes, fOSQueryVarsTypes}, ", ")
+	if len(fQueryVarsTypes) > 0 {
+		fQueryVarsTypes = fmt.Sprintf(`(%s)`, fQueryVarsTypes)
+	}
+
+	// TODO weird singular vs multiple queries
+
+	cmd := fmt.Sprintf(`query %s {
+  release %s {
+		name
+		version
+		labels
+
+    compilations %s {
+			os
+			version
+			labels
+
+      tarball {
+        name
+        size
+        hashes {
+          type
+          hash
+        }
+        urls {
+          url
+        }
+        metaurls {
+          url
+          mediatype
+        }
+      }
+    }
+  }
+}`, fQueryVarsTypes, fReleaseQueryFilter, fOSQueryFilter)
 
 	req := graphql.NewRequest(cmd)
 
@@ -74,7 +100,21 @@ func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		return nil, errors.Wrap(err, "executing remote request")
 	}
 
-	return []compilation.Artifact{resp.Release.Compilation}, nil
+	var results []compilation.Artifact
+
+	for _, compl := range resp.Release.Compilations {
+		results = append(results, compilation.Artifact{
+			OS: osversion.Reference{Name: compl.OS, Version: compl.Version},
+			Release: releaseversion.Reference{
+				Name:    resp.Release.Name,
+				Version: resp.Release.Version,
+			},
+			Tarball: compl.Tarball,
+			Labels:  compl.Labels,
+		})
+	}
+
+	return results, nil
 }
 
 func (i *Index) StoreCompilationArtifact(_ compilation.Artifact) error {

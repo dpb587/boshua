@@ -25,6 +25,6 @@ func WaitForScheduledTask(t ScheduledTask, callback StatusChangeCallback) (Statu
 			return status, err
 		}
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
