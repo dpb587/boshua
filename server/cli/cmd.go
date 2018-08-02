@@ -27,7 +27,20 @@ func (c *Cmd) Execute(extra []string) error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) })).Methods(http.MethodGet)
-	r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", http.FileServer(http.Dir("ui")))).Methods(http.MethodGet) // TODO path assumptions
+
+	if cfg.Mount.CLI != "" {
+		r.PathPrefix("/cli/").Handler(http.StripPrefix("/cli/", http.FileServer(http.Dir(cfg.Mount.CLI)))).Methods(http.MethodGet)
+	}
+
+	if cfg.Mount.UI != "" {
+		r.PathPrefix("/ui/").Handler(http.StripPrefix("/ui/", http.FileServer(http.Dir(cfg.Mount.UI)))).Methods(http.MethodGet)
+	}
+
+	if cfg.Redirect.Root != "" {
+		r.HandleFunc("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, cfg.Redirect.Root, http.StatusFound)
+		}))
+	}
 
 	releaseIndex, err := c.AppOpts.GetReleaseIndex("default")
 	if err != nil {

@@ -16,8 +16,18 @@ type GeneralConfig struct {
 }
 
 type ServerConfig struct {
-	Bind string          `yaml:"bind"`
-	TLS  ServerTLSConfig `yaml:"tls"`
+	Bind     string               `yaml:"bind"`
+	Mount    ServerMountConfig    `yaml:"mount"`
+	Redirect ServerRedirectConfig `yaml:"redirect"`
+}
+
+type ServerMountConfig struct {
+	UI  string `yaml:"ui"`
+	CLI string `yaml:"cli"`
+}
+
+type ServerRedirectConfig struct {
+	Root string `yaml:"root"`
 }
 
 type ServerTLSConfig struct {

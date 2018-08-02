@@ -60,7 +60,7 @@ func LoadAnalysis(
 			return analysis.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 
-		err = analysisIndex.FlushCache()
+		err = analysisIndex.FlushAnalysisCache()
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "flushing cache")
 		}

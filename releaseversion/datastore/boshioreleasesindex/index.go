@@ -18,23 +18,23 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type Index struct {
+type index struct {
 	logger     logrus.FieldLogger
 	config     Config
 	repository *git.Repository
 }
 
-var _ datastore.Index = &Index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) *Index {
-	return &Index{
-		logger:     logger.WithField("build.package", reflect.TypeOf(Index{}).PkgPath()),
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
+	return &index{
+		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
 		repository: git.NewRepository(logger, config.RepositoryConfig),
 	}
 }
 
-func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	err := i.repository.Reload()
 	if err != nil {
 		return nil, errors.Wrap(err, "reloading repository")
@@ -110,7 +110,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 	return results, nil
 }
 
-func (i *Index) GetLabels() ([]string, error) {
+func (i *index) GetLabels() ([]string, error) {
 	// TODO optimize; don't need to load all artifacts
 	all, err := i.GetArtifacts(datastore.FilterParams{})
 	if err != nil {
@@ -132,4 +132,9 @@ func (i *Index) GetLabels() ([]string, error) {
 	}
 
 	return labels, nil
+}
+
+func (i *index) FlushCache() error {
+	// TODO defer reload?
+	return i.repository.ForceReload()
 }

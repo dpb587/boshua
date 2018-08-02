@@ -35,5 +35,9 @@ func (i *analysisIndex) StoreAnalysisResult(ref analysis.Reference, meta4 metali
 }
 
 func (i *analysisIndex) FlushCache() error {
-	return i.analysisIndex.FlushCache()
+	return i.index.FlushCache()
+}
+
+func (i *analysisIndex) FlushAnalysisCache() error {
+	return i.analysisIndex.FlushAnalysisCache()
 }

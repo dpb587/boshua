@@ -38,6 +38,10 @@ func (i *analysisIndex) StoreAnalysisResult(ref analysis.Reference, meta4 metali
 	return i.analysisIndex.StoreAnalysisResult(ref, meta4)
 }
 
-func (i *analysisIndex) FlushCache() error {
-	return i.analysisIndex.FlushCache()
+func (i *analysisIndex) FlushCompilationCache() error {
+	return i.index.FlushCompilationCache()
+}
+
+func (i *analysisIndex) FlushAnalysisCache() error {
+	return i.analysisIndex.FlushAnalysisCache()
 }

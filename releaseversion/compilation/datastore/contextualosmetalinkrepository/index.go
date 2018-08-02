@@ -141,3 +141,8 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 		),
 	)
 }
+
+func (i *index) FlushCompilationCache() error {
+	// TODO defer reload?
+	return i.repository.ForceReload()
+}

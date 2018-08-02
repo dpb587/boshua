@@ -36,9 +36,9 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	return results, nil
 }
 
-func (i *index) FlushCache() error {
+func (i *index) FlushAnalysisCache() error {
 	for idxIdx, idx := range i.aggregated {
-		err := idx.FlushCache()
+		err := idx.FlushAnalysisCache()
 		if err != nil {
 			return errors.Wrapf(err, "flushing %d", idxIdx)
 		}

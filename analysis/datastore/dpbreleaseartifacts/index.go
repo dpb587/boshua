@@ -73,7 +73,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	}, nil
 }
 
-func (i *index) FlushCache() error {
+func (i *index) FlushAnalysisCache() error {
 	// TODO defer reload?
 	return i.repository.ForceReload()
 }

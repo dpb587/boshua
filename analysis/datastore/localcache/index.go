@@ -106,7 +106,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, source metalink.Meta
 	return nil
 }
 
-func (i *index) FlushCache() error {
+func (i *index) FlushAnalysisCache() error {
 	return nil
 }
 

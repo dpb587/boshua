@@ -14,23 +14,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Index struct {
+type index struct {
 	logger logrus.FieldLogger
 	config Config
 	client *boshuaV2.Client
 }
 
-var _ datastore.Index = &Index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) *Index {
-	return &Index{
-		logger: logger.WithField("build.package", reflect.TypeOf(Index{}).PkgPath()),
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
+	return &index{
+		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config: config,
 		client: boshuaV2.NewClient(http.DefaultClient, config.BoshuaConfig, logger),
 	}
 }
 
-func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
 	if len(fQueryVarsTypes) > 0 {
 		fQueryVarsTypes = fmt.Sprintf(`(%s)`, fQueryVarsTypes)
@@ -79,6 +79,10 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 	return resp.Releases, nil
 }
 
-func (i *Index) GetLabels() ([]string, error) {
+func (i *index) GetLabels() ([]string, error) {
 	return nil, errors.New("TODO")
+}
+
+func (i *index) FlushCache() error {
+	return nil
 }

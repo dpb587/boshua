@@ -12,6 +12,7 @@ type Factory interface {
 type Index interface {
 	GetArtifacts(f FilterParams) ([]releaseversion.Artifact, error)
 	GetLabels() ([]string, error)
+	FlushCache() error
 }
 
 type AnalysisIndex interface {

@@ -72,7 +72,7 @@ func (i *index) StoreAnalysisResult(_ analysis.Reference, _ metalink.Metalink) e
 	return datastore.UnsupportedOperationErr
 }
 
-func (i *index) FlushCache() error {
+func (i *index) FlushAnalysisCache() error {
 	return nil // unsupported
 }
 

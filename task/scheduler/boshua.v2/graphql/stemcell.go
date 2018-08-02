@@ -2,8 +2,10 @@ package graphql
 
 import (
 	"github.com/dpb587/boshua/analysis"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversiongraphql "github.com/dpb587/boshua/stemcellversion/graphql"
+	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
@@ -55,10 +57,15 @@ func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *gra
 				return nil, errors.Wrap(err, "checking status")
 			}
 
-			// // TODO flush cache?
-			// if status == task.StatusSucceeded {
-			// 	index.FlushCache()
-			// }
+			if status == task.StatusSucceeded {
+				// TODO better way to avoid repeated flushes?
+				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
+					err = analysisIndex.FlushAnalysisCache()
+					if err != nil {
+						return nil, errors.Wrap(err, "flushing cache")
+					}
+				}
+			}
 
 			return map[string]interface{}{
 				"status": status,

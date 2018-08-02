@@ -101,14 +101,25 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, meta4 metalink.Metal
 	return analysisdatastore.UnsupportedOperationErr
 }
 
-func (i *index) FlushCache() error {
+func (i *index) FlushCompilationCache() error {
+	for idxIdx, idx := range i.indices {
+		err := idx.FlushCompilationCache()
+		if err != nil {
+			return fmt.Errorf("flushing %d: %v", idxIdx, err)
+		}
+	}
+
+	return nil
+}
+
+func (i *index) FlushAnalysisCache() error {
 	for idxIdx, idx := range i.indices {
 		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
 		if !analysisSupported {
 			continue
 		}
 
-		err := analysisIdx.FlushCache()
+		err := analysisIdx.FlushAnalysisCache()
 		if err != nil {
 			return fmt.Errorf("flushing %d: %v", idxIdx, err)
 		}

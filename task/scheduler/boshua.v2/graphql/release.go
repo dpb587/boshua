@@ -2,8 +2,10 @@ package graphql
 
 import (
 	"github.com/dpb587/boshua/analysis"
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
+	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
@@ -45,14 +47,24 @@ func NewReleaseAnalysisField(s scheduler.Scheduler, index datastore.Index) *grap
 				Analyzer: analysis.AnalyzerName(analyzer),
 			}
 
-			task, err := s.ScheduleAnalysis(analysisRef)
+			scheduledTask, err := s.ScheduleAnalysis(analysisRef)
 			if err != nil {
 				return nil, errors.Wrap(err, "scheduling task")
 			}
 
-			status, err := task.Status()
+			status, err := scheduledTask.Status()
 			if err != nil {
 				return nil, errors.Wrap(err, "checking status")
+			}
+
+			if status == task.StatusSucceeded {
+				// TODO better way to avoid repeated flushes?
+				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
+					err = analysisIndex.FlushAnalysisCache()
+					if err != nil {
+						return nil, errors.Wrap(err, "flushing cache")
+					}
+				}
 			}
 
 			return map[string]interface{}{

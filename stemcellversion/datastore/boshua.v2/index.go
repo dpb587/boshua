@@ -82,3 +82,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 
 	return resp.Stemcells, nil
 }
+
+func (i *index) FlushCache() error {
+	return nil
+}

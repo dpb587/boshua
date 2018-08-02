@@ -13,6 +13,7 @@ type Factory interface {
 type Index interface {
 	GetCompilationArtifacts(f FilterParams) ([]compilation.Artifact, error)
 	StoreCompilationArtifact(compilation.Artifact) error
+	FlushCompilationCache() error
 }
 
 type AnalysisIndex interface {

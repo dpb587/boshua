@@ -11,7 +11,7 @@ type Factory interface {
 
 type Index interface {
 	GetArtifacts(f FilterParams) ([]stemcellversion.Artifact, error)
-	// TODO add FlushCache?
+	FlushCache() error
 }
 
 type AnalysisIndex interface {

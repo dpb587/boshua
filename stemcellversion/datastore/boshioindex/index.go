@@ -88,3 +88,8 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 
 	return results, nil
 }
+
+func (i *index) FlushCache() error {
+	// TODO defer reload?
+	return i.repository.ForceReload()
+}

@@ -18,23 +18,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Index struct {
+type index struct {
 	logger logrus.FieldLogger
 	config Config
 	client *boshuaV2.Client
 }
 
-var _ datastore.Index = &Index{}
+var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) *Index {
-	return &Index{
-		logger: logger.WithField("build.package", reflect.TypeOf(Index{}).PkgPath()),
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
+	return &index{
+		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config: config,
 		client: boshuaV2.NewClient(http.DefaultClient, config.BoshuaConfig, logger),
 	}
 }
 
-func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
+func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO this should be using "compilations", not singular compilation
 	fReleaseQueryFilter, fReleaseQueryVarsTypes, fReleaseQueryVars := releaseversiongraphql.BuildListQueryArgs(f.Release)
 	if len(fReleaseQueryFilter) > 0 {
@@ -117,6 +117,10 @@ func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 	return results, nil
 }
 
-func (i *Index) StoreCompilationArtifact(_ compilation.Artifact) error {
+func (i *index) StoreCompilationArtifact(_ compilation.Artifact) error {
 	return datastore.UnsupportedOperationErr
+}
+
+func (i *index) FlushCompilationCache() error {
+	return nil
 }

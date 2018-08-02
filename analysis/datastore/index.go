@@ -8,5 +8,5 @@ import (
 type Index interface {
 	GetAnalysisArtifacts(analysis.Reference) ([]analysis.Artifact, error)
 	StoreAnalysisResult(analysis.Reference, metalink.Metalink) error
-	FlushCache() error // TODO rename? intent is force reload next time
+	FlushAnalysisCache() error // TODO rename? intent is force reload next time
 }
