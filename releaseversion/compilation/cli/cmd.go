@@ -52,6 +52,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	cmd.OpsFileCmd.CmdOpts = cmdOpts
 	cmd.UploadReleaseCmd.CmdOpts = cmdOpts
 	cmd.ExportReleaseCmd.CmdOpts = cmdOpts
+	cmd.DownloadCmd.CmdOpts = cmdOpts
 
 	return cmd
 }
