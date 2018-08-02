@@ -60,7 +60,10 @@ func (f *Fly) RunWithStdin(stdin io.Reader, command string, args ...string) ([]b
 
 		var retryable bool
 
-		if strings.Contains(string(errbuf.Bytes()), "not authorized.") {
+		if strings.Contains(string(errbuf.Bytes()), "unknown target") {
+			f.needsLogin = true
+			retryable = true
+		} else if strings.Contains(string(errbuf.Bytes()), "not authorized.") {
 			f.needsLogin = true
 			retryable = true
 		} else if strings.Contains(string(errbuf.Bytes()), "out of sync with the target") {

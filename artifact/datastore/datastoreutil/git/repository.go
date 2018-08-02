@@ -25,6 +25,8 @@ func NewRepository(
 	logger logrus.FieldLogger,
 	config RepositoryConfig,
 ) *Repository {
+	logger.Infof("initialized (repository: %s; branch: %s; local: %s)", config.Repository, config.Branch, config.LocalPath)
+
 	return &Repository{
 		logger: logger,
 		config: config,
@@ -74,7 +76,6 @@ func (i *Repository) ForceReload() error {
 	}
 
 	err := i.run(args...)
-
 	if err != nil {
 		return errors.Wrap(err, "fetching repository")
 	}
