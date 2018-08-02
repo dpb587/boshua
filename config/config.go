@@ -92,7 +92,7 @@ func (c *Config) ApplyDefaults() {
 		}
 
 		if len(c.CompiledReleases) == 0 { // TODO check for name = default instead?
-			c.Releases = append(c.CompiledReleases, defaultServer)
+			c.CompiledReleases = append(c.CompiledReleases, defaultServer)
 		}
 
 		if len(c.Stemcells) == 0 { // TODO check for name = default instead?
