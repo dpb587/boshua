@@ -30,7 +30,8 @@ import (
 )
 
 type Opts struct {
-	Config string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
+	Config        string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
+	DefaultServer string `long:"default-server" description:"Default boshua API server" env:"BOSHUA_SERVER"`
 
 	Quiet    bool          `long:"quiet" description:"Suppress informational output"`
 	LogLevel args.LogLevel `long:"log-level" description:"Show additional levels of log messages" default:"FATAL" env:"BOSHUA_LOG_LEVEL"`
@@ -44,8 +45,10 @@ type Opts struct {
 	osIndex              osversiondatastore.Index
 }
 
-func (o *Opts) getConfigPath() string {
+func (o *Opts) getConfigPath() (string, bool) {
 	configPath := o.Config
+
+	var isDefault = configPath == "~/.config/boshua/config.yml"
 
 	if strings.HasPrefix(configPath, "~/") {
 		configPath = filepath.Join(os.Getenv("HOME"), configPath[1:])
@@ -56,7 +59,7 @@ func (o *Opts) getConfigPath() string {
 		panic(err)
 	}
 
-	return configPath
+	return configPath, isDefault
 }
 
 func (o *Opts) GetConfig() (*config.Config, error) {
@@ -64,12 +67,29 @@ func (o *Opts) GetConfig() (*config.Config, error) {
 		return o.parsedConfig, nil
 	}
 
-	configBytes, err := ioutil.ReadFile(o.getConfigPath())
+	configPath, isDefault := o.getConfigPath()
+
+	configBytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
+		if os.IsNotExist(err) && isDefault {
+			cfg, err := o.getDefaultConfig()
+			if err != nil {
+				return nil, errors.Wrap(err, "loading defaults")
+			}
+
+			o.parsedConfig = cfg
+
+			return o.parsedConfig, nil
+		}
+
 		return nil, errors.Wrap(err, "reading config")
 	}
 
-	cfg := config.Config{}
+	cfg := config.Config{
+		General: config.GeneralConfig{
+			DefaultServer: o.DefaultServer,
+		},
+	}
 	err = config.UnmarshalYAML(configBytes, &cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "loading options")
@@ -78,6 +98,17 @@ func (o *Opts) GetConfig() (*config.Config, error) {
 	o.parsedConfig = &cfg
 
 	return o.parsedConfig, nil
+}
+
+func (o *Opts) getDefaultConfig() (*config.Config, error) {
+	cfg := &config.Config{
+		General: config.GeneralConfig{
+			DefaultServer: o.DefaultServer,
+		},
+	}
+	cfg.ApplyDefaults()
+
+	return cfg, nil
 }
 
 func (o *Opts) GetAnalysisIndex(_ analysis.Reference) (analysisdatastore.Index, error) {

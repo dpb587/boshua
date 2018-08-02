@@ -4,15 +4,15 @@ type Config struct {
 	General   GeneralConfig              `yaml:"general,omitempty"`
 	Scheduler *AbstractComponentConfig   `yaml:"scheduler,omitempty"`
 	Stemcells []StemcellVersionDatastore `yaml:"stemcell_versions"`
-	Releases  []AbstractComponentConfig  `yaml:"release_versions"`
+	Releases  []AbstractComponentConfig  `yaml:"release_versions"` // TODO ReleaseDatastore
 	// TODO release-specific indices for compiled release datastores
-	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"`
-	Analyses         []AbstractComponentConfig `yaml:"analyses"`
+	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"` // TODO ReleaseCompilationDatastore
+	Analyses         []AnalysisDatastore       `yaml:"analyses"`
 	Server           ServerConfig              `yaml:"server"`
 }
 
 type GeneralConfig struct {
-	IgnoreDefaultServer bool `yaml:"ignore_default_server"`
+	DefaultServer string `yaml:"default_server"`
 }
 
 type ServerConfig struct {
@@ -64,16 +64,41 @@ type AbstractComponentConfig struct {
 }
 
 func (c *Config) ApplyDefaults() {
-	if c.Scheduler == nil {
-		c.Scheduler = &AbstractComponentConfig{
-			Type: "localexec",
-			Options: map[string]interface{}{
-				"exec": "boshua",
-			},
-		}
-	}
-
 	if c.Server.Bind == "" {
 		c.Server.Bind = "127.0.0.1:4508"
+	}
+
+	if c.General.DefaultServer != "" {
+		defaultServer := AbstractComponentConfig{
+			Name: "default",
+			Type: "boshua.v2",
+			Options: map[string]interface{}{
+				"url": c.General.DefaultServer,
+			},
+		}
+
+		if c.Scheduler == nil {
+			c.Scheduler = &defaultServer
+		}
+
+		if len(c.Analyses) == 0 { // TODO check for name = default instead?
+			c.Analyses = append(c.Analyses, AnalysisDatastore{
+				AbstractComponentConfig: defaultServer,
+			})
+		}
+
+		if len(c.Releases) == 0 { // TODO check for name = default instead?
+			c.Releases = append(c.Releases, defaultServer)
+		}
+
+		if len(c.CompiledReleases) == 0 { // TODO check for name = default instead?
+			c.Releases = append(c.CompiledReleases, defaultServer)
+		}
+
+		if len(c.Stemcells) == 0 { // TODO check for name = default instead?
+			c.Stemcells = append(c.Stemcells, StemcellVersionDatastore{
+				AbstractComponentConfig: defaultServer,
+			})
+		}
 	}
 }

@@ -74,5 +74,11 @@ func (o Opts) FilterParams() datastore.FilterParams {
 		f.Hypervisor = o.Hypervisor
 	}
 
+	// TODO no default?
+	if !f.FlavorExpected {
+		f.FlavorExpected = true
+		f.Flavor = "heavy"
+	}
+
 	return f
 }

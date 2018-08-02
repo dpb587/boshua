@@ -33,7 +33,8 @@ for os in $os_list ; do
       -ldflags "
         -X main.appSemver=$version \
         -X main.appCommit=$commit \
-        -X main.appBuilt=$built
+        -X main.appBuilt=$built \
+        -X main.defaultServer=${BOSHUA_SERVER:-}
       " \
       -o tmp/$name \
       cli/main.go

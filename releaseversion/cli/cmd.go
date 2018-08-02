@@ -16,12 +16,12 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd    *analysis.Cmd    `command:"analysis" description:"For analyzing the release artifact"`
+	AnalysisCmd    *analysis.Cmd    `command:"analysis" description:"For analyzing the release artifact" subcommands-optional:"true"`
 	DatastoreCmd   *datastore.Cmd   `command:"datastore" description:"For interacting with release datastores"`
 	CompilationCmd *compilation.Cmd `command:"compilation" description:"For working with compiled releases" subcommands-optional:"true"`
 
 	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`
-	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact" subcommands-optional:"true"`
+	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the release artifact"`
 	UploadReleaseCmd UploadReleaseCmd `command:"upload-release" description:"For uploading the release to BOSH"`
 	DownloadCmd      DownloadCmd      `command:"download" description:"For downloading the release locally"`
 }

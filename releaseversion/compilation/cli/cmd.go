@@ -16,7 +16,7 @@ type CmdOpts struct {
 type Cmd struct {
 	*opts.Opts
 
-	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing artifacts" subcommands-optional:"true"`
+	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing artifacts" subcommands-optional:"true" subcommands-optional:"true"`
 	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with compiled release datastores"`
 
 	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`

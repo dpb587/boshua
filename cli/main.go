@@ -8,8 +8,11 @@ import (
 	flags "github.com/jessevdk/go-flags"
 )
 
+var defaultServer string
+
 func main() {
 	c := cmd.New()
+	c.Opts.DefaultServer = defaultServer
 
 	var parser = flags.NewParser(c, flags.Default)
 	if _, err := parser.Parse(); err != nil {
