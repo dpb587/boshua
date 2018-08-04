@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
-
-	"github.com/dpb587/boshua/osversion"
-
 	"github.com/cppforlife/go-patch/patch"
+	"github.com/dpb587/boshua/osversion"
+	"github.com/pkg/errors"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, error) {

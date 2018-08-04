@@ -66,14 +66,14 @@ func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell
 func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
 	fly := NewFly(s.config)
 
-	pipelineBytes, pipelineVars, pipelineOpsFiles, err := s.buildBasePipeline(tt)
+	pipelineBytes, pipelineVars, pipelineOps, err := s.buildBasePipeline(tt)
 	if err != nil {
 		return nil, errors.Wrap(err, "building pipeline")
 	}
 
 	pipelineName := s.pipelineName(tt, pipelineBytes)
 
-	pipelineBytes, err = s.buildFinalPipeline(pipelineBytes, pipelineOpsFiles)
+	pipelineBytes, err = s.buildFinalPipeline(pipelineBytes, pipelineOps)
 	if err != nil {
 		return nil, errors.Wrap(err, "apply pipeline ops")
 	}
@@ -143,7 +143,7 @@ func (s *Scheduler) pipelineName(t *task.Task, pipelineBytes []byte) string {
 	return fmt.Sprintf("boshua:%s:%x", t.Type, sha1.Sum(pipelineBytes))
 }
 
-func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opsFiles []string) ([]byte, error) {
+func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opDefs []patch.OpDefinition) ([]byte, error) {
 	var pipeline interface{}
 
 	err := yaml.Unmarshal(pipelineBytes, &pipeline)
@@ -151,28 +151,14 @@ func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opsFiles []string) 
 		return nil, errors.Wrap(err, "unmarshaling internal pipeline")
 	}
 
-	for _, opsFile := range opsFiles {
-		opsBytes, err := ioutil.ReadFile(opsFile)
-		if err != nil {
-			return nil, errors.Wrap(err, "reading ops file")
-		}
+	ops, err := patch.NewOpsFromDefinitions(opDefs)
+	if err != nil {
+		return nil, errors.Wrap(err, "building ops")
+	}
 
-		var opDefs []patch.OpDefinition
-
-		err = yaml.Unmarshal(opsBytes, &opDefs)
-		if err != nil {
-			return nil, errors.Wrap(err, "unmarshaling ops file")
-		}
-
-		ops, err := patch.NewOpsFromDefinitions(opDefs)
-		if err != nil {
-			return nil, errors.Wrap(err, "building ops")
-		}
-
-		pipeline, err = ops.Apply(pipeline)
-		if err != nil {
-			return nil, errors.Wrap(err, "applying ops file") // TODO include file paths?
-		}
+	pipeline, err = ops.Apply(pipeline)
+	if err != nil {
+		return nil, errors.Wrap(err, "applying ops")
 	}
 
 	pipelineBytes, err = yaml.Marshal(pipeline)
@@ -183,7 +169,7 @@ func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opsFiles []string) 
 	return pipelineBytes, nil
 }
 
-func (s *Scheduler) buildBasePipeline(t *task.Task) ([]byte, map[string]interface{}, []string, error) {
+func (s *Scheduler) buildBasePipeline(t *task.Task) ([]byte, map[string]interface{}, []patch.OpDefinition, error) {
 	var plan atc.PlanSequence
 
 	configPath := "config/boshua.yml"
@@ -333,17 +319,37 @@ exec boshua "$@"`, privilegedMounts), "--"}, runConfig.Args...)
 		"boshua_config": string(rawConfigBytes),
 	}
 
-	pipelineOpsFiles := []string{}
+	var pipelineOps []patch.OpDefinition
 
 	for _, taskConfig := range s.config.Tasks {
 		if taskConfig.Type != string(t.Type) {
 			continue
 		}
 
-		pipelineOpsFiles = append(pipelineOpsFiles, taskConfig.OpsFiles...)
+		for _, opsFile := range taskConfig.OpsFiles {
+			opsBytes, err := ioutil.ReadFile(opsFile)
+			if err != nil {
+				return nil, nil, nil, errors.Wrap(err, "reading ops file")
+			}
+
+			var opDefs []patch.OpDefinition
+
+			err = yaml.Unmarshal(opsBytes, &opDefs)
+			if err != nil {
+				return nil, nil, nil, errors.Wrap(err, "unmarshaling ops file")
+			}
+
+			pipelineOps = append(pipelineOps, opDefs...)
+		}
+
+		pipelineOps = append(pipelineOps, taskConfig.Ops...)
+
+		for varKey, varVal := range taskConfig.Vars {
+			pipelineVars[varKey] = varVal
+		}
 	}
 
-	return pipelineBytes, pipelineVars, pipelineOpsFiles, nil
+	return pipelineBytes, pipelineVars, pipelineOps, nil
 }
 
 var privilegedMounts = `set -eu

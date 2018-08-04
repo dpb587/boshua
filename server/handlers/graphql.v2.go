@@ -80,7 +80,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err)
 		}
 
-		// h.logger.WithField("request.body", string(requestBytes)).Debug("processing request")
+		h.logger.WithField("request.body", string(requestBytes)).Debug("processing request")
 
 		var requestBodyObj struct {
 			Query     string                 `json:"query"`

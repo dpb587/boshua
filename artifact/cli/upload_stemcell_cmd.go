@@ -10,6 +10,9 @@ type UploadStemcellCmd struct {
 
 	*CmdOpts `no-flag:"true"`
 
+	Name    string `long:"name" description:"Stemcell name"`
+	Version string `long:"version" description:"Stemcell version"`
+
 	Args UploadStemcellCmdArgs `positional-args:"true" required:"true"`
 }
 
@@ -20,5 +23,8 @@ type UploadStemcellCmdArgs struct {
 func (c *UploadStemcellCmd) Execute(_ []string) error {
 	c.AppOpts.ConfigureLogger("artifact/upload-stemcell")
 
-	return c.UploadStemcellCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink))
+	return c.UploadStemcellCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink), clicommon.UploadStemcellOpts{
+		Name:    c.Name,
+		Version: c.Version,
+	})
 }

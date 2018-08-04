@@ -47,12 +47,12 @@ func NewQuery(index datastore.Index, compilationIndex compilationdatastore.Index
 
 			results, err := index.GetArtifacts(f)
 			if err != nil {
-				return nil, errors.Wrap(err, "finding stemcell")
+				return nil, errors.Wrap(err, "finding release")
 			}
 
 			result, err := datastore.RequireSingleResult(results)
 			if err != nil {
-				return nil, errors.Wrap(err, "finding stemcell")
+				return nil, errors.Wrap(err, "finding release")
 			}
 
 			return result, err

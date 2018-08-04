@@ -41,6 +41,8 @@ func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (*t
 				Args: []string{
 					"artifact",
 					"upload-release",
+					fmt.Sprintf("--name=%s", release.Name),
+					fmt.Sprintf("--version=%s", release.Version),
 					"input/metalink.meta4",
 				},
 			},
@@ -52,6 +54,8 @@ func New(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (*t
 				Args: []string{
 					"artifact",
 					"upload-stemcell",
+					fmt.Sprintf("--name=%s", stemcell.FullName()),
+					fmt.Sprintf("--version=%s", stemcell.Version),
 					"input/metalink.meta4",
 				},
 			},

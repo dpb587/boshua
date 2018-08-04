@@ -1,5 +1,9 @@
 package concourse
 
+import (
+	"github.com/cppforlife/go-patch/patch"
+)
+
 type Config struct {
 	Fly string `yaml:"fly"`
 
@@ -20,7 +24,9 @@ func (c *Config) ApplyDefaults() {
 }
 
 type TaskConfig struct {
-	Type      string   `yaml:"type"`
-	OpsFiles  []string `yaml:"ops_files"`
-	VarsFiles []string `yaml:"vars_files"`
+	Type      string                 `yaml:"type"`
+	Ops       []patch.OpDefinition   `yaml:"ops"`
+	OpsFiles  []string               `yaml:"ops_files"`
+	Vars      map[string]interface{} `yaml:"vars"`
+	VarsFiles []string               `yaml:"vars_files"`
 }

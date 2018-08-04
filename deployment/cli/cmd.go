@@ -9,7 +9,7 @@ type CmdOpts struct {
 }
 
 type Cmd struct {
-	PatchManifestCmd PatchManifestCmd `command:"patch-manifest" description:"For patching a manifest to refer to compiled releases"`
+	UseCompiledReleasesCmd UseCompiledReleasesCmd `command:"use-compiled-releases" description:"For patching a manifest to refer to compiled releases"`
 }
 
 func New(app *cmdopts.Opts) *Cmd {
@@ -19,7 +19,7 @@ func New(app *cmdopts.Opts) *Cmd {
 		AppOpts: app,
 	}
 
-	cmd.PatchManifestCmd.CmdOpts = cmdOpts
+	cmd.UseCompiledReleasesCmd.CmdOpts = cmdOpts
 
 	return cmd
 }

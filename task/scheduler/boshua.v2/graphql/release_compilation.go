@@ -122,17 +122,19 @@ func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilation
 			results, err := index.GetCompilationArtifacts(compilationdatastore.FilterParams{
 				Release: f,
 				OS: osversiondatastore.FilterParams{
-					Name:    p.Args["osName"].(string),    // TODO err checking
-					Version: p.Args["osVersion"].(string), // TODO err checking
+					NameExpected:    true,
+					Name:            p.Args["osName"].(string), // TODO err checking
+					VersionExpected: true,
+					Version:         p.Args["osVersion"].(string), // TODO err checking
 				},
 			})
 			if err != nil {
-				return nil, errors.Wrap(err, "finding release")
+				return nil, errors.Wrap(err, "finding compilation")
 			}
 
 			result, err := compilationdatastore.RequireSingleResult(results)
 			if err != nil {
-				return nil, errors.Wrap(err, "finding release")
+				return nil, errors.Wrap(err, "finding compilation")
 			}
 
 			analysisRef := analysis.Reference{

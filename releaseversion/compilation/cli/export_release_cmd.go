@@ -108,6 +108,11 @@ update:
 		return errors.Wrap(err, "moving tarball")
 	}
 
+	err = os.Remove(exportedPath[0])
+	if err != nil {
+		return errors.Wrap(err, "removing initial tarball")
+	}
+
 	cmd = exec.Command("bosh", "-n", fmt.Sprintf("-d=%s", deploymentName), "delete-deployment")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

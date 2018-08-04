@@ -1,8 +1,7 @@
 package manifest
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 

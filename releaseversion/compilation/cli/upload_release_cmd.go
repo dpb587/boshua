@@ -22,5 +22,5 @@ func (c *UploadReleaseCmd) Execute(_ []string) error {
 		}
 
 		return artifact, nil
-	})
+	}, clicommon.UploadReleaseOpts{})
 }

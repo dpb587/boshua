@@ -29,12 +29,7 @@ var _ artifact.Artifact = &Artifact{}
 
 func (r Artifact) FullName() string {
 	// TODO rename to Name()
-	// TODO breaks with light prefix; should match name from `bosh stemcells`
 	var prefix string
-
-	if r.Flavor == "light" {
-		prefix = "light-"
-	}
 
 	return fmt.Sprintf("%sbosh-%s-%s-%s-go_agent", prefix, r.IaaS, r.Hypervisor, r.OS)
 }

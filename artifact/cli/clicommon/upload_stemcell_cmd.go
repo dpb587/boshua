@@ -16,7 +16,12 @@ type UploadStemcellCmd struct {
 	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
 }
 
-func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader) error {
+type UploadStemcellOpts struct {
+	Name    string
+	Version string
+}
+
+func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader, opts UploadStemcellOpts) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -36,13 +41,28 @@ func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader) error {
 		}
 	}
 
+	var effectiveOpts UploadStemcellOpts
+
 	switch artifact := artifact.(type) {
 	case stemcellversion.Artifact:
-		idArgs = append(
-			idArgs,
-			fmt.Sprintf("--name=%s", artifact.FullName()),
-			fmt.Sprintf("--version=%s", artifact.Version),
-		)
+		effectiveOpts.Name = artifact.FullName()
+		effectiveOpts.Version = artifact.Version
+	}
+
+	if opts.Name != "" {
+		effectiveOpts.Name = opts.Name
+	}
+
+	if opts.Version != "" {
+		effectiveOpts.Version = opts.Version
+	}
+
+	if effectiveOpts.Name != "" {
+		idArgs = append(idArgs, fmt.Sprintf("--name=%s", effectiveOpts.Name))
+	}
+
+	if effectiveOpts.Version != "" {
+		idArgs = append(idArgs, fmt.Sprintf("--version=%s", effectiveOpts.Version))
 	}
 
 	if c.Cmd {

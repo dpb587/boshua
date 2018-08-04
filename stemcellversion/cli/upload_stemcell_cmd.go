@@ -22,5 +22,5 @@ func (c *UploadStemcellCmd) Execute(_ []string) error {
 		}
 
 		return artifact, nil
-	})
+	}, clicommon.UploadStemcellOpts{})
 }

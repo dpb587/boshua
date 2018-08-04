@@ -1,32 +1,38 @@
-- path: /jobs/name=task/plan/task=configure/on_success?
+- path: /jobs/name=task/plan/task=uploading-release/params/BOSH_ENVIRONMENT?
   type: replace
-  value:
-    do:
-    - put: env
-      params:
-        acquire: true
-    - get: bosh-deployment
-    - task: create-director
-      file: bosh-compiled-releases/ci/tasks/create-bosh-director/task.yml
-- path: /jobs/name=task/ensure?
+  value: ((bosh_environment))
+- path: /jobs/name=task/plan/task=uploading-release/params/BOSH_CA_CERT?
   type: replace
-  value:
-    do:
-    - task: destroy-director
-      file: bosh-compiled-releases/ci/tasks/destroy-bosh-director/task.yml
-    - put: env
-      params:
-        release: env
-- path: /resources/-
+  value: ((bosh_ca_cert))
+- path: /jobs/name=task/plan/task=uploading-release/params/BOSH_CLIENT?
   type: replace
-  value:
-    name: env
-    type: pool
-    source: ((env_source))
-- path: /resources/-
+  value: ((bosh_client))
+- path: /jobs/name=task/plan/task=uploading-release/params/BOSH_CLIENT_SECRET?
   type: replace
-  value:
-    name: bosh-deployment
-    type: git
-    source:
-      uri: https://github.com/cloudfoundry/bosh-deployment.git
+  value: ((bosh_client_secret))
+
+- path: /jobs/name=task/plan/task=uploading-stemcell/params/BOSH_ENVIRONMENT?
+  type: replace
+  value: ((bosh_environment))
+- path: /jobs/name=task/plan/task=uploading-stemcell/params/BOSH_CA_CERT?
+  type: replace
+  value: ((bosh_ca_cert))
+- path: /jobs/name=task/plan/task=uploading-stemcell/params/BOSH_CLIENT?
+  type: replace
+  value: ((bosh_client))
+- path: /jobs/name=task/plan/task=uploading-stemcell/params/BOSH_CLIENT_SECRET?
+  type: replace
+  value: ((bosh_client_secret))
+
+- path: /jobs/name=task/plan/task=compiling/params/BOSH_ENVIRONMENT?
+  type: replace
+  value: ((bosh_environment))
+- path: /jobs/name=task/plan/task=compiling/params/BOSH_CA_CERT?
+  type: replace
+  value: ((bosh_ca_cert))
+- path: /jobs/name=task/plan/task=compiling/params/BOSH_CLIENT?
+  type: replace
+  value: ((bosh_client))
+- path: /jobs/name=task/plan/task=compiling/params/BOSH_CLIENT_SECRET?
+  type: replace
+  value: ((bosh_client_secret))

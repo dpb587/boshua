@@ -17,7 +17,13 @@ type UploadReleaseCmd struct {
 	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
 }
 
-func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader) error {
+type UploadReleaseOpts struct {
+	Name     string
+	Version  string
+	Stemcell string
+}
+
+func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader, opts UploadReleaseOpts) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -37,26 +43,42 @@ func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader) error {
 		}
 	}
 
+	var effectiveOpts UploadReleaseOpts
+
 	switch artifact := artifact.(type) {
 	case releaseversion.Artifact:
-		idArgs = append(
-			idArgs,
-			fmt.Sprintf("--name=%s", artifact.Name),
-			fmt.Sprintf("--version=%s", artifact.Version),
-		)
+		effectiveOpts.Name = artifact.Name
+		effectiveOpts.Version = artifact.Version
 	case compilation.Artifact:
 		artifactRef := artifact.Reference().(compilation.Reference)
 
-		idArgs = append(
-			idArgs,
-			fmt.Sprintf("--name=%s", artifactRef.ReleaseVersion.Name),
-			fmt.Sprintf("--version=%s", artifactRef.ReleaseVersion.Version),
-		)
+		effectiveOpts.Name = artifactRef.ReleaseVersion.Name
+		effectiveOpts.Version = artifactRef.ReleaseVersion.Version
+		effectiveOpts.Stemcell = fmt.Sprintf("%s/%s", artifactRef.OSVersion.Name, artifactRef.OSVersion.Version)
+	}
 
-		args = append(
-			args,
-			fmt.Sprintf("--stemcell=%s/%s", artifactRef.OSVersion.Name, artifactRef.OSVersion.Version),
-		)
+	if opts.Name != "" {
+		effectiveOpts.Name = opts.Name
+	}
+
+	if opts.Version != "" {
+		effectiveOpts.Version = opts.Version
+	}
+
+	if opts.Stemcell != "" {
+		effectiveOpts.Stemcell = opts.Stemcell
+	}
+
+	if effectiveOpts.Name != "" {
+		idArgs = append(idArgs, fmt.Sprintf("--name=%s", effectiveOpts.Name))
+	}
+
+	if effectiveOpts.Version != "" {
+		idArgs = append(idArgs, fmt.Sprintf("--version=%s", effectiveOpts.Version))
+	}
+
+	if effectiveOpts.Stemcell != "" {
+		args = append(args, fmt.Sprintf("--stemcell=%s", effectiveOpts.Stemcell))
 	}
 
 	if c.Cmd {
