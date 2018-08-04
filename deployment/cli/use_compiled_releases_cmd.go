@@ -173,6 +173,10 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 				}
 
 				status, err := task.WaitForScheduledTask(scheduledTask, func(status task.Status) {
+					if c.AppOpts.Quiet {
+						return
+					}
+
 					fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] compilation is %s\n", time.Now().Format("15:04:05"), stemcellVersion.OS, stemcellVersion.Version, releaseVersion.Name, releaseVersion.Version, status)
 				})
 				if err != nil {

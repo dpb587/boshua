@@ -59,6 +59,10 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
 		func(status task.Status) {
+			if o.AppOpts.Quiet {
+				return
+			}
+
 			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifact.FullName(), artifact.Version, status)
 		},
 	)

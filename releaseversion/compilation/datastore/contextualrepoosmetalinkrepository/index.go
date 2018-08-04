@@ -1,4 +1,4 @@
-package contextualosmetalinkrepository
+package contextualrepoosmetalinkrepository
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/cheggaaa/pb"
@@ -24,7 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ./{os_name}/{os_version}/*.meta4
+// ./github.com/{owner}/{repo}/{os_name}/{os_version}/*.meta4 -> repo/github.com/{owner}/{repo}
 type index struct {
 	logger              logrus.FieldLogger
 	config              Config
@@ -44,20 +45,11 @@ func New(releaseVersionIndex releaseversiondatastore.Index, config Config, logge
 }
 
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
-	if !f.Release.NameSatisfied(i.config.Release) {
-		return nil, nil
-	}
-
-	releases, err := i.releaseVersionIndex.GetArtifacts(f.Release)
+	release, repository, err := i.findReleaseRepository(f.Release)
 	if err != nil {
-		// TODO warn and continue?
-		return nil, errors.Wrap(err, "finding release")
-	}
-
-	release, err := releaseversiondatastore.RequireSingleResult(releases)
-	if err != nil {
-		// TODO warn and continue?
-		return nil, errors.Wrap(err, "finding release")
+		return nil, errors.Wrap(err, "finding release repository")
+	} else if repository == "" {
+		return nil, datastore.UnsupportedOperationErr
 	}
 
 	err = i.repository.Reload()
@@ -65,7 +57,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, "*", "*", "*.meta4"))
+	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, repository, "*", "*", "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}
@@ -121,8 +113,10 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	artifactRef := artifact.Reference().(compilation.Reference)
 
-	// TODO keep? the compilation -> releaseVersionIndex affiliation should be managed by the config
-	if artifactRef.ReleaseVersion.Name != i.config.Release {
+	_, repository, err := i.findReleaseRepository(releaseversiondatastore.FilterParamsFromReference(artifactRef.ReleaseVersion))
+	if err != nil {
+		return errors.Wrap(err, "finding release repository")
+	} else if repository == "" {
 		return datastore.UnsupportedOperationErr
 	}
 
@@ -208,6 +202,7 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 
 	path := filepath.Join(
 		i.config.Prefix,
+		repository,
 		artifactRef.OSVersion.Name,
 		artifactRef.OSVersion.Version,
 		fmt.Sprintf("v%s.meta4", artifactRef.ReleaseVersion.Version),
@@ -216,7 +211,8 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	return i.repository.Commit(
 		map[string][]byte{path: commitMeta4Bytes},
 		fmt.Sprintf(
-			"Compiling v%s for %s/%s",
+			"Compiling %s/%s for %s/%s",
+			artifactRef.ReleaseVersion.Name,
 			artifactRef.ReleaseVersion.Version,
 			artifactRef.OSVersion.Name,
 			artifactRef.OSVersion.Version,
@@ -227,4 +223,27 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 func (i *index) FlushCompilationCache() error {
 	// TODO defer reload?
 	return i.repository.ForceReload()
+}
+
+func (i *index) findReleaseRepository(f releaseversiondatastore.FilterParams) (releaseversion.Artifact, string, error) {
+	releases, err := i.releaseVersionIndex.GetArtifacts(f)
+	if err != nil {
+		// TODO warn and continue?
+		return releaseversion.Artifact{}, "", errors.Wrap(err, "finding release")
+	}
+
+	release, err := releaseversiondatastore.RequireSingleResult(releases)
+	if err != nil {
+		// TODO warn and continue?
+		return releaseversion.Artifact{}, "", errors.Wrap(err, "finding release")
+	}
+
+	for _, label := range release.Labels {
+		if strings.HasPrefix(label, "repo/") {
+			// TODO support multiple matches?
+			return release, strings.TrimPrefix(label, "repo/"), nil
+		}
+	}
+
+	return releaseversion.Artifact{}, "", nil
 }

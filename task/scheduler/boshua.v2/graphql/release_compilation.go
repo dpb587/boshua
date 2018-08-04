@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex releaseversiondatastore.Index, stemcellVersionIndex stemcellversiondatastore.Index) *graphql.Field {
+func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex releaseversiondatastore.Index, stemcellVersionIndex stemcellversiondatastore.Index, releaseCompilationIndex compilationdatastore.Index) *graphql.Field {
 	args := releaseversiongraphql.NewFilterArgs()
 	// TODO support stemcell precision; objects
 	args["osName"] = &graphql.ArgumentConfig{
@@ -76,11 +76,9 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 
 			if status == task.StatusSucceeded {
 				// TODO better way to avoid repeated flushes?
-				if compilationIndex, ok := releaseVersionIndex.(compilationdatastore.Index); ok {
-					err = compilationIndex.FlushCompilationCache()
-					if err != nil {
-						return nil, errors.Wrap(err, "flushing cache")
-					}
+				err = releaseCompilationIndex.FlushCompilationCache()
+				if err != nil {
+					return nil, errors.Wrap(err, "flushing cache")
 				}
 			}
 

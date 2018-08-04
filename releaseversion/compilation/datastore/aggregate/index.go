@@ -28,7 +28,9 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 
 	for idxIdx, idx := range i.indices {
 		found, err := idx.GetCompilationArtifacts(f)
-		if err != nil {
+		if err == datastore.UnsupportedOperationErr {
+			continue
+		} else if err != nil {
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 

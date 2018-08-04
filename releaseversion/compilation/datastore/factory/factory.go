@@ -6,6 +6,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	boshuaV2 "github.com/dpb587/boshua/releaseversion/compilation/datastore/boshua.v2"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualosmetalinkrepository"
+	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualrepoosmetalinkrepository"
 	// "github.com/dpb587/boshua/releaseversion/compilation/datastore/legacybcr"
 	"github.com/dpb587/boshua/config"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
@@ -37,6 +38,14 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 		}
 
 		return contextualosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
+	case "contextualrepoosmetalinkrepository":
+		cfg := contextualrepoosmetalinkrepository.Config{}
+		err := config.RemarshalYAML(options, &cfg)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading options")
+		}
+
+		return contextualrepoosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
 	case "boshua.v2":
 		cfg := boshuaV2.Config{}
 		err := config.RemarshalYAML(options, &cfg)

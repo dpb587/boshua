@@ -55,7 +55,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 	var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
-			"scheduleReleaseCompilation":         schedulerboshuaV2.NewReleaseCompilationField(h.scheduler, h.releaseIndex, h.stemcellIndex),
+			"scheduleReleaseCompilation":         schedulerboshuaV2.NewReleaseCompilationField(h.scheduler, h.releaseIndex, h.stemcellIndex, h.releaseCompilationIndex),
 			"scheduleReleaseCompilationAnalysis": schedulerboshuaV2.NewReleaseCompilationAnalysisField(h.scheduler, h.releaseCompilationIndex),
 			"scheduleReleaseAnalysis":            schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex),
 			"scheduleStemcellAnalysis":           schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex),
