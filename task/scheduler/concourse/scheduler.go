@@ -157,11 +157,16 @@ func (s *Scheduler) buildFinalPipeline(pipelineBytes []byte, opsFiles []string) 
 			return nil, errors.Wrap(err, "reading ops file")
 		}
 
-		var ops patch.Ops
+		var opDefs []patch.OpDefinition
 
-		err = yaml.Unmarshal(opsBytes, &ops)
+		err = yaml.Unmarshal(opsBytes, &opDefs)
 		if err != nil {
 			return nil, errors.Wrap(err, "unmarshaling ops file")
+		}
+
+		ops, err := patch.NewOpsFromDefinitions(opDefs)
+		if err != nil {
+			return nil, errors.Wrap(err, "building ops")
 		}
 
 		pipeline, err = ops.Apply(pipeline)
@@ -328,8 +333,14 @@ exec boshua "$@"`, privilegedMounts), "--"}, runConfig.Args...)
 		"boshua_config": string(rawConfigBytes),
 	}
 
-	pipelineOpsFiles := []string{
-		// TODO lookup from config[type]
+	pipelineOpsFiles := []string{}
+
+	for _, taskConfig := range s.config.Tasks {
+		if taskConfig.Type != string(t.Type) {
+			continue
+		}
+
+		pipelineOpsFiles = append(pipelineOpsFiles, taskConfig.OpsFiles...)
 	}
 
 	return pipelineBytes, pipelineVars, pipelineOpsFiles, nil

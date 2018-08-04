@@ -68,7 +68,7 @@ func (c *Cmd) Execute(extra []string) error {
 	}
 
 	stemcellversionserver.NewHandlers(stemcellIndex, analysisIndex).Mount(r)
-	handlers.NewGraphqlV2(releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
+	handlers.NewGraphqlV2(c.AppOpts.GetLogger(), releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)
 }

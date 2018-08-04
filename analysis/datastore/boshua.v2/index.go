@@ -110,7 +110,7 @@ func (i *index) getQuery(ref analysis.Reference) (string, string, map[string]int
 		fQueryVars["queryStemcellOS"] = subjectRef.OSVersion.Name
 		fQueryVars["queryStemcellVersion"] = subjectRef.OSVersion.Version
 		return fmt.Sprintf(`release(%s) {
-				compilation(os: $queryStemcellOS, version: $queryStemcellVersion) {
+				compilations(os: $queryStemcellOS, version: $queryStemcellVersion) {
 					analysis {
 						results(analyzers: [$analyzer]) {
 							artifact {

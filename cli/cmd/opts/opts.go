@@ -206,10 +206,25 @@ func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatas
 	factory := compiledreleaseversionfactory.New(o.GetLogger())
 
 	for _, cfg := range config.CompiledReleases {
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options, releaseIndex)
+		var idx compiledreleaseversiondatastore.Index
+		var err error
+
+		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options, releaseIndex)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating compiled release version datastore")
 		}
+
+		// if cfg.Analysis != nil { // TODO configurable
+		var analysisIdx analysisdatastore.Index
+
+		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
+		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
+		if err != nil {
+			return nil, errors.Wrap(err, "loading release analysis")
+		}
+
+		idx = compiledreleaseversiondatastore.NewAnalysisIndex(idx, analysisIdx)
+		// }
 
 		all = append(all, idx)
 	}

@@ -41,10 +41,10 @@ func (t *Task) Status() (task.Status, error) {
 		return task.StatusUnknown, errors.New("listing jobs: columns incorrect")
 	}
 
-	if fields[2] == "succeeded" {
-		return task.StatusSucceeded, nil
-	} else if fields[3] == "started" {
+	if fields[3] == "started" {
 		return task.StatusRunning, nil
+	} else if fields[2] == "succeeded" {
+		return task.StatusSucceeded, nil
 	} else if fields[2] == "aborted" {
 		return task.StatusFailed, nil
 	} else if fields[2] == "failed" {

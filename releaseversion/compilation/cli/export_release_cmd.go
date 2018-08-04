@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/pkg/errors"
 )
 
@@ -99,7 +101,9 @@ update:
 		return errors.New("expected an exported release tarball")
 	}
 
-	err = os.Rename(exportedPath[0], c.Args.Local)
+	// TODO ew
+	sys := boshsys.NewOsFileSystem(boshlog.NewLogger(boshlog.LevelNone))
+	err = sys.CopyFile(exportedPath[0], c.Args.Local) // TODO Rename failed for some reason
 	if err != nil {
 		return errors.Wrap(err, "moving tarball")
 	}

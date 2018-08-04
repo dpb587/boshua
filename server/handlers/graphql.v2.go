@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
@@ -17,6 +18,7 @@ import (
 	// stemcellversionv2 "github.com/dpb587/boshua/stemcellversion/api/v2/server"
 	"github.com/gorilla/mux"
 	"github.com/graphql-go/graphql"
+	"github.com/sirupsen/logrus"
 )
 
 type GraphqlV2 struct {
@@ -24,14 +26,16 @@ type GraphqlV2 struct {
 	releaseCompilationIndex compilationdatastore.Index
 	stemcellIndex           stemcellversiondatastore.Index
 	scheduler               schedulerpkg.Scheduler
+	logger                  logrus.FieldLogger
 }
 
-func NewGraphqlV2(releaseIndex releaseversiondatastore.Index, releaseCompilationIndex compilationdatastore.Index, stemcellIndex stemcellversiondatastore.Index, scheduler schedulerpkg.Scheduler) *GraphqlV2 {
+func NewGraphqlV2(logger logrus.FieldLogger, releaseIndex releaseversiondatastore.Index, releaseCompilationIndex compilationdatastore.Index, stemcellIndex stemcellversiondatastore.Index, scheduler schedulerpkg.Scheduler) *GraphqlV2 {
 	return &GraphqlV2{
 		releaseIndex:            releaseIndex,
 		releaseCompilationIndex: releaseCompilationIndex,
 		stemcellIndex:           stemcellIndex,
 		scheduler:               scheduler,
+		logger:                  logger.WithField("build.package", reflect.TypeOf(GraphqlV2{}).PkgPath()),
 	}
 }
 
@@ -51,8 +55,10 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 	var mutationType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
-			"scheduleReleaseAnalysis":  schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex),
-			"scheduleStemcellAnalysis": schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex),
+			"scheduleReleaseCompilation":         schedulerboshuaV2.NewReleaseCompilationField(h.scheduler, h.releaseIndex, h.stemcellIndex),
+			"scheduleReleaseCompilationAnalysis": schedulerboshuaV2.NewReleaseCompilationAnalysisField(h.scheduler, h.releaseCompilationIndex),
+			"scheduleReleaseAnalysis":            schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex),
+			"scheduleStemcellAnalysis":           schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex),
 		},
 	})
 
@@ -74,7 +80,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err)
 		}
 
-		// fmt.Printf("< %s\n", strings.TrimSpace(string(requestBytes)))
+		// h.logger.WithField("request.body", string(requestBytes)).Debug("processing request")
 
 		var requestBodyObj struct {
 			Query     string                 `json:"query"`
@@ -106,7 +112,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err) // TODO !panic
 		}
 
-		// fmt.Printf("> %s\n", responseBytes)
+		// h.logger.WithField("response.body", string(responseBytes)).Debug("sending response")
 
 		w.Write(responseBytes)
 		w.Write([]byte("\n"))

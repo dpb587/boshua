@@ -10,11 +10,17 @@ type Config struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 
-	SecretsPath string `yaml:"secrets_path"` // TODO remove?
+	Tasks []TaskConfig `yaml:"tasks"`
 }
 
 func (c *Config) ApplyDefaults() {
 	if c.Fly == "" {
 		c.Fly = "/usr/local/bin/fly"
 	}
+}
+
+type TaskConfig struct {
+	Type      string   `yaml:"type"`
+	OpsFiles  []string `yaml:"ops_files"`
+	VarsFiles []string `yaml:"vars_files"`
 }

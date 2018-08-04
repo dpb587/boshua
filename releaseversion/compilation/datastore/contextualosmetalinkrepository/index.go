@@ -3,10 +3,15 @@ package contextualosmetalinkrepository
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
+	"time"
 
+	"github.com/cheggaaa/pb"
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
@@ -14,6 +19,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/metalink"
+	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -72,18 +78,6 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			continue
 		}
 
-		releases, err := i.releaseVersionIndex.GetArtifacts(f.Release)
-		if err != nil {
-			// TODO warn and continue?
-			return nil, fmt.Errorf("finding release")
-		}
-
-		release, err := releaseversiondatastore.RequireSingleResult(releases)
-		if err != nil {
-			// TODO warn and continue?
-			return nil, fmt.Errorf("finding release")
-		}
-
 		// TODO sanity checks? files = 1?
 
 		osVersionReference := osversion.Reference{
@@ -95,6 +89,18 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			continue
 		} else if !f.OS.VersionSatisfied(osVersionReference.Version) {
 			continue
+		}
+
+		releases, err := i.releaseVersionIndex.GetArtifacts(f.Release)
+		if err != nil {
+			// TODO warn and continue?
+			return nil, fmt.Errorf("finding release")
+		}
+
+		release, err := releaseversiondatastore.RequireSingleResult(releases)
+		if err != nil {
+			// TODO warn and continue?
+			return nil, fmt.Errorf("finding release")
 		}
 
 		results = append(
@@ -115,24 +121,95 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	artifactRef := artifact.Reference().(compilation.Reference)
 
+	logger := boshlog.NewLogger(boshlog.LevelError)
+	fs := boshsys.NewOsFileSystem(logger)
+
+	urlLoader := urldefaultloader.New(fs)
+
+	file := artifact.MetalinkFile()
+
+	local, err := urlLoader.Load(metalink.URL{URL: file.URLs[0].URL})
+	if err != nil {
+		return errors.Wrap(err, "parsing origin destination")
+	}
+
+	var sha1 string
+
+	for _, hash := range file.Hashes {
+		if hash.Type == "sha-1" {
+			sha1 = hash.Hash
+
+			break
+		}
+	}
+
+	if sha1 == "" {
+		return errors.New("sha-1 hash not found")
+	}
+
+	// not a good way to inject configs
+	priorAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	os.Setenv("AWS_ACCESS_KEY_ID", i.config.BlobstoreConfig.S3.AccessKey)
+	defer os.Setenv("AWS_ACCESS_KEY_ID", priorAccessKey)
+
+	priorSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", i.config.BlobstoreConfig.S3.SecretKey)
+	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
+
+	// TODO configurable? e.g. metalink-repository-resource?
+	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
+		"s3://%s/%s/%s%s/%s",
+		i.config.BlobstoreConfig.S3.Host,
+		i.config.BlobstoreConfig.S3.Bucket,
+		i.config.BlobstoreConfig.S3.Prefix,
+		sha1[0:2],
+		sha1[2:],
+	)})
+	if err != nil {
+		return errors.Wrap(err, "Parsing source blob")
+	}
+
+	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+	progress.Start()
+
+	err = remote.WriteFrom(local, progress)
+	if err != nil {
+		return errors.Wrap(err, "Copying blob")
+	}
+
+	progress.Finish()
+
+	commitMeta4 := metalink.Metalink{
+		Files: []metalink.File{
+			{
+				Name:    file.Name, // TODO rebuild name
+				Version: artifactRef.ReleaseVersion.Version,
+				Size:    file.Size,
+				URLs: []metalink.URL{
+					{
+						URL: remote.ReaderURI(),
+					},
+				},
+				Hashes: file.Hashes,
+			},
+		},
+		Generator: "boshua/boshreleasedpb",
+	}
+
+	commitMeta4Bytes, err := metalink.MarshalXML(commitMeta4)
+	if err != nil {
+		return errors.Wrap(err, "marshalling metalink")
+	}
+
 	path := filepath.Join(
+		i.config.Prefix,
 		artifactRef.OSVersion.Name,
 		artifactRef.OSVersion.Version,
 		fmt.Sprintf("v%s.meta4", artifactRef.ReleaseVersion.Version),
 	)
 
-	meta4 := metalink.Metalink{
-		Files:     []metalink.File{artifact.MetalinkFile()},
-		Generator: "boshua/contextualosmetalinkrepository",
-	}
-
-	meta4Bytes, err := metalink.MarshalXML(meta4)
-	if err != nil {
-		return errors.Wrap(err, "marshalling metalink")
-	}
-
 	return i.repository.Commit(
-		map[string][]byte{path: meta4Bytes},
+		map[string][]byte{path: commitMeta4Bytes},
 		fmt.Sprintf(
 			"Compiling v%s for %s/%s",
 			artifactRef.ReleaseVersion.Version,

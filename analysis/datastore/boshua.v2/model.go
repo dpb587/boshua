@@ -11,8 +11,8 @@ type filterResponse struct {
 }
 
 type filterReleaseResponse struct {
-	Compilation filterReleaseCompilationResponse `json:"compilation"`
-	Analysis    *filterAnalysisResponse          `json:"analysis"`
+	Compilations []filterReleaseCompilationResponse `json:"compilations"`
+	Analysis     *filterAnalysisResponse            `json:"analysis"`
 }
 
 type filterReleaseCompilationResponse struct {
@@ -35,8 +35,8 @@ type filterAnalysisResultResponse struct {
 func (r filterResponse) GetAnalysis() []filterAnalysisResultResponse {
 	if r.Release.Analysis != nil {
 		return r.Release.Analysis.Results
-	} else if r.Release.Compilation.Analysis != nil {
-		return r.Release.Compilation.Analysis.Results
+	} else if len(r.Release.Compilations) > 0 {
+		return r.Release.Compilations[0].Analysis.Results
 	} else if r.Stemcell.Analysis != nil {
 		return r.Stemcell.Analysis.Results
 	}

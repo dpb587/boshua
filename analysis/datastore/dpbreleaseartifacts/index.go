@@ -153,6 +153,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 	os.Setenv("AWS_SECRET_ACCESS_KEY", i.config.BlobstoreConfig.S3.SecretKey)
 	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
 
+	// TODO configurable?
 	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
 		"s3://%s/%s/%s%s/%s",
 		i.config.BlobstoreConfig.S3.Host,

@@ -44,14 +44,21 @@ func (s scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.Schedu
 	case releaseversion.Artifact:
 		return s.scheduleReleaseAnalysis(subject, analysisRef.Analyzer)
 	case compilation.Artifact:
-		panic("TODO")
+		return s.scheduleReleaseCompilationAnalysis(subject, analysisRef.Analyzer)
 	default:
 		panic(errors.New("unsupported analysis subject")) // TODO panic?
 	}
 }
 
 func (s scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.ScheduledTask, error) {
-	panic("TODO")
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromArtifact(release))
+	mutationVars["osName"] = stemcell.OS
+	mutationVars["osVersion"] = stemcell.Version
+
+	return s.schedule(
+		fmt.Sprintf(`mutation _(%s, $osName: String!, $osVersion: String!) { scheduleReleaseCompilation(%s, osName: $osName, osVersion: $osVersion) { status } }`, mutationVarsTypes, mutationFilter),
+		mutationVars,
+	)
 }
 
 func (s scheduler) schedule(mutationQuery string, mutationVars map[string]interface{}) (task.ScheduledTask, error) {
@@ -64,7 +71,7 @@ func (s scheduler) schedule(mutationQuery string, mutationVars map[string]interf
 				req.Var(k, v)
 			}
 
-			var resp mutationScheduleAnalysis
+			var resp mutationSchedule
 
 			err := s.client.Execute(req, &resp)
 			if err != nil {
@@ -92,6 +99,18 @@ func (s scheduler) scheduleReleaseAnalysis(subject releaseversion.Artifact, anal
 
 	return s.schedule(
 		fmt.Sprintf(`mutation _(%s, $analyzer: String!) { scheduleReleaseAnalysis(%s, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
+		mutationVars,
+	)
+}
+
+func (s scheduler) scheduleReleaseCompilationAnalysis(subject compilation.Artifact, analyzer analysis.AnalyzerName) (task.ScheduledTask, error) {
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromReference(subject.Release))
+	mutationVars["osName"] = subject.OS.Name
+	mutationVars["osVersion"] = subject.OS.Version
+	mutationVars["analyzer"] = analyzer
+
+	return s.schedule(
+		fmt.Sprintf(`mutation _(%s, $osName: String!, $osVersion: String!, $analyzer: String!) { scheduleReleaseCompilationAnalysis(%s, osName: $osName, osVersion: $osVersion, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
 		mutationVars,
 	)
 }
