@@ -92,51 +92,55 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 				},
 			}
 
+			parallelLog := func(msg string) {
+				fmt.Fprintf(os.Stderr, fmt.Sprintf("%s [%s/%s %s/%s] %s\n", time.Now().Format("15:04:05"), rel.Stemcell.OS, rel.Stemcell.Version, rel.Name, rel.Version, msg))
+			}
+
 			index, err := c.AppOpts.GetCompiledReleaseIndex("default")
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "loading index"))
+				parallelLog(errors.Wrap(err, "loading index").Error())
 
 				return
 			}
 
 			results, err := index.GetCompilationArtifacts(f)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering"))
+				parallelLog(errors.Wrap(err, "filtering").Error())
 
 				return
 			}
 
 			if len(results) == 0 {
 				if c.NoWait {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.New("none found"))
+					parallelLog(errors.New("none found").Error())
 
 					return
 				}
 
 				releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "loading release index"))
+					parallelLog(errors.Wrap(err, "loading release index").Error())
 
 					return
 				}
 
 				releaseVersions, err := releaseVersionIndex.GetArtifacts(f.Release)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering release"))
+					parallelLog(errors.Wrap(err, "filtering release").Error())
 
 					return
 				}
 
 				releaseVersion, err := releaseversiondatastore.RequireSingleResult(releaseVersions)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering release"))
+					parallelLog(errors.Wrap(err, "filtering release").Error())
 
 					return
 				}
 
 				stemcellVersionIndex, err := c.AppOpts.GetStemcellIndex("default")
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "loading stemcell index"))
+					parallelLog(errors.Wrap(err, "loading stemcell index").Error())
 
 					return
 				}
@@ -153,21 +157,21 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					Flavor:         "light",
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering stemcell"))
+					parallelLog(errors.Wrap(err, "filtering stemcell").Error())
 
 					return
 				}
 
 				stemcellVersion, err := stemcellversiondatastore.RequireSingleResult(stemcellVersions)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering stemcell"))
+					parallelLog(errors.Wrap(err, "filtering stemcell").Error())
 
 					return
 				}
 
 				scheduledTask, err := scheduler.ScheduleCompilation(releaseVersion, stemcellVersion)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "creating compilation"))
+					parallelLog(errors.Wrap(err, "creating compilation").Error())
 
 					return
 				}
@@ -177,21 +181,21 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 						return
 					}
 
-					fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] compilation is %s\n", time.Now().Format("15:04:05"), stemcellVersion.OS, stemcellVersion.Version, releaseVersion.Name, releaseVersion.Version, status)
+					parallelLog(fmt.Sprintf("compilation is %s", status))
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "checking task"))
+					parallelLog(errors.Wrap(err, "checking task").Error())
 
 					return
 				} else if status != task.StatusSucceeded {
-					fmt.Fprintf(os.Stderr, "%s\n", fmt.Errorf("task did not succeed: %s", status))
+					parallelLog(fmt.Errorf("task did not succeed: %s", status).Error())
 
 					return
 				}
 
 				results, err = index.GetCompilationArtifacts(f)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "finding finished compilation"))
+					parallelLog(errors.Wrap(err, "finding finished compilation").Error())
 
 					return
 				}
@@ -199,7 +203,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 
 			result, err := compilationdatastore.RequireSingleResult(results)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", errors.Wrap(err, "filtering"))
+				parallelLog(errors.Wrap(err, "filtering").Error())
 
 				return
 			}
@@ -209,22 +213,24 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 
 			err = man.UpdateRelease(rel)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "updating release: %v", err)
+				log.Fatalf(fmt.Errorf("updating release: %v", err).Error())
 
 				return
 			}
+
+			parallelLog("added compiled release")
 		})
 	}
 
 	pool, err := workpool.NewThrottler(c.Parallel, parallelize)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "parallelizing: %v", err)
+		log.Fatalf(fmt.Errorf("parallelizing: %v", err).Error())
 	}
 	pool.Work()
 
 	bytes, err = man.Bytes()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "getting bytes: %v", err)
+		log.Fatalf(fmt.Errorf("getting bytes: %v", err).Error())
 	}
 
 	fmt.Printf("%s\n", bytes)
