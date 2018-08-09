@@ -1,13 +1,11 @@
 package formatter
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
-	"github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/output"
+	"github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/result"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -16,18 +14,10 @@ type Properties struct {
 }
 
 func (f Properties) Format(writer io.Writer, reader io.Reader) error {
-	s := bufio.NewScanner(reader)
-	for s.Scan() {
-		var result output.Result
-
-		err := json.Unmarshal(s.Bytes(), &result)
-		if err != nil {
-			return err
-		}
-
+	return result.NewProcessor(reader, func(record result.Record) error {
 		var parsedManifest manifest
 
-		err = yaml.Unmarshal([]byte(result.Raw), &parsedManifest)
+		err := yaml.Unmarshal([]byte(record.Raw), &parsedManifest)
 		if err != nil {
 			return err
 		}
@@ -44,7 +34,7 @@ func (f Properties) Format(writer io.Writer, reader io.Reader) error {
 			}
 
 			if !found {
-				continue
+				return nil
 			}
 		}
 
@@ -55,9 +45,9 @@ func (f Properties) Format(writer io.Writer, reader io.Reader) error {
 
 			fmt.Fprintf(writer, "%s\t%s\n", propertyName, strings.Replace(property.Description, `\n`, "\n", -1))
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 type manifest struct {

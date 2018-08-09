@@ -26,17 +26,12 @@ func (o *Opts) Artifact() (releaseversion.Artifact, error) {
 		return releaseversion.Artifact{}, errors.Wrap(err, "loading release index")
 	}
 
-	results, err := index.GetArtifacts(o.FilterParams())
+	result, err := datastore.GetArtifact(index, o.FilterParams())
 	if err != nil {
 		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
 	}
 
-	result, err := datastore.RequireSingleResult(results)
-	if err != nil {
-		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
-	}
-
-	return result, err
+	return result, nil
 }
 
 func (o Opts) FilterParams() datastore.FilterParams {

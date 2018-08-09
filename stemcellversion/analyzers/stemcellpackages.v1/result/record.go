@@ -1,11 +1,11 @@
-package output
+package result
 
-type Result struct {
+type Record struct {
 	Line    string         `json:"line" yaml:"line"`
-	Package *ResultPackage `json:"package,omitempty" yaml:"package,omitempty"`
+	Package *RecordPackage `json:"package,omitempty" yaml:"package,omitempty"`
 }
 
-type ResultPackage struct {
+type RecordPackage struct {
 	Name         string `json:"name" yaml:"name"`
 	Version      string `json:"version" yaml:"version"`
 	Architecture string `json:"architecture" yaml:"architecture"`

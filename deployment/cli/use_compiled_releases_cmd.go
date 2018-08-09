@@ -103,14 +103,8 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 				return
 			}
 
-			results, err := index.GetCompilationArtifacts(f)
-			if err != nil {
-				parallelLog(errors.Wrap(err, "filtering").Error())
-
-				return
-			}
-
-			if len(results) == 0 {
+			result, err := compilationdatastore.GetCompilationArtifact(index, f)
+			if err == compilationdatastore.NoMatchErr {
 				if c.NoWait {
 					parallelLog(errors.New("none found").Error())
 
@@ -124,14 +118,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					return
 				}
 
-				releaseVersions, err := releaseVersionIndex.GetArtifacts(f.Release)
-				if err != nil {
-					parallelLog(errors.Wrap(err, "filtering release").Error())
-
-					return
-				}
-
-				releaseVersion, err := releaseversiondatastore.RequireSingleResult(releaseVersions)
+				releaseVersion, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, f.Release)
 				if err != nil {
 					parallelLog(errors.Wrap(err, "filtering release").Error())
 
@@ -145,7 +132,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					return
 				}
 
-				stemcellVersions, err := stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{
+				stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
 					OSExpected:      true,
 					OS:              f.OS.Name,
 					VersionExpected: true,
@@ -156,13 +143,6 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					FlavorExpected: true,
 					Flavor:         "light",
 				})
-				if err != nil {
-					parallelLog(errors.Wrap(err, "filtering stemcell").Error())
-
-					return
-				}
-
-				stemcellVersion, err := stemcellversiondatastore.RequireSingleResult(stemcellVersions)
 				if err != nil {
 					parallelLog(errors.Wrap(err, "filtering stemcell").Error())
 
@@ -193,16 +173,13 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					return
 				}
 
-				results, err = index.GetCompilationArtifacts(f)
+				result, err = compilationdatastore.GetCompilationArtifact(index, f)
 				if err != nil {
 					parallelLog(errors.Wrap(err, "finding finished compilation").Error())
 
 					return
 				}
-			}
-
-			result, err := compilationdatastore.RequireSingleResult(results)
-			if err != nil {
+			} else if err != nil {
 				parallelLog(errors.Wrap(err, "filtering").Error())
 
 				return

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/output"
+	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/result"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -27,7 +27,7 @@ func NewAnalysis(tarball string) analysis.AnalysisGenerator {
 	}
 }
 
-func (a *analysisGenerator) Analyze(results analysis.Writer) error {
+func (a *analysisGenerator) Analyze(records analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
 		return errors.Wrap(err, "opening file")
@@ -56,7 +56,7 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 		path := strings.TrimPrefix(header.Name, "./")
 
 		if path == "stemcell.MF" {
-			err = a.analyzeManifest(results, path, tarReader)
+			err = a.analyzeManifest(records, path, tarReader)
 		} else {
 			continue
 		}
@@ -69,7 +69,7 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 	return nil
 }
 
-func (a *analysisGenerator) analyzeManifest(results analysis.Writer, artifact string, reader io.Reader) error {
+func (a *analysisGenerator) analyzeManifest(records analysis.Writer, artifact string, reader io.Reader) error {
 	marshalBytes, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return errors.Wrap(err, "reading release.MF")
@@ -82,7 +82,7 @@ func (a *analysisGenerator) analyzeManifest(results analysis.Writer, artifact st
 		return errors.Wrap(err, "parsing release.MF")
 	}
 
-	err = results.Write(output.Result{
+	err = records.Write(result.Record{
 		Raw:    string(marshalBytes),
 		Parsed: safejson(spec),
 	})

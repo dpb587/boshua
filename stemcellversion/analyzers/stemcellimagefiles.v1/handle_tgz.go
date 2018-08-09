@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/result"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/pkg/errors"
 )
 
-func (a *analysisGenerator) handleTGZ(results analysis.Writer, imageReader io.Reader) error {
+func (a *analysisGenerator) handleTGZ(records analysis.Writer, imageReader io.Reader) error {
 	gzReader, err := gzip.NewReader(imageReader)
 	if err != nil {
 		return errors.Wrap(err, "starting gzip")
@@ -32,7 +32,7 @@ func (a *analysisGenerator) handleTGZ(results analysis.Writer, imageReader io.Re
 			return errors.Wrap(err, "advancing tar")
 		}
 
-		result := output.Result{
+		record := result.Record{
 			Type:    string(header.Typeflag),
 			Path:    fmt.Sprintf("/%s", strings.TrimPrefix(header.Name, "./")),
 			Link:    header.Linkname,
@@ -49,11 +49,11 @@ func (a *analysisGenerator) handleTGZ(results analysis.Writer, imageReader io.Re
 
 		if header.Format == tar.FormatPAX || header.Format == tar.FormatGNU {
 			if header.ChangeTime != unknownTime {
-				result.ChangeTime = &header.ChangeTime
+				record.ChangeTime = &header.ChangeTime
 			}
 
 			if header.AccessTime != unknownTime {
-				result.AccessTime = &header.AccessTime
+				record.AccessTime = &header.AccessTime
 			}
 		}
 
@@ -70,12 +70,12 @@ func (a *analysisGenerator) handleTGZ(results analysis.Writer, imageReader io.Re
 				return errors.Wrap(err, "creating checksum")
 			}
 
-			result.Checksums = checksums.ImmutableChecksums()
+			record.Checksums = checksums.ImmutableChecksums()
 		}
 
-		err = results.Write(result)
+		err = records.Write(record)
 		if err != nil {
-			return errors.Wrap(err, "writing result")
+			return errors.Wrap(err, "writing record")
 		}
 	}
 

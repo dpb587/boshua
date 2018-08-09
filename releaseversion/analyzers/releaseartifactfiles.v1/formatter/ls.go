@@ -1,13 +1,12 @@
 package formatter
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/formatter"
-	"github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/output"
+	"github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/result"
+	"github.com/pkg/errors"
 )
 
 type Ls struct{}
@@ -15,19 +14,15 @@ type Ls struct{}
 func (f Ls) Format(writer io.Writer, reader io.Reader) error {
 	ff := formatter.NewLs(writer)
 
-	s := bufio.NewScanner(reader)
-	for s.Scan() {
-		var result output.Result
+	err := result.NewProcessor(reader, func(record result.Record) error {
+		record.Result.Path = fmt.Sprintf("%s!%s", record.Artifact, record.Result.Path)
 
-		err := json.Unmarshal(s.Bytes(), &result)
-		if err != nil {
-			return err
-		}
+		ff.Add(record.Result)
 
-		// TODO prefix instead?
-		result.Result.Path = fmt.Sprintf("%s!%s", result.Artifact, result.Result.Path)
-
-		ff.Add(result.Result)
+		return nil
+	})
+	if err != nil {
+		return errors.Wrap(err, "processing")
 	}
 
 	ff.Flush()

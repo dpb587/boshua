@@ -32,12 +32,7 @@ func NewReleaseAnalysisField(s scheduler.Scheduler, index datastore.Index) *grap
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			results, err := index.GetArtifacts(f)
-			if err != nil {
-				return nil, errors.Wrap(err, "finding release")
-			}
-
-			result, err := datastore.RequireSingleResult(results)
+			result, err := datastore.GetArtifact(index, f)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding release")
 			}

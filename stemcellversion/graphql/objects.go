@@ -49,17 +49,12 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 						f := datastore.FilterParamsFromArtifact(source)
 						f.Flavor = "light"
 
-						results, err := index.GetArtifacts(f)
+						result, err := datastore.GetArtifact(index, f)
 						if err != nil {
 							return nil, errors.Wrap(err, "finding light stemcell")
 						}
 
-						result, err := datastore.RequireSingleResult(results)
-						if err != nil {
-							return nil, errors.Wrap(err, "finding light stemcell")
-						}
-
-						return result.MetalinkFile(), err
+						return result.MetalinkFile(), nil
 					},
 				},
 				"tarball": tarballField,

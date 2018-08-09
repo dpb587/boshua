@@ -1,4 +1,4 @@
-package output
+package result
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/util/checksum"
 )
 
-type Result struct {
+type Record struct {
 	Type       string                      `json:"type" yaml:"type"`
 	Path       string                      `json:"path" yaml:"path"`
 	Link       string                      `json:"link,omitempty" yaml:"link,omitempty"`

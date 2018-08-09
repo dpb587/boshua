@@ -1,19 +1,21 @@
 package datastore
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/dpb587/boshua/stemcellversion"
 )
 
-func RequireSingleResult(results []stemcellversion.Artifact) (stemcellversion.Artifact, error) {
+func GetArtifact(index Index, f FilterParams) (stemcellversion.Artifact, error) {
+	results, err := index.GetArtifacts(f)
+	if err != nil {
+		return stemcellversion.Artifact{}, err
+	}
+
 	l := len(results)
 
 	if l == 0 {
-		return stemcellversion.Artifact{}, errors.New("expected 1 stemcell version, found 0")
+		return stemcellversion.Artifact{}, NoMatchErr
 	} else if l > 1 {
-		return stemcellversion.Artifact{}, fmt.Errorf("expected 1 stemcell version, found %d", l)
+		return stemcellversion.Artifact{}, MultipleMatchErr
 	}
 
 	return results[0], nil

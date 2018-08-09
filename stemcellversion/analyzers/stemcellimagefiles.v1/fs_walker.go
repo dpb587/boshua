@@ -13,14 +13,14 @@ import (
 	"syscall"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/result"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/pkg/errors"
 )
 
 func (a *analysisGenerator) loadFileNameMap(path string) (map[int]string, error) {
-	results := map[int]string{}
+	records := map[int]string{}
 
 	pathBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -38,13 +38,13 @@ func (a *analysisGenerator) loadFileNameMap(path string) (map[int]string, error)
 			return nil, errors.Wrap(err, "converting id")
 		}
 
-		results[num] = cols[0]
+		records[num] = cols[0]
 	}
 
-	return results, nil
+	return records, nil
 }
 
-func (a *analysisGenerator) walkFS(results analysis.Writer, baseDir string, userMap map[int]string, groupMap map[int]string) filepath.WalkFunc {
+func (a *analysisGenerator) walkFS(records analysis.Writer, baseDir string, userMap map[int]string, groupMap map[int]string) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -59,7 +59,7 @@ func (a *analysisGenerator) walkFS(results analysis.Writer, baseDir string, user
 
 		atime, ctime, mtime := getFSTimes(statSys)
 
-		result := output.Result{
+		record := result.Record{
 			Type:       string(info.Mode().String()[0]),
 			Path:       relPath,
 			Size:       statSys.Size,
@@ -79,7 +79,7 @@ func (a *analysisGenerator) walkFS(results analysis.Writer, baseDir string, user
 				return errors.Wrap(err, "reading link")
 			}
 
-			result.Link = resolved
+			record.Link = resolved
 		}
 
 		if info.Mode()&os.ModeType == 0 {
@@ -102,12 +102,12 @@ func (a *analysisGenerator) walkFS(results analysis.Writer, baseDir string, user
 				return errors.Wrap(err, "creating checksum")
 			}
 
-			result.Checksums = checksums.ImmutableChecksums()
+			record.Checksums = checksums.ImmutableChecksums()
 		}
 
-		err = results.Write(result)
+		err = records.Write(record)
 		if err != nil {
-			return errors.Wrap(err, "writing result")
+			return errors.Wrap(err, "writing record")
 		}
 
 		return nil

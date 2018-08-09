@@ -1,19 +1,21 @@
 package datastore
 
 import (
-	"fmt"
-
 	"github.com/dpb587/boshua/analysis"
-	"github.com/pkg/errors"
 )
 
-func RequireSingleResult(results []analysis.Artifact) (analysis.Artifact, error) {
+func GetAnalysisArtifact(index Index, ref analysis.Reference) (analysis.Artifact, error) {
+	results, err := index.GetAnalysisArtifacts(ref)
+	if err != nil {
+		return analysis.Artifact{}, err
+	}
+
 	l := len(results)
 
 	if l == 0 {
-		return analysis.Artifact{}, errors.New("expected 1 analysis, found 0")
+		return analysis.Artifact{}, NoMatchErr
 	} else if l > 1 {
-		return analysis.Artifact{}, fmt.Errorf("expected 1 analysis, found %d", l)
+		return analysis.Artifact{}, MultipleMatchErr
 	}
 
 	return results[0], nil

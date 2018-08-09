@@ -1,32 +1,22 @@
 package formatter
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 
-	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/output"
+	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 )
 
 type Packages struct{}
 
 func (f Packages) Format(writer io.Writer, reader io.Reader) error {
-	s := bufio.NewScanner(reader)
-	for s.Scan() {
-		var result output.Result
-
-		err := json.Unmarshal(s.Bytes(), &result)
-		if err != nil {
-			return err
+	return result.NewProcessor(reader, func(record result.Record) error {
+		if record.Package == nil {
+			return nil
 		}
 
-		if result.Package == nil {
-			continue
-		}
+		fmt.Fprintf(writer, "%s\t%s\n", record.Package.Name, record.Package.Version)
 
-		fmt.Fprintf(writer, "%s\t%s\n", result.Package.Name, result.Package.Version)
-	}
-
-	return nil
+		return nil
+	})
 }

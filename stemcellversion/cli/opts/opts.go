@@ -26,17 +26,12 @@ func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}
 
-	results, err := index.GetArtifacts(o.FilterParams())
+	result, err := datastore.GetArtifact(index, o.FilterParams())
 	if err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
 
-	result, err := datastore.RequireSingleResult(results)
-	if err != nil {
-		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
-	}
-
-	return result, err
+	return result, nil
 }
 
 func (o Opts) FilterParams() datastore.FilterParams {

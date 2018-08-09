@@ -1,6 +1,6 @@
-package output
+package result
 
-type Result struct {
+type Record struct {
 	Raw    string      `json:"raw"`
 	Parsed interface{} `json:"parsed"`
 }

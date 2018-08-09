@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/analysis"
-	filescommonoutput "github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
-	"github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/output"
+	filescommonresult "github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/result"
+	"github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/result"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/pkg/errors"
@@ -29,7 +29,7 @@ func NewAnalysis(tarball string) analysis.AnalysisGenerator {
 	}
 }
 
-func (a *analysisGenerator) Analyze(results analysis.Writer) error {
+func (a *analysisGenerator) Analyze(records analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
 		return errors.Wrap(err, "opening file")
@@ -61,7 +61,7 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 			continue
 		}
 
-		err = a.analyzeArtifact(results, path, tarReader)
+		err = a.analyzeArtifact(records, path, tarReader)
 		if err != nil {
 			return fmt.Errorf("analyzing artifact %s: %v", path, err)
 		}
@@ -70,7 +70,7 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 	return nil
 }
 
-func (a *analysisGenerator) analyzeArtifact(results analysis.Writer, artifact string, reader io.Reader) error {
+func (a *analysisGenerator) analyzeArtifact(records analysis.Writer, artifact string, reader io.Reader) error {
 	gzReader, err := gzip.NewReader(reader)
 	if err != nil {
 		return errors.Wrap(err, "starting gzip")
@@ -91,7 +91,7 @@ func (a *analysisGenerator) analyzeArtifact(results analysis.Writer, artifact st
 
 		path := strings.TrimPrefix(header.Name, "./")
 
-		filestat := filescommonoutput.Result{
+		filestat := filescommonresult.Record{
 			Type:    string(header.Typeflag),
 			Path:    path,
 			Link:    header.Linkname,
@@ -130,7 +130,7 @@ func (a *analysisGenerator) analyzeArtifact(results analysis.Writer, artifact st
 
 		filestat.Checksums = checksums.ImmutableChecksums()
 
-		err = results.Write(output.Result{
+		err = records.Write(result.Record{
 			Artifact: artifact,
 			Result:   filestat,
 		})

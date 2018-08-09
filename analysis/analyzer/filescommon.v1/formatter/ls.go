@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/result"
 )
 
 type Ls struct {
@@ -22,29 +22,29 @@ func NewLs(writer io.Writer) *Ls {
 	}
 }
 
-func (f *Ls) Add(result output.Result) {
-	gname := result.Gname
+func (f *Ls) Add(record result.Record) {
+	gname := record.Gname
 	if gname == "" {
-		gname = strconv.FormatInt(result.Gid, 10)
+		gname = strconv.FormatInt(record.Gid, 10)
 	}
 
-	uname := result.Uname
+	uname := record.Uname
 	if uname == "" {
-		uname = strconv.FormatInt(result.Uid, 10)
+		uname = strconv.FormatInt(record.Uid, 10)
 	}
 
 	row := []string{
-		f.modeText(result),
+		f.modeText(record),
 		"0", // TODO try to manually determine link count?
 		gname,
 		uname,
-		strconv.FormatInt(result.Size, 10),
-		f.timeText(result),
-		result.Path,
+		strconv.FormatInt(record.Size, 10),
+		f.timeText(record),
+		record.Path,
 	}
 
-	if result.Link != "" {
-		row[6] = fmt.Sprintf("%s -> %s", row[6], result.Link)
+	if record.Link != "" {
+		row[6] = fmt.Sprintf("%s -> %s", row[6], record.Link)
 	}
 
 	f.rows = append(f.rows, row)
@@ -76,8 +76,8 @@ func (f *Ls) Flush() {
 	}
 }
 
-func (f *Ls) timeText(result output.Result) string {
-	ts := result.ModTime
+func (f *Ls) timeText(record result.Record) string {
+	ts := record.ModTime
 	then := time.Now().Add(-1 * time.Second * 86400 * 180)
 
 	if ts.Unix() > then.Unix() {
@@ -87,11 +87,11 @@ func (f *Ls) timeText(result output.Result) string {
 	return ts.Format("Jan _2  2006")
 }
 
-func (f *Ls) modeText(result output.Result) string {
+func (f *Ls) modeText(record result.Record) string {
 	var buf [10]byte // Mode is uint32.
 
-	if len(result.Type) > 0 {
-		buf[0] = result.Type[0]
+	if len(record.Type) > 0 {
+		buf[0] = record.Type[0]
 
 		// https://golang.org/src/os/types.go?s=1131:1151#L42
 		if buf[0] == 'L' {
@@ -108,7 +108,7 @@ func (f *Ls) modeText(result output.Result) string {
 	w := 1
 	const rwx = "rwxrwxrwx"
 	for i, c := range rwx {
-		if result.Mode&(1<<uint(9-1-i)) != 0 {
+		if record.Mode&(1<<uint(9-1-i)) != 0 {
 			buf[w] = byte(c)
 		} else {
 			buf[w] = '-'

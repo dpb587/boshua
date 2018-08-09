@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/output"
+	"github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/result"
 	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -27,7 +27,7 @@ func NewAnalysis(tarball string) analysis.AnalysisGenerator {
 	}
 }
 
-func (a *analysisGenerator) Analyze(results analysis.Writer) error {
+func (a *analysisGenerator) Analyze(records analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
 		return errors.Wrap(err, "opening file")
@@ -56,9 +56,9 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 		path := strings.TrimPrefix(header.Name, "./")
 
 		if path == "release.MF" {
-			err = a.analyzeReleaseManifest(results, path, tarReader)
+			err = a.analyzeReleaseManifest(records, path, tarReader)
 		} else if strings.HasPrefix(path, "jobs/") && strings.HasSuffix(path, ".tgz") {
-			err = a.analyzeJobArtifactManifest(results, path, tarReader)
+			err = a.analyzeJobArtifactManifest(records, path, tarReader)
 		} else {
 			continue
 		}
@@ -71,23 +71,23 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 	return nil
 }
 
-func (a *analysisGenerator) analyzeReleaseManifest(results analysis.Writer, artifact string, reader io.Reader) error {
+func (a *analysisGenerator) analyzeReleaseManifest(records analysis.Writer, artifact string, reader io.Reader) error {
 	marshalBytes, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return errors.Wrap(err, "reading release.MF")
 	}
 
-	var spec output.ResultSpec
+	var spec result.RecordSpec
 
 	err = yaml.Unmarshal(marshalBytes, &spec)
 	if err != nil {
 		return errors.Wrap(err, "parsing release.MF")
 	}
 
-	err = results.Write(output.Result{
+	err = records.Write(result.Record{
 		Path:   artifact,
 		Raw:    string(marshalBytes),
-		Parsed: safejson(spec).(output.ResultSpec),
+		Parsed: safejson(spec).(result.RecordSpec),
 	})
 	if err != nil {
 		return errors.Wrap(err, "writing result")
@@ -96,7 +96,7 @@ func (a *analysisGenerator) analyzeReleaseManifest(results analysis.Writer, arti
 	return nil
 }
 
-func (a *analysisGenerator) analyzeJobArtifactManifest(results analysis.Writer, artifact string, reader io.Reader) error {
+func (a *analysisGenerator) analyzeJobArtifactManifest(records analysis.Writer, artifact string, reader io.Reader) error {
 	gzReader, err := gzip.NewReader(reader)
 	if err != nil {
 		return errors.Wrap(err, "starting gzip")
@@ -126,17 +126,17 @@ func (a *analysisGenerator) analyzeJobArtifactManifest(results analysis.Writer, 
 			return errors.Wrap(err, "reading job.MF")
 		}
 
-		var spec output.ResultSpec
+		var spec result.RecordSpec
 
 		err = yaml.Unmarshal(marshalBytes, &spec)
 		if err != nil {
 			return errors.Wrap(err, "parsing job.MF")
 		}
 
-		err = results.Write(output.Result{
+		err = records.Write(result.Record{
 			Path:   artifact,
 			Raw:    string(marshalBytes),
-			Parsed: safejson(spec).(output.ResultSpec),
+			Parsed: safejson(spec).(result.RecordSpec),
 		})
 		if err != nil {
 			return errors.Wrap(err, "writing result")

@@ -1,12 +1,11 @@
 package formatter
 
 import (
-	"bufio"
-	"encoding/json"
 	"io"
 
 	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/formatter"
-	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/output"
+	"github.com/dpb587/boshua/analysis/analyzer/filescommon.v1/result"
+	"github.com/pkg/errors"
 )
 
 type Ls struct{}
@@ -14,16 +13,13 @@ type Ls struct{}
 func (f Ls) Format(writer io.Writer, reader io.Reader) error {
 	ff := formatter.NewLs(writer)
 
-	s := bufio.NewScanner(reader)
-	for s.Scan() {
-		var result output.Result
+	err := result.NewProcessor(reader, func(record result.Record) error {
+		ff.Add(record)
 
-		err := json.Unmarshal(s.Bytes(), &result)
-		if err != nil {
-			return err
-		}
-
-		ff.Add(result)
+		return nil
+	})
+	if err != nil {
+		return errors.Wrap(err, "processing")
 	}
 
 	ff.Flush()

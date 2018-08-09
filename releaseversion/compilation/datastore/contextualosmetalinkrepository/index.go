@@ -48,13 +48,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		return nil, nil
 	}
 
-	releases, err := i.releaseVersionIndex.GetArtifacts(f.Release)
-	if err != nil {
-		// TODO warn and continue?
-		return nil, errors.Wrap(err, "finding release")
-	}
-
-	release, err := releaseversiondatastore.RequireSingleResult(releases)
+	release, err := releaseversiondatastore.GetArtifact(i.releaseVersionIndex, f.Release)
 	if err != nil {
 		// TODO warn and continue?
 		return nil, errors.Wrap(err, "finding release")

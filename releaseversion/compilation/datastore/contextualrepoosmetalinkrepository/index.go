@@ -226,13 +226,7 @@ func (i *index) FlushCompilationCache() error {
 }
 
 func (i *index) findReleaseRepository(f releaseversiondatastore.FilterParams) (releaseversion.Artifact, string, error) {
-	releases, err := i.releaseVersionIndex.GetArtifacts(f)
-	if err != nil {
-		// TODO warn and continue?
-		return releaseversion.Artifact{}, "", errors.Wrap(err, "finding release")
-	}
-
-	release, err := releaseversiondatastore.RequireSingleResult(releases)
+	release, err := releaseversiondatastore.GetArtifact(i.releaseVersionIndex, f)
 	if err != nil {
 		// TODO warn and continue?
 		return releaseversion.Artifact{}, "", errors.Wrap(err, "finding release")

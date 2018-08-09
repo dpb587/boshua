@@ -34,17 +34,12 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			releaseVersions, err := releaseVersionIndex.GetArtifacts(releaseFilter)
+			releaseVersion, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, releaseFilter)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding release")
 			}
 
-			releaseVersion, err := releaseversiondatastore.RequireSingleResult(releaseVersions)
-			if err != nil {
-				return nil, errors.Wrap(err, "finding release")
-			}
-
-			stemcellVersions, err := stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{
+			stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
 				OSExpected:      true,
 				OS:              p.Args["osName"].(string), // TODO err checking
 				VersionExpected: true,
@@ -55,11 +50,6 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 				FlavorExpected: true,
 				Flavor:         "light",
 			})
-			if err != nil {
-				return nil, errors.Wrap(err, "filtering stemcell")
-			}
-
-			stemcellVersion, err := stemcellversiondatastore.RequireSingleResult(stemcellVersions)
 			if err != nil {
 				return nil, errors.Wrap(err, "filtering stemcell")
 			}
@@ -117,7 +107,7 @@ func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilation
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			results, err := index.GetCompilationArtifacts(compilationdatastore.FilterParams{
+			result, err := compilationdatastore.GetCompilationArtifact(index, compilationdatastore.FilterParams{
 				Release: f,
 				OS: osversiondatastore.FilterParams{
 					NameExpected:    true,
@@ -126,11 +116,6 @@ func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilation
 					Version:         p.Args["osVersion"].(string), // TODO err checking
 				},
 			})
-			if err != nil {
-				return nil, errors.Wrap(err, "finding compilation")
-			}
-
-			result, err := compilationdatastore.RequireSingleResult(results)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding compilation")
 			}

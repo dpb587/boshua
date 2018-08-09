@@ -45,17 +45,12 @@ func NewQuery(index datastore.Index) *graphql.Field {
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			results, err := index.GetArtifacts(f)
+			result, err := datastore.GetArtifact(index, f)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding stemcell")
 			}
 
-			result, err := datastore.RequireSingleResult(results)
-			if err != nil {
-				return nil, errors.Wrap(err, "finding stemcell")
-			}
-
-			return result, err
+			return result, nil
 		},
 	}
 }

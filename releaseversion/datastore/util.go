@@ -1,19 +1,21 @@
 package datastore
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/dpb587/boshua/releaseversion"
 )
 
-func RequireSingleResult(results []releaseversion.Artifact) (releaseversion.Artifact, error) {
+func GetArtifact(index Index, f FilterParams) (releaseversion.Artifact, error) {
+	results, err := index.GetArtifacts(f)
+	if err != nil {
+		return releaseversion.Artifact{}, err
+	}
+
 	l := len(results)
 
 	if l == 0 {
-		return releaseversion.Artifact{}, errors.New("expected 1 release version, found 0")
+		return releaseversion.Artifact{}, NoMatchErr
 	} else if l > 1 {
-		return releaseversion.Artifact{}, fmt.Errorf("expected 1 release version, found %d", l)
+		return releaseversion.Artifact{}, MultipleMatchErr
 	}
 
 	return results[0], nil

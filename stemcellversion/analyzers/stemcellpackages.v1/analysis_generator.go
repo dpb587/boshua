@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/output"
+	"github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +29,7 @@ func NewAnalysis(tarball string) analysis.AnalysisGenerator {
 	}
 }
 
-func (a *analysisGenerator) Analyze(results analysis.Writer) error {
+func (a *analysisGenerator) Analyze(records analysis.Writer) error {
 	fh, err := os.Open(a.tarball)
 	if err != nil {
 		return errors.Wrap(err, "opening file")
@@ -58,7 +58,7 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 		path := strings.TrimPrefix(header.Name, "./")
 
 		if path == "packages.txt" || path == "stemcell_rpm_qa.txt" || path == "stemcell_dpkg_l.txt" {
-			err = a.analyzePackages(results, path, tarReader)
+			err = a.analyzePackages(records, path, tarReader)
 		} else {
 			continue
 		}
@@ -71,16 +71,16 @@ func (a *analysisGenerator) Analyze(results analysis.Writer) error {
 	return nil
 }
 
-func (a *analysisGenerator) analyzePackages(results analysis.Writer, artifact string, reader io.Reader) error {
+func (a *analysisGenerator) analyzePackages(records analysis.Writer, artifact string, reader io.Reader) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		result := output.Result{
+		record := result.Record{
 			Line: scanner.Text(),
 		}
 
-		parsed := dpkgList.FindStringSubmatch(result.Line)
+		parsed := dpkgList.FindStringSubmatch(record.Line)
 		if len(parsed) > 0 {
-			result.Package = &output.ResultPackage{
+			record.Package = &result.RecordPackage{
 				Name:         parsed[1],
 				Version:      parsed[2],
 				Architecture: parsed[3],
@@ -88,7 +88,7 @@ func (a *analysisGenerator) analyzePackages(results analysis.Writer, artifact st
 			}
 		}
 
-		err := results.Write(result)
+		err := records.Write(record)
 		if err != nil {
 			return errors.Wrap(err, "writing result")
 		}

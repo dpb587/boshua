@@ -32,12 +32,8 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
-	results, err := index.GetCompilationArtifacts(o.FilterParams())
-	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "filtering")
-	}
-
-	if len(results) == 0 {
+	result, err := datastore.GetCompilationArtifact(index, o.FilterParams())
+	if err == datastore.NoMatchErr {
 		if o.NoWait {
 			return compilation.Artifact{}, errors.New("none found")
 		}
@@ -52,7 +48,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "loading stemcell index")
 		}
 
-		stemcellVersions, err := stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{
+		stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
 			OSExpected:      true,
 			OS:              o.OS.Name,
 			VersionExpected: true,
@@ -63,11 +59,6 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			FlavorExpected: true,
 			Flavor:         "light",
 		})
-		if err != nil {
-			return compilation.Artifact{}, errors.Wrap(err, "filtering stemcell")
-		}
-
-		stemcellVersion, err := stemcellversiondatastore.RequireSingleResult(stemcellVersions)
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "filtering stemcell")
 		}
@@ -95,14 +86,11 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 
-		results, err = index.GetCompilationArtifacts(o.FilterParams())
+		result, err = datastore.GetCompilationArtifact(index, o.FilterParams())
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "finding finished compilation")
 		}
-	}
-
-	result, err := datastore.RequireSingleResult(results)
-	if err != nil {
+	} else if err != nil {
 		return compilation.Artifact{}, errors.Wrap(err, "filtering")
 	}
 

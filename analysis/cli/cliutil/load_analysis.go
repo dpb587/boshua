@@ -33,12 +33,8 @@ func LoadAnalysis(
 		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
 	}
 
-	results, err := analysisIndex.GetAnalysisArtifacts(analysisRef)
-	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
-	}
-
-	if len(results) == 0 {
+	result, err := analysisdatastore.GetAnalysisArtifact(analysisIndex, analysisRef)
+	if err == analysisdatastore.NoMatchErr {
 		if analysisOpts.NoWait {
 			return analysis.Artifact{}, errors.New("no analysis found")
 		}
@@ -65,14 +61,11 @@ func LoadAnalysis(
 			return analysis.Artifact{}, errors.Wrap(err, "flushing cache")
 		}
 
-		results, err = analysisIndex.GetAnalysisArtifacts(analysisRef)
+		result, err = analysisdatastore.GetAnalysisArtifact(analysisIndex, analysisRef)
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "finding finished analysis")
 		}
-	}
-
-	result, err := analysisdatastore.RequireSingleResult(results)
-	if err != nil {
+	} else if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
 	}
 
