@@ -11,7 +11,6 @@ import (
 	"github.com/cppforlife/go-patch/patch"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/factory"
-	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/releaseversion"
 	compilationtask "github.com/dpb587/boshua/releaseversion/compilation/task"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -23,7 +22,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type ConfigLoader func() (*config.Config, error)
+type ConfigLoader func() ([]byte, error)
 
 type Scheduler struct {
 	config             Config
@@ -305,14 +304,9 @@ exec boshua "$@"`, privilegedMounts), "--"}, runConfig.Args...)
 		return nil, nil, nil, errors.Wrap(err, "marshaling pipeline")
 	}
 
-	rawConfig, err := s.boshuaConfigLoader()
+	rawConfigBytes, err := s.boshuaConfigLoader()
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "loading boshua config")
-	}
-
-	rawConfigBytes, err := yaml.Marshal(rawConfig)
-	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "marshaling boshua config")
+		return nil, nil, nil, errors.Wrap(err, "loading raw config")
 	}
 
 	pipelineVars := map[string]interface{}{

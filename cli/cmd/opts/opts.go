@@ -1,27 +1,22 @@
 package opts
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
+	"time"
 
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
 	"github.com/dpb587/boshua/cli/args"
 	"github.com/dpb587/boshua/config"
+	configloader "github.com/dpb587/boshua/config/loader"
+	configprovider "github.com/dpb587/boshua/config/provider"
+	configtypes "github.com/dpb587/boshua/config/types"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	compiledreleaseversionaggregate "github.com/dpb587/boshua/releaseversion/compilation/datastore/aggregate"
-	compiledreleaseversionfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/factory"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	releaseversionaggregate "github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	stemcellversionaggregate "github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
 	"github.com/dpb587/boshua/task/scheduler"
 	schedulerfactory "github.com/dpb587/boshua/task/scheduler/factory"
@@ -30,246 +25,67 @@ import (
 )
 
 type Opts struct {
-	Config        string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
-	DefaultServer string `long:"default-server" description:"Default boshua API server" env:"BOSHUA_SERVER"`
+	Config string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
 
-	Quiet    bool          `long:"quiet" description:"Suppress informational output"`
+	DefaultServer string        `long:"default-server" description:"Default boshua API server" env:"BOSHUA_SERVER"`
+	DefaultWait   args.Duration `long:"default-wait" description:"Maximum time to wait for scheduled tasks; 0 to disable scheduling" env:"BOSHUA_WAIT" default:"30m"` // TODO better name
+
+	Quiet    bool          `long:"quiet" description:"Suppress informational output" env:"BOSHUA_QUIET"`
 	LogLevel args.LogLevel `long:"log-level" description:"Show additional levels of log messages" default:"FATAL" env:"BOSHUA_LOG_LEVEL"`
 
-	logger logrus.FieldLogger
-
-	parsedConfig         *config.Config
-	releaseIndex         releaseversiondatastore.Index
-	compiledReleaseIndex compiledreleaseversiondatastore.Index
-	stemcellIndex        stemcellversiondatastore.Index
-	osIndex              osversiondatastore.Index
+	parsedConfig *configprovider.Config
 }
 
-func (o *Opts) getConfigPath() (string, bool) {
-	configPath := o.Config
-
-	var isDefault = configPath == "~/.config/boshua/config.yml"
-
-	if strings.HasPrefix(configPath, "~/") {
-		configPath = filepath.Join(os.Getenv("HOME"), configPath[1:])
-	}
-
-	configPath, err := filepath.Abs(configPath)
-	if err != nil {
-		panic(err)
-	}
-
-	return configPath, isDefault
-}
-
-func (o *Opts) GetConfig() (*config.Config, error) {
+func (o *Opts) GetConfig() (*configprovider.Config, error) {
 	if o.parsedConfig != nil {
 		return o.parsedConfig, nil
 	}
 
-	configPath, isDefault := o.getConfigPath()
-
-	configBytes, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		if os.IsNotExist(err) && isDefault {
-			cfg, err := o.getDefaultConfig()
-			if err != nil {
-				return nil, errors.Wrap(err, "loading defaults")
-			}
-
-			o.parsedConfig = cfg
-
-			return o.parsedConfig, nil
-		}
-
-		return nil, errors.Wrap(err, "reading config")
-	}
-
-	cfg := config.Config{
-		General: config.GeneralConfig{
-			DefaultServer: o.DefaultServer,
+	cfg, err := configloader.LoadFromFile(
+		o.Config,
+		&config.Config{
+			General: config.GeneralConfig{
+				DefaultServer: o.DefaultServer,
+				DefaultWait:   time.Duration(o.DefaultWait),
+				LogLevel:      configtypes.LogLevel(o.LogLevel),
+			},
 		},
-	}
-	err = config.UnmarshalYAML(configBytes, &cfg)
+	)
 	if err != nil {
-		return nil, errors.Wrap(err, "loading options")
+		return nil, errors.Wrap(err, "loading file")
 	}
 
-	o.parsedConfig = &cfg
+	cfg.SetAnalysisFactory(analysisfactory.New(cfg.GetLogger()))
+	cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
+	cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
+
+	o.parsedConfig = cfg
 
 	return o.parsedConfig, nil
 }
 
-func (o *Opts) getDefaultConfig() (*config.Config, error) {
-	cfg := &config.Config{
-		General: config.GeneralConfig{
-			DefaultServer: o.DefaultServer,
-		},
-	}
-	cfg.ApplyDefaults()
+func (o *Opts) GetAnalysisIndex(r analysis.Reference) (analysisdatastore.Index, error) {
+	o.mustConfig() // TODO cleaner error
 
-	return cfg, nil
-}
-
-func (o *Opts) GetAnalysisIndex(_ analysis.Reference) (analysisdatastore.Index, error) {
-	// TODO decide between name and analysis reference
-	name := "default"
-
-	config, err := o.GetConfig()
-	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
-
-	factory := analysisfactory.New(o.GetLogger())
-
-	for _, cfg := range config.Analyses {
-		if cfg.Name != name {
-			continue
-		}
-
-		idx, err := factory.Create(cfg.Type, cfg.Name, cfg.Options)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating analysis datastore")
-		}
-
-		return idx, nil
-	}
-
-	return nil, fmt.Errorf("failed to find analysis index: %s", name)
+	return o.parsedConfig.GetAnalysisIndex(r)
 }
 
 func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, error) {
-	if name != "default" {
-		panic("TODO")
-	}
+	o.mustConfig() // TODO cleaner error
 
-	config, err := o.GetConfig()
-	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
-
-	var all []releaseversiondatastore.Index
-	factory := releaseversionfactory.New(o.GetLogger())
-
-	for _, cfg := range config.Releases {
-		var idx releaseversiondatastore.Index
-		var err error
-
-		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating release version datastore")
-		}
-
-		// if cfg.Analysis != nil { // TODO configurable
-		var analysisIdx analysisdatastore.Index
-
-		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
-		if err != nil {
-			return nil, errors.Wrap(err, "loading release analysis")
-		}
-
-		idx = releaseversiondatastore.NewAnalysisIndex(idx, analysisIdx)
-		// }
-
-		all = append(all, idx)
-	}
-
-	return releaseversionaggregate.New(all...), nil
+	return o.parsedConfig.GetReleaseIndex(name)
 }
-
-// func (o *Opts) GetCompiledReleaseManager() (*manager.Manager, error) {
-// 	rvi, err := o.GetReleaseIndex(name)
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "loading release index")
-// 	}
-//
-// 	return manager.NewManager(rv, ov)
-// }
 
 func (o *Opts) GetCompiledReleaseIndex(name string) (compiledreleaseversiondatastore.Index, error) {
-	if name != "default" {
-		panic("TODO")
-	}
+	o.mustConfig() // TODO cleaner error
 
-	config, err := o.GetConfig()
-	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
-
-	releaseIndex, err := o.GetReleaseIndex("default")
-	if err != nil {
-		return nil, errors.Wrap(err, "loading release index")
-	}
-
-	var all []compiledreleaseversiondatastore.Index
-	factory := compiledreleaseversionfactory.New(o.GetLogger())
-
-	for _, cfg := range config.CompiledReleases {
-		var idx compiledreleaseversiondatastore.Index
-		var err error
-
-		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options, releaseIndex)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating compiled release version datastore")
-		}
-
-		// if cfg.Analysis != nil { // TODO configurable
-		var analysisIdx analysisdatastore.Index
-
-		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
-		if err != nil {
-			return nil, errors.Wrap(err, "loading release analysis")
-		}
-
-		idx = compiledreleaseversiondatastore.NewAnalysisIndex(idx, analysisIdx)
-		// }
-
-		all = append(all, idx)
-	}
-
-	return compiledreleaseversionaggregate.New(all...), nil
+	return o.parsedConfig.GetCompiledReleaseIndex(name)
 }
 
-func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.AnalysisIndex, error) {
-	if name != "default" {
-		panic("TODO")
-	}
+func (o *Opts) GetStemcellIndex(name string) (stemcellversiondatastore.Index, error) {
+	o.mustConfig() // TODO cleaner error
 
-	config, err := o.GetConfig()
-	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
-
-	var all []stemcellversiondatastore.Index
-	factory := stemcellversionfactory.New(o.GetLogger())
-
-	for _, cfg := range config.Stemcells {
-		var idx stemcellversiondatastore.Index
-		var err error
-
-		idx, err = factory.Create(cfg.Type, cfg.Name, cfg.Options)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating stemcell version datastore")
-		}
-
-		// if cfg.Analysis != nil { // TODO configurable
-		var analysisIdx analysisdatastore.Index
-
-		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		analysisIdx, err = o.GetAnalysisIndex(analysis.Reference{}) // TODO
-		if err != nil {
-			return nil, errors.Wrap(err, "loading compiled release analysis")
-		}
-
-		idx = stemcellversiondatastore.NewAnalysisIndex(idx, analysisIdx)
-		// }
-
-		all = append(all, idx)
-	}
-
-	return stemcellversionaggregate.New(all...), nil
+	return o.parsedConfig.GetStemcellIndex(name)
 }
 
 func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
@@ -291,7 +107,7 @@ func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
 		return nil, errors.Wrap(err, "loading config")
 	}
 
-	factory := schedulerfactory.New(o.GetConfig, o.GetLogger())
+	factory := schedulerfactory.New(config.Marshal, o.GetLogger())
 
 	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
 }
@@ -306,22 +122,20 @@ func (o *Opts) GetServerConfig() (config.ServerConfig, error) {
 }
 
 func (o *Opts) GetLogger() logrus.FieldLogger {
-	if o.logger == nil {
-		panic("logger is not configured")
-	}
+	o.mustConfig()
 
-	return o.logger
+	return o.parsedConfig.GetLogger()
 }
 
 func (o *Opts) ConfigureLogger(command string) {
-	if o.logger != nil {
-		panic("logger is already configured")
+	o.mustConfig()
+
+	o.parsedConfig.AppendLoggerFields(logrus.Fields{"cli.command": command})
+}
+
+func (o *Opts) mustConfig() {
+	_, err := o.GetConfig()
+	if err != nil {
+		panic(errors.Wrap(err, "loading config"))
 	}
-
-	var logger = logrus.New()
-	logger.Out = os.Stderr
-	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Level = logrus.Level(o.LogLevel)
-
-	o.logger = logger.WithField("cli.command", command)
 }

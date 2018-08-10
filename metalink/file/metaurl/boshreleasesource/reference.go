@@ -40,11 +40,12 @@ func (o Reference) Size() (uint64, error) {
 func (o Reference) Reader() (io.ReadCloser, error) {
 	schemeSplit := strings.SplitN(o.url, "://", 2)
 
-	if !strings.HasPrefix(schemeSplit[0], "git+") {
-		return nil, fmt.Errorf("unsupported scheme: %s", schemeSplit[0])
-	}
-
 	uriSplit := strings.SplitN(schemeSplit[1], "//", 2)
+
+	if !strings.HasPrefix(schemeSplit[0], "git+") {
+		schemeSplit[0] = fmt.Sprintf("git+%s", schemeSplit[0]) // TODO normalize repository uris
+		// return nil, fmt.Errorf("unsupported scheme: %s", schemeSplit[0])
+	}
 
 	repoURI := fmt.Sprintf("%s://%s", schemeSplit[0][4:], uriSplit[0])
 

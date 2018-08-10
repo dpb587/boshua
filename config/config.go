@@ -1,5 +1,11 @@
 package config
 
+import (
+	"time"
+
+	"github.com/dpb587/boshua/config/types"
+)
+
 type Config struct {
 	General   GeneralConfig              `yaml:"general,omitempty"`
 	Scheduler *AbstractComponentConfig   `yaml:"scheduler,omitempty"`
@@ -12,7 +18,9 @@ type Config struct {
 }
 
 type GeneralConfig struct {
-	DefaultServer string `yaml:"default_server"`
+	DefaultServer string         `yaml:"default_server"`
+	DefaultWait   time.Duration  `yaml:"default_wait"`
+	LogLevel      types.LogLevel `yaml:"log_level"`
 }
 
 type ServerConfig struct {
@@ -61,44 +69,4 @@ type AbstractComponentConfig struct {
 	Name    string                 `yaml:"name"`
 	Type    string                 `yaml:"type"`
 	Options map[string]interface{} `yaml:"options"`
-}
-
-func (c *Config) ApplyDefaults() {
-	if c.Server.Bind == "" {
-		c.Server.Bind = "127.0.0.1:4508"
-	}
-
-	if c.General.DefaultServer != "" {
-		defaultServer := AbstractComponentConfig{
-			Name: "default",
-			Type: "boshua.v2",
-			Options: map[string]interface{}{
-				"url": c.General.DefaultServer,
-			},
-		}
-
-		if c.Scheduler == nil {
-			c.Scheduler = &defaultServer
-		}
-
-		if len(c.Analyses) == 0 { // TODO check for name = default instead?
-			c.Analyses = append(c.Analyses, AnalysisDatastore{
-				AbstractComponentConfig: defaultServer,
-			})
-		}
-
-		if len(c.Releases) == 0 { // TODO check for name = default instead?
-			c.Releases = append(c.Releases, defaultServer)
-		}
-
-		if len(c.CompiledReleases) == 0 { // TODO check for name = default instead?
-			c.CompiledReleases = append(c.CompiledReleases, defaultServer)
-		}
-
-		if len(c.Stemcells) == 0 { // TODO check for name = default instead?
-			c.Stemcells = append(c.Stemcells, StemcellVersionDatastore{
-				AbstractComponentConfig: defaultServer,
-			})
-		}
-	}
 }

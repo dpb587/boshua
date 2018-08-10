@@ -8,7 +8,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualosmetalinkrepository"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualrepoosmetalinkrepository"
 	// "github.com/dpb587/boshua/releaseversion/compilation/datastore/legacybcr"
-	"github.com/dpb587/boshua/config"
+	"github.com/dpb587/boshua/config/configdef"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 	switch provider {
 	case "contextualosmetalinkrepository":
 		cfg := contextualosmetalinkrepository.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
@@ -40,7 +40,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 		return contextualosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
 	case "contextualrepoosmetalinkrepository":
 		cfg := contextualrepoosmetalinkrepository.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
@@ -48,7 +48,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 		return contextualrepoosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
 	case "boshua.v2":
 		cfg := boshuaV2.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
@@ -56,7 +56,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 		return boshuaV2.New(cfg, logger), nil
 	// case "presentbcr":
 	// 	cfg := presentbcr.Config{}
-	// 	err := config.RemarshalYAML(options, &cfg)
+	// 	err := configdef.RemarshalYAML(options, &cfg)
 	// 	if err != nil {
 	// 		return nil, errors.Wrap(err, "loading options")
 	// 	}
@@ -64,7 +64,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 	// 	return presentbcr.New(cfg, logger), nil
 	// case "legacybcr":
 	// 	cfg := legacybcr.Config{}
-	// 	err := config.RemarshalYAML(options, &cfg)
+	// 	err := configdef.RemarshalYAML(options, &cfg)
 	// 	if err != nil {
 	// 		return nil, errors.Wrap(err, "loading options")
 	// 	}

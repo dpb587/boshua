@@ -10,45 +10,48 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	analysisboshuaV2 "github.com/dpb587/boshua/analysis/datastore/boshua.v2"
 	analysisscheduler "github.com/dpb587/boshua/analysis/datastore/scheduler"
-	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
+	"github.com/dpb587/boshua/cli/args"
+	"github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/metalink"
 	stemcellpackagesV1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1"
 	stemcellpackagesV1result "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	stemcellversionboshuaV2 "github.com/dpb587/boshua/stemcellversion/datastore/boshua.v2"
 	"github.com/dpb587/boshua/task"
-	schedulerboshuaV2 "github.com/dpb587/boshua/task/scheduler/boshua.v2"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
-	osArg, priorVersionArg, nextVersionArg, err := parseArgs(os.Args)
-	if err != nil {
-		panic(errors.Wrap(err, "parsing args"))
-	}
+type cmd struct {
+	GlobalOpts *opts.Opts
+	Args       struct {
+		OS     string `positional-arg-name:"OS" description:"Operating system name"`
+		Before string `positional-arg-name:"BEFORE" description:"Earlier version"`
+		After  string `positional-arg-name:"AFTER" description:"Later version"`
+	} `positional-args:"true" required:"true"`
+}
 
-	logger := newLogger()
-	boshuaConfig := loadBoshuaConfig()
+func (c *cmd) Execute(_ []string) error {
+	stemcellIndex, _ := c.GlobalOpts.GetStemcellIndex("default")
+	analysisIndex, _ := c.GlobalOpts.GetAnalysisIndex(analysis.Reference{})
+	scheduler, _ := c.GlobalOpts.GetScheduler()
 
-	index := stemcellversionboshuaV2.New(stemcellversionboshuaV2.Config{BoshuaConfig: boshuaConfig}, logger)
-	analysisIndex := analysisscheduler.New(
-		analysisboshuaV2.New(analysisboshuaV2.Config{BoshuaConfig: boshuaConfig}, logger),
-		schedulerboshuaV2.New(schedulerboshuaV2.Config{BoshuaConfig: boshuaConfig}, logger),
+	analysisIndex = analysisscheduler.New(
+		analysisIndex,
+		scheduler,
 		func(status task.Status) {
-			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), osArg, "something", status)
+			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), c.Args.OS, "something", status)
 		},
 	)
 
-	packagesBefore, err := loadPackages(index, analysisIndex, osArg, priorVersionArg)
+	packagesBefore, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.Before)
 	if err != nil {
 		panic(errors.Wrap(err, "loading before"))
 	}
 
-	packagesAfter, err := loadPackages(index, analysisIndex, osArg, nextVersionArg)
+	packagesAfter, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.After)
 	if err != nil {
 		panic(errors.Wrap(err, "loading after"))
 	}
@@ -62,6 +65,30 @@ func main() {
 			fmt.Printf("- %s (%s)\n", pkg.Name, pkg.Before.Version)
 		} else if pkg.Before.Version != pkg.After.Version {
 			fmt.Printf("~ %s (%s --> %s)\n", pkg.Name, pkg.Before.Version, pkg.After.Version)
+		}
+	}
+
+	return nil
+}
+
+func main() {
+	c := cmd{
+		GlobalOpts: &opts.Opts{
+			LogLevel: args.LogLevel(logrus.FatalLevel),
+		},
+	}
+
+	var parser = flags.NewParser(&c, flags.Default)
+	parser.SubcommandsOptional = true
+	parser.CommandHandler = func(command flags.Commander, args []string) error {
+		return c.Execute(args)
+	}
+
+	if _, err := parser.Parse(); err != nil {
+		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
+			os.Exit(0)
+		} else {
+			os.Exit(1)
 		}
 	}
 }
@@ -112,43 +139,6 @@ func mergePackages(before, after []stemcellpackagesV1result.RecordPackage) []Pac
 	})
 
 	return results
-}
-
-func parseArgs(args []string) (string, string, string, error) {
-	if len(args) != 4 {
-		return "", "", "", errors.New("expected 3 arguments")
-	}
-
-	return os.Args[1], os.Args[2], os.Args[3], nil
-}
-
-func newLogger() logrus.FieldLogger {
-	var logger = logrus.New()
-
-	logger.Out = os.Stderr
-	logger.Formatter = &logrus.JSONFormatter{}
-
-	if logLevel := os.Getenv("BOSHUA_LOG_LEVEL"); logLevel != "" {
-		parsedLogLevel, err := logrus.ParseLevel(logLevel)
-		if err != nil {
-			panic(errors.Wrap(err, "parsing $BOSHUA_LOG_LEVEL"))
-		}
-
-		logger.Level = logrus.Level(parsedLogLevel)
-	}
-
-	return logger
-}
-
-func loadBoshuaConfig() boshuaV2.BoshuaConfig {
-	server := os.Getenv("BOSHUA_SERVER")
-	if server == "" {
-		panic(errors.Wrap(errors.New("no boshua.v2 server specified"), "reading $BOSHUA_SERVER")) // TODO default to global
-	}
-
-	return boshuaV2.BoshuaConfig{
-		URL: server,
-	}
 }
 
 func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisdatastore.Index, os, version string) ([]stemcellpackagesV1result.RecordPackage, error) {
@@ -204,7 +194,7 @@ func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisda
 		return nil
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "processing old")
+		return nil, errors.Wrap(err, "processing")
 	}
 
 	return pkgs, nil

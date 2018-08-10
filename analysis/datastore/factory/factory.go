@@ -7,7 +7,7 @@ import (
 	boshuaV2 "github.com/dpb587/boshua/analysis/datastore/boshua.v2"
 	"github.com/dpb587/boshua/analysis/datastore/dpbreleaseartifacts"
 	"github.com/dpb587/boshua/analysis/datastore/localcache"
-	"github.com/dpb587/boshua/config"
+	"github.com/dpb587/boshua/config/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -30,7 +30,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	switch provider {
 	case "boshua.v2":
 		cfg := boshuaV2.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
@@ -38,7 +38,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		return boshuaV2.New(cfg, logger), nil
 	case "dpbreleaseartifacts":
 		cfg := boshreleasedpb.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}

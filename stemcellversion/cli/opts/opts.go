@@ -20,8 +20,17 @@ type Opts struct {
 	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
 }
 
+func (o *Opts) Index(name string) (datastore.Index, error) {
+	cfg, err := o.AppOpts.GetConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "loading config")
+	}
+
+	return cfg.GetStemcellIndex(name)
+}
+
 func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
-	index, err := o.AppOpts.GetStemcellIndex("default")
+	index, err := o.Index("default")
 	if err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading stemcell index")
 	}

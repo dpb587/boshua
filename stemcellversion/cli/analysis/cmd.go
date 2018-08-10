@@ -39,7 +39,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 
 	return cliutil.LoadAnalysis(
 		func(analysis.Reference) (analysisdatastore.Index, error) {
-			idx, err := o.AppOpts.GetStemcellIndex("default")
+			idx, err := o.StemcellOpts.Index("default")
 			if err != nil {
 				return nil, errors.Wrap(err, "getting index")
 			}

@@ -3,7 +3,7 @@ package factory
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/config"
+	"github.com/dpb587/boshua/config/configdef"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/boshioindex"
 	boshuaV2 "github.com/dpb587/boshua/stemcellversion/datastore/boshua.v2"
@@ -29,7 +29,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 	switch provider {
 	case "boshua.v2":
 		cfg := boshuaV2.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}
@@ -37,7 +37,7 @@ func (f *factory) Create(provider, name string, options map[string]interface{}) 
 		return boshuaV2.New(cfg, logger), nil
 	case "boshioindex":
 		cfg := boshioindex.Config{}
-		err := config.RemarshalYAML(options, &cfg)
+		err := configdef.RemarshalYAML(options, &cfg)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading options")
 		}

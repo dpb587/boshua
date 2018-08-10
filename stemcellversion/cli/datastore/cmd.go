@@ -20,7 +20,7 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getDatastore() (stemcellversiondatastore.Index, error) {
-	return o.AppOpts.GetStemcellIndex(o.DatastoreOpts.Datastore)
+	return o.StemcellOpts.Index(o.DatastoreOpts.Datastore)
 }
 
 func New(app *cmdopts.Opts, stemcell *stemcellopts.Opts) *Cmd {
