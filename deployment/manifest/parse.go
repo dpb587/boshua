@@ -73,8 +73,11 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 		} else if release.Stemcell != nil {
 			// already compiled; ignore
 			continue
-		} else if cloudProviderReleaseInstalled && release.Name == cloudProviderRelease.Release {
-			if localStemcell.Name != stemcell.Name || localStemcell.Version != stemcell.Version {
+		} else if release.Name == cloudProviderRelease.Release {
+			if !cloudProviderReleaseInstalled {
+				// not installed and bosh-init can't use it; ignore for now
+				continue
+			} else if localStemcell.Name != stemcell.Name || localStemcell.Version != stemcell.Version {
 				// used by both remote and local; ignore for now
 				continue
 			}
