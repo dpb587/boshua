@@ -40,7 +40,7 @@ func New(config Config, boshuaConfigLoader ConfigLoader, logger logrus.FieldLogg
 	}
 }
 
-func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.ScheduledTask, error) {
+func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (scheduler.ScheduledTask, error) {
 	tt, err := factory.SoonToBeDeprecatedFactory.BuildTask(analysisRef.Analyzer, analysisRef.Subject)
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")
@@ -51,7 +51,7 @@ func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.Schedu
 	return s.schedule(tt)
 }
 
-func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.ScheduledTask, error) {
+func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (scheduler.ScheduledTask, error) {
 	tt, err := compilationtask.New(release, stemcell)
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")
@@ -62,7 +62,7 @@ func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell
 	return s.schedule(tt)
 }
 
-func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
+func (s Scheduler) schedule(tt *task.Task) (scheduler.ScheduledTask, error) {
 	fly := NewFly(s.config)
 
 	pipelineBytes, pipelineVars, pipelineOps, err := s.buildBasePipeline(tt)
@@ -135,7 +135,7 @@ func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
 		return nil, errors.Wrap(err, "unpausing pipeline")
 	}
 
-	return NewTask(fly, pipelineName), nil
+	return newScheduledTask(fly, pipelineName), nil
 }
 
 func (s *Scheduler) pipelineName(t *task.Task, pipelineBytes []byte) string {

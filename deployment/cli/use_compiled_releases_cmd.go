@@ -16,7 +16,7 @@ import (
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/task"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -156,7 +156,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					return
 				}
 
-				status, err := task.WaitForScheduledTask(scheduledTask, func(status task.Status) {
+				status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, func(status schedulerpkg.Status) {
 					if c.AppOpts.Quiet {
 						return
 					}
@@ -167,7 +167,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					parallelLog(errors.Wrap(err, "checking task").Error())
 
 					return
-				} else if status != task.StatusSucceeded {
+				} else if status != schedulerpkg.StatusSucceeded {
 					parallelLog(fmt.Errorf("task did not succeed: %s", status).Error())
 
 					return

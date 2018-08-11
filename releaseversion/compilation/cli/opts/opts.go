@@ -12,7 +12,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/task"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -73,7 +73,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
 		}
 
-		status, err := task.WaitForScheduledTask(scheduledTask, func(status task.Status) {
+		status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, func(status schedulerpkg.Status) {
 			if o.AppOpts.Quiet {
 				return
 			}
@@ -82,7 +82,7 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 		})
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "checking task")
-		} else if status != task.StatusSucceeded {
+		} else if status != schedulerpkg.StatusSucceeded {
 			return compilation.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 

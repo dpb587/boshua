@@ -11,7 +11,7 @@ import (
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
-	"github.com/dpb587/boshua/task"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 )
 
 type Cmd struct {
@@ -44,7 +44,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		func(status task.Status) {
+		func(status schedulerpkg.Status) {
 			if o.AppOpts.Quiet {
 				return
 			}

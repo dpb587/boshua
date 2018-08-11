@@ -1,4 +1,4 @@
-package boshreleasedpb
+package dpbreleaseartifacts
 
 import (
 	"fmt"

@@ -12,7 +12,7 @@ import (
 	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
-	"github.com/dpb587/boshua/task"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -58,7 +58,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		func(status task.Status) {
+		func(status schedulerpkg.Status) {
 			if o.AppOpts.Quiet {
 				return
 			}

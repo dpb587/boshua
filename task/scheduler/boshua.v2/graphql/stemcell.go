@@ -5,7 +5,6 @@ import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversiongraphql "github.com/dpb587/boshua/stemcellversion/graphql"
-	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
@@ -52,7 +51,7 @@ func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *gra
 				return nil, errors.Wrap(err, "checking status")
 			}
 
-			if status == task.StatusSucceeded {
+			if status == scheduler.StatusSucceeded {
 				// TODO better way to avoid repeated flushes?
 				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
 					err = analysisIndex.FlushAnalysisCache()

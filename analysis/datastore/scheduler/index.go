@@ -5,7 +5,6 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
@@ -14,12 +13,12 @@ import (
 type index struct {
 	index             datastore.Index
 	scheduler         scheduler.Scheduler
-	schedulerCallback task.StatusChangeCallback
+	schedulerCallback scheduler.StatusChangeCallback
 }
 
 var _ datastore.Index = &index{}
 
-func New(idx datastore.Index, scheduler scheduler.Scheduler, schedulerCallback task.StatusChangeCallback) datastore.Index {
+func New(idx datastore.Index, scheduler scheduler.Scheduler, schedulerCallback scheduler.StatusChangeCallback) datastore.Index {
 	return &index{
 		index:             idx,
 		scheduler:         scheduler,
@@ -42,10 +41,10 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 		return nil, errors.Wrap(err, "creating analysis")
 	}
 
-	status, err := task.WaitForScheduledTask(scheduledTask, i.schedulerCallback)
+	status, err := scheduler.WaitForScheduledTask(scheduledTask, i.schedulerCallback)
 	if err != nil {
 		return nil, errors.Wrap(err, "checking task")
-	} else if status != task.StatusSucceeded {
+	} else if status != scheduler.StatusSucceeded {
 		return nil, fmt.Errorf("task did not succeed: %s", status)
 	}
 

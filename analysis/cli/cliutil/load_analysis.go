@@ -6,7 +6,6 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/task"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
@@ -16,7 +15,7 @@ func LoadAnalysis(
 	subjectLoader func() (analysis.Subject, error),
 	analysisOpts *opts.Opts,
 	schedulerLoader func() (schedulerpkg.Scheduler, error),
-	callback task.StatusChangeCallback,
+	callback schedulerpkg.StatusChangeCallback,
 ) (analysis.Artifact, error) {
 	subject, err := subjectLoader()
 	if err != nil {
@@ -49,10 +48,10 @@ func LoadAnalysis(
 			return analysis.Artifact{}, errors.Wrap(err, "creating analysis")
 		}
 
-		status, err := task.WaitForScheduledTask(scheduledTask, callback)
+		status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, callback)
 		if err != nil {
 			return analysis.Artifact{}, errors.Wrap(err, "checking task")
-		} else if status != task.StatusSucceeded {
+		} else if status != schedulerpkg.StatusSucceeded {
 			return analysis.Artifact{}, fmt.Errorf("task did not succeed: %s", status)
 		}
 

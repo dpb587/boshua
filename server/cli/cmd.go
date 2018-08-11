@@ -19,10 +19,12 @@ type Cmd struct {
 func (c *Cmd) Execute(extra []string) error {
 	c.AppOpts.ConfigureLogger("server")
 
-	cfg, err := c.AppOpts.GetServerConfig()
+	cfgProvider, err := c.AppOpts.GetConfig()
 	if err != nil {
 		return errors.Wrap(err, "getting server config")
 	}
+
+	cfg := cfgProvider.Config.Server
 
 	r := mux.NewRouter()
 

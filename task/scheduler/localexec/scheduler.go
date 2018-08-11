@@ -35,12 +35,12 @@ func (s Scheduler) cmd(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func (s Scheduler) schedule(tt *task.Task) (task.ScheduledTask, error) {
+func (s Scheduler) schedule(tt *task.Task) (scheduler.ScheduledTask, error) {
 	// definitely not parallel-safe
-	return NewTask(s.cmd, tt), nil
+	return newScheduledTask(s.cmd, tt), nil
 }
 
-func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.ScheduledTask, error) {
+func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (scheduler.ScheduledTask, error) {
 	tt, err := factory.SoonToBeDeprecatedFactory.BuildTask(analysisRef.Analyzer, analysisRef.Subject)
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")
@@ -51,7 +51,7 @@ func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (task.Schedu
 	return s.schedule(tt)
 }
 
-func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (task.ScheduledTask, error) {
+func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (scheduler.ScheduledTask, error) {
 	tt, err := compilationtask.New(release, stemcell)
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")

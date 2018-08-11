@@ -1,23 +1,19 @@
 package opts
 
 import (
-	"time"
-
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	analysisfactory "github.com/dpb587/boshua/analysis/datastore/factory"
-	"github.com/dpb587/boshua/cli/args"
-	"github.com/dpb587/boshua/config"
-	configloader "github.com/dpb587/boshua/config/loader"
+	analysisfactory "github.com/dpb587/boshua/analysis/datastore/defaultfactory"
+	"github.com/dpb587/boshua/cli/opts"
 	configprovider "github.com/dpb587/boshua/config/provider"
-	configtypes "github.com/dpb587/boshua/config/types"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	compiledreleaseversiondatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	compilationfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/defaultfactory"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/factory"
+	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/defaultfactory"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/factory"
+	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/defaultfactory"
 	"github.com/dpb587/boshua/task/scheduler"
 	schedulerfactory "github.com/dpb587/boshua/task/scheduler/factory"
 	"github.com/pkg/errors"
@@ -25,41 +21,26 @@ import (
 )
 
 type Opts struct {
-	Config string `long:"config" description:"Path to configuration file" env:"BOSHUA_CONFIG" default:"~/.config/boshua/config.yml"`
-
-	DefaultServer string        `long:"default-server" description:"Default boshua API server" env:"BOSHUA_SERVER"`
-	DefaultWait   args.Duration `long:"default-wait" description:"Maximum time to wait for scheduled tasks; 0 to disable scheduling" env:"BOSHUA_WAIT" default:"30m"` // TODO better name
-
-	Quiet    bool          `long:"quiet" description:"Suppress informational output" env:"BOSHUA_QUIET"`
-	LogLevel args.LogLevel `long:"log-level" description:"Show additional levels of log messages" default:"FATAL" env:"BOSHUA_LOG_LEVEL"`
+	*opts.Opts
 
 	parsedConfig *configprovider.Config
 }
 
 func (o *Opts) GetConfig() (*configprovider.Config, error) {
-	if o.parsedConfig != nil {
-		return o.parsedConfig, nil
+	if o.parsedConfig == nil {
+		cfg, err := o.Opts.GetConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.SetAnalysisFactory(analysisfactory.New(cfg.GetLogger()))
+		cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
+		cfg.SetReleaseCompilationFactory(compilationfactory.New(cfg.GetLogger()))
+		cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
+		cfg.SetSchedulerFactory(schedulerfactory.New(cfg.Marshal, cfg.GetLogger()))
+
+		o.parsedConfig = cfg
 	}
-
-	cfg, err := configloader.LoadFromFile(
-		o.Config,
-		&config.Config{
-			General: config.GeneralConfig{
-				DefaultServer: o.DefaultServer,
-				DefaultWait:   time.Duration(o.DefaultWait),
-				LogLevel:      configtypes.LogLevel(o.LogLevel),
-			},
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "loading file")
-	}
-
-	cfg.SetAnalysisFactory(analysisfactory.New(cfg.GetLogger()))
-	cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
-	cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
-
-	o.parsedConfig = cfg
 
 	return o.parsedConfig, nil
 }
@@ -102,23 +83,9 @@ func (o *Opts) GetOSIndex(name string) (osversiondatastore.Index, error) {
 }
 
 func (o *Opts) GetScheduler() (scheduler.Scheduler, error) {
-	config, err := o.GetConfig()
-	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
+	o.mustConfig()
 
-	factory := schedulerfactory.New(config.Marshal, o.GetLogger())
-
-	return factory.Create(config.Scheduler.Type, config.Scheduler.Options)
-}
-
-func (o *Opts) GetServerConfig() (config.ServerConfig, error) {
-	parsed, err := o.GetConfig()
-	if err != nil {
-		return config.ServerConfig{}, errors.Wrap(err, "loading config")
-	}
-
-	return parsed.Server, nil
+	return o.parsedConfig.GetScheduler()
 }
 
 func (o *Opts) GetLogger() logrus.FieldLogger {

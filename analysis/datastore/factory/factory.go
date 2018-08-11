@@ -4,49 +4,27 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis/datastore"
-	boshuaV2 "github.com/dpb587/boshua/analysis/datastore/boshua.v2"
-	"github.com/dpb587/boshua/analysis/datastore/dpbreleaseartifacts"
-	"github.com/dpb587/boshua/analysis/datastore/localcache"
-	"github.com/dpb587/boshua/config/configdef"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
-type factory struct {
-	logger logrus.FieldLogger
+type Factory struct {
+	providers map[string]datastore.Factory
 }
 
-var _ datastore.Factory = &factory{}
-
-func New(logger logrus.FieldLogger) datastore.Factory {
-	return &factory{
-		logger: logger,
+func New() *Factory {
+	return &Factory{
+		providers: map[string]datastore.Factory{},
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
-	logger := f.logger.WithField("datastore", fmt.Sprintf("analysis:%s[%s]", provider, name))
+func (f *Factory) Add(provider string, factory datastore.Factory) {
+	f.providers[provider] = factory
+}
 
-	switch provider {
-	case "boshua.v2":
-		cfg := boshuaV2.Config{}
-		err := configdef.RemarshalYAML(options, &cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "loading options")
-		}
-
-		return boshuaV2.New(cfg, logger), nil
-	case "dpbreleaseartifacts":
-		cfg := boshreleasedpb.Config{}
-		err := configdef.RemarshalYAML(options, &cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "loading options")
-		}
-
-		return boshreleasedpb.New(cfg, logger), nil
-	case "localcache":
-		return localcache.New(), nil
-	default:
+func (f *Factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
+	factory, found := f.providers[provider]
+	if !found {
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
+
+	return factory.Create(provider, name, options)
 }

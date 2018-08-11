@@ -6,19 +6,18 @@ import (
 	"io"
 	"os"
 	"sort"
-	"time"
 
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
-	analysisscheduler "github.com/dpb587/boshua/analysis/datastore/scheduler"
+	analysisV2 "github.com/dpb587/boshua/analysis/datastore/boshua.v2"
 	"github.com/dpb587/boshua/cli/args"
-	"github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/cli/opts"
 	"github.com/dpb587/boshua/metalink"
-	stemcellpackagesV1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1"
 	stemcellpackagesV1result "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/task"
+	stemcellversionV2 "github.com/dpb587/boshua/stemcellversion/datastore/boshua.v2"
+	schedulerV2 "github.com/dpb587/boshua/task/scheduler/boshua.v2"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -34,26 +33,27 @@ type cmd struct {
 }
 
 func (c *cmd) Execute(_ []string) error {
-	stemcellIndex, _ := c.GlobalOpts.GetStemcellIndex("default")
-	analysisIndex, _ := c.GlobalOpts.GetAnalysisIndex(analysis.Reference{})
-	scheduler, _ := c.GlobalOpts.GetScheduler()
+	cfg, err := c.GlobalOpts.GetConfig()
+	if err != nil {
+		return errors.Wrap(err, "loading config")
+	}
 
-	analysisIndex = analysisscheduler.New(
-		analysisIndex,
-		scheduler,
-		func(status task.Status) {
-			fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), c.Args.OS, "something", status)
-		},
-	)
+	// only support remote api server
+	cfg.SetAnalysisFactory(analysisV2.NewFactory(cfg.GetLogger()))
+	cfg.SetStemcellFactory(stemcellversionV2.NewFactory(cfg.GetLogger()))
+	cfg.SetSchedulerFactory(schedulerV2.NewFactory(cfg.Marshal, cfg.GetLogger()))
+
+	stemcellIndex, _ := cfg.GetStemcellIndex("default")
+	analysisIndex, _ := cfg.GetAnalysisIndexScheduler(analysis.Reference{})
 
 	packagesBefore, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.Before)
 	if err != nil {
-		panic(errors.Wrap(err, "loading before"))
+		return errors.Wrap(err, "loading before")
 	}
 
 	packagesAfter, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.After)
 	if err != nil {
-		panic(errors.Wrap(err, "loading after"))
+		return errors.Wrap(err, "loading after")
 	}
 
 	packages := mergePackages(packagesBefore, packagesAfter)
@@ -155,11 +155,11 @@ func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisda
 
 	artifact, err := datastore.GetArtifact(index, ref)
 	if err != nil {
-		panic(errors.Wrap(err, "finding stemcell"))
+		return nil, errors.Wrap(err, "finding stemcell")
 	}
 
 	analysis, err := analysisdatastore.GetAnalysisArtifact(analysisIndex, analysis.Reference{
-		Analyzer: stemcellpackagesV1.AnalyzerName,
+		Analyzer: "stemcellpackages.v1",
 		Subject:  artifact,
 	})
 	if err != nil {

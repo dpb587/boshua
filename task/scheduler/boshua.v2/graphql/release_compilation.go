@@ -8,7 +8,6 @@ import (
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
@@ -64,7 +63,7 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 				return nil, errors.Wrap(err, "checking status")
 			}
 
-			if status == task.StatusSucceeded {
+			if status == scheduler.StatusSucceeded {
 				// TODO better way to avoid repeated flushes?
 				err = releaseCompilationIndex.FlushCompilationCache()
 				if err != nil {
@@ -135,7 +134,7 @@ func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilation
 				return nil, errors.Wrap(err, "checking status")
 			}
 
-			if status == task.StatusSucceeded {
+			if status == scheduler.StatusSucceeded {
 				// TODO better way to avoid repeated flushes?
 				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
 					err = analysisIndex.FlushAnalysisCache()

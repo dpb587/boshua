@@ -8,6 +8,7 @@ import (
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -21,6 +22,7 @@ type Config struct {
 	releaseCompilationFactory compilationdatastore.Factory
 	stemcellFactory           stemcellversiondatastore.Factory
 	analysisFactory           analysisdatastore.Factory
+	schedulerFactory          scheduler.Factory
 }
 
 func (c *Config) Marshal() ([]byte, error) {

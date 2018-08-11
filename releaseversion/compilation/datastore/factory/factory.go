@@ -4,74 +4,28 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	boshuaV2 "github.com/dpb587/boshua/releaseversion/compilation/datastore/boshua.v2"
-	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualosmetalinkrepository"
-	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualrepoosmetalinkrepository"
-	// "github.com/dpb587/boshua/releaseversion/compilation/datastore/legacybcr"
-	"github.com/dpb587/boshua/config/configdef"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
-type factory struct {
-	logger logrus.FieldLogger
+type Factory struct {
+	providers map[string]datastore.Factory
 }
 
-var _ datastore.Factory = &factory{}
-
-func New(logger logrus.FieldLogger) datastore.Factory {
-	return &factory{
-		logger: logger,
+func New() *Factory {
+	return &Factory{
+		providers: map[string]datastore.Factory{},
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}, releaseVersionIndex releaseversiondatastore.Index) (datastore.Index, error) {
-	logger := f.logger.WithField("datastore", fmt.Sprintf("compiledreleaseversion:%s[%s]", provider, name))
+func (f *Factory) Add(provider string, factory datastore.Factory) {
+	f.providers[provider] = factory
+}
 
-	switch provider {
-	case "contextualosmetalinkrepository":
-		cfg := contextualosmetalinkrepository.Config{}
-		err := configdef.RemarshalYAML(options, &cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "loading options")
-		}
-
-		return contextualosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
-	case "contextualrepoosmetalinkrepository":
-		cfg := contextualrepoosmetalinkrepository.Config{}
-		err := configdef.RemarshalYAML(options, &cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "loading options")
-		}
-
-		return contextualrepoosmetalinkrepository.New(releaseVersionIndex, cfg, logger), nil
-	case "boshua.v2":
-		cfg := boshuaV2.Config{}
-		err := configdef.RemarshalYAML(options, &cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "loading options")
-		}
-
-		return boshuaV2.New(cfg, logger), nil
-	// case "presentbcr":
-	// 	cfg := presentbcr.Config{}
-	// 	err := configdef.RemarshalYAML(options, &cfg)
-	// 	if err != nil {
-	// 		return nil, errors.Wrap(err, "loading options")
-	// 	}
-	//
-	// 	return presentbcr.New(cfg, logger), nil
-	// case "legacybcr":
-	// 	cfg := legacybcr.Config{}
-	// 	err := configdef.RemarshalYAML(options, &cfg)
-	// 	if err != nil {
-	// 		return nil, errors.Wrap(err, "loading options")
-	// 	}
-	//
-	// 	return legacybcr.New(cfg, f.releaseVersionsIndex, logger), nil
-	// case "compiledreleasesops": // TODO https://github.com/cloudfoundry/cf-deployment/blob/master/operations/use-compiled-releases.yml
-	default:
+func (f *Factory) Create(provider, name string, options map[string]interface{}, releaseVersionIndex releaseversiondatastore.Index) (datastore.Index, error) {
+	factory, found := f.providers[provider]
+	if !found {
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
+
+	return factory.Create(provider, name, options, releaseVersionIndex)
 }

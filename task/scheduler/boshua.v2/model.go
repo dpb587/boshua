@@ -1,7 +1,7 @@
 package boshuaV2
 
 import (
-	"github.com/dpb587/boshua/task"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 )
 
 type mutationSchedule struct {
@@ -12,10 +12,10 @@ type mutationSchedule struct {
 }
 
 type statusResponse struct {
-	Status task.Status `json:"status"`
+	Status schedulerpkg.Status `json:"status"`
 }
 
-func (m mutationSchedule) Status() task.Status {
+func (m mutationSchedule) Status() schedulerpkg.Status {
 	if m.Stemcell != nil {
 		return m.Stemcell.Status
 	} else if m.Release != nil {

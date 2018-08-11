@@ -1,8 +1,8 @@
-package boshreleasedpb
+package dpbreleaseartifacts
 
 import (
-	"github.com/dpb587/boshua/blobstore"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+	"github.com/dpb587/boshua/blobstore"
 )
 
 type Config struct {

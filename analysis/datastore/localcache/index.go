@@ -18,16 +18,21 @@ import (
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type index struct {
+	config  Config
+	logger  logrus.FieldLogger
 	storage string
 }
 
 var _ datastore.Index = &index{}
 
-func New() datastore.Index {
+func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		config:  config,
+		logger:  logger,
 		storage: filepath.Join(os.Getenv("HOME"), ".cache", "boshua", "analysis-localcache"),
 	}
 }
