@@ -15,6 +15,7 @@ import (
 const DefaultPath = "~/.config/boshua/config.yml"
 
 func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
+	// TODO cfg presets should not be overridden?
 	configPath, isDefault := absPath(path)
 
 	configBytes, err := ioutil.ReadFile(configPath)
@@ -26,7 +27,7 @@ func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
 		configBytes = []byte("--- {}")
 	}
 
-	err = configdef.UnmarshalYAML(configBytes, &cfg)
+	err = configdef.UnmarshalYAML(configBytes, cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "loading options")
 	}

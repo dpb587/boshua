@@ -9,6 +9,7 @@ import (
 	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
+	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -39,28 +40,29 @@ func New(config Config, logger logrus.FieldLogger) schedulerpkg.Scheduler {
 func (s scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (schedulerpkg.ScheduledTask, error) {
 	switch subject := analysisRef.Subject.(type) {
 	case stemcellversion.Artifact:
-		return s.scheduleStemcellAnalysis(subject, analysisRef.Analyzer)
+		return s.scheduleStemcellAnalysis(analysisRef, subject)
 	case releaseversion.Artifact:
-		return s.scheduleReleaseAnalysis(subject, analysisRef.Analyzer)
+		return s.scheduleReleaseAnalysis(analysisRef, subject)
 	case compilation.Artifact:
-		return s.scheduleReleaseCompilationAnalysis(subject, analysisRef.Analyzer)
+		return s.scheduleReleaseCompilationAnalysis(analysisRef, subject)
 	default:
 		panic(errors.New("unsupported analysis subject")) // TODO panic?
 	}
 }
 
-func (s scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (schedulerpkg.ScheduledTask, error) {
-	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromArtifact(release))
-	mutationVars["osName"] = stemcell.OS
-	mutationVars["osVersion"] = stemcell.Version
+func (s scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (schedulerpkg.ScheduledTask, error) {
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(f.Release)
+	mutationVars["osName"] = f.OS.Name
+	mutationVars["osVersion"] = f.OS.Version
 
 	return s.schedule(
+		f,
 		fmt.Sprintf(`mutation _(%s, $osName: String!, $osVersion: String!) { scheduleReleaseCompilation(%s, osName: $osName, osVersion: $osVersion) { status } }`, mutationVarsTypes, mutationFilter),
 		mutationVars,
 	)
 }
 
-func (s scheduler) schedule(mutationQuery string, mutationVars map[string]interface{}) (schedulerpkg.ScheduledTask, error) {
+func (s scheduler) schedule(subject interface{}, mutationQuery string, mutationVars map[string]interface{}) (schedulerpkg.ScheduledTask, error) {
 	// TODO assumes caller runs Status; not calling here avoids duplicate initial requests
 	return newScheduledTask(
 		func() (schedulerpkg.Status, error) {
@@ -79,36 +81,40 @@ func (s scheduler) schedule(mutationQuery string, mutationVars map[string]interf
 
 			return resp.Status(), nil
 		},
+		subject,
 	), nil
 }
 
-func (s scheduler) scheduleStemcellAnalysis(subject stemcellversion.Artifact, analyzer analysis.AnalyzerName) (schedulerpkg.ScheduledTask, error) {
+func (s scheduler) scheduleStemcellAnalysis(analysisRef analysis.Reference, subject stemcellversion.Artifact) (schedulerpkg.ScheduledTask, error) {
 	mutationFilter, mutationVarsTypes, mutationVars := stemcellversiongraphql.BuildListQueryArgs(stemcellversiondatastore.FilterParamsFromArtifact(subject))
-	mutationVars["analyzer"] = analyzer
+	mutationVars["analyzer"] = analysisRef.Analyzer
 
 	return s.schedule(
+		analysisRef,
 		fmt.Sprintf(`mutation _(%s, $analyzer: String!) { scheduleStemcellAnalysis(%s, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
 		mutationVars,
 	)
 }
 
-func (s scheduler) scheduleReleaseAnalysis(subject releaseversion.Artifact, analyzer analysis.AnalyzerName) (schedulerpkg.ScheduledTask, error) {
+func (s scheduler) scheduleReleaseAnalysis(analysisRef analysis.Reference, subject releaseversion.Artifact) (schedulerpkg.ScheduledTask, error) {
 	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromArtifact(subject))
-	mutationVars["analyzer"] = analyzer
+	mutationVars["analyzer"] = analysisRef.Analyzer
 
 	return s.schedule(
+		analysisRef,
 		fmt.Sprintf(`mutation _(%s, $analyzer: String!) { scheduleReleaseAnalysis(%s, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
 		mutationVars,
 	)
 }
 
-func (s scheduler) scheduleReleaseCompilationAnalysis(subject compilation.Artifact, analyzer analysis.AnalyzerName) (schedulerpkg.ScheduledTask, error) {
+func (s scheduler) scheduleReleaseCompilationAnalysis(analysisRef analysis.Reference, subject compilation.Artifact) (schedulerpkg.ScheduledTask, error) {
 	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromReference(subject.Release))
 	mutationVars["osName"] = subject.OS.Name
 	mutationVars["osVersion"] = subject.OS.Version
-	mutationVars["analyzer"] = analyzer
+	mutationVars["analyzer"] = analysisRef.Analyzer
 
 	return s.schedule(
+		analysisRef,
 		fmt.Sprintf(`mutation _(%s, $osName: String!, $osVersion: String!, $analyzer: String!) { scheduleReleaseCompilationAnalysis(%s, osName: $osName, osVersion: $osVersion, analyzer: $analyzer) { status } }`, mutationVarsTypes, mutationFilter),
 		mutationVars,
 	)

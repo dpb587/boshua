@@ -5,7 +5,6 @@ import (
 
 	"github.com/dpb587/boshua/config/configdef"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
-	"github.com/dpb587/boshua/task/scheduler/concourse"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -13,14 +12,12 @@ import (
 const Provider = "boshua.v2"
 
 type factory struct {
-	configLoader concourse.ConfigLoader
-	logger       logrus.FieldLogger
+	logger logrus.FieldLogger
 }
 
-func NewFactory(configLoader concourse.ConfigLoader, logger logrus.FieldLogger) schedulerpkg.Factory {
+func NewFactory(logger logrus.FieldLogger) schedulerpkg.Factory {
 	return &factory{
-		configLoader: configLoader,
-		logger:       logger,
+		logger: logger,
 	}
 }
 

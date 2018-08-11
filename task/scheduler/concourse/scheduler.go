@@ -11,9 +11,10 @@ import (
 	"github.com/cppforlife/go-patch/patch"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/factory"
-	"github.com/dpb587/boshua/releaseversion"
+	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	compilationtask "github.com/dpb587/boshua/releaseversion/compilation/task"
-	"github.com/dpb587/boshua/stemcellversion"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/task"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/dpb587/boshua/task/scheduler/storecommon"
@@ -25,18 +26,22 @@ import (
 type ConfigLoader func() ([]byte, error)
 
 type Scheduler struct {
-	config             Config
-	boshuaConfigLoader ConfigLoader
-	logger             logrus.FieldLogger
+	config               Config
+	boshuaConfigLoader   ConfigLoader
+	releaseVersionIndex  releaseversiondatastore.Index
+	stemcellVersionIndex stemcellversiondatastore.Index
+	logger               logrus.FieldLogger
 }
 
 var _ scheduler.Scheduler = &Scheduler{}
 
-func New(config Config, boshuaConfigLoader ConfigLoader, logger logrus.FieldLogger) *Scheduler {
+func New(config Config, boshuaConfigLoader ConfigLoader, releaseVersionIndex releaseversiondatastore.Index, stemcellVersionIndex stemcellversiondatastore.Index, logger logrus.FieldLogger) *Scheduler {
 	return &Scheduler{
-		config:             config,
-		boshuaConfigLoader: boshuaConfigLoader,
-		logger:             logger,
+		config:               config,
+		boshuaConfigLoader:   boshuaConfigLoader,
+		releaseVersionIndex:  releaseVersionIndex,
+		stemcellVersionIndex: stemcellVersionIndex,
+		logger:               logger,
 	}
 }
 
@@ -48,10 +53,30 @@ func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (scheduler.S
 
 	tt = storecommon.AppendAnalysisStore(tt, analysisRef)
 
-	return s.schedule(tt)
+	return s.schedule(tt, analysisRef)
 }
 
-func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell stemcellversion.Artifact) (scheduler.ScheduledTask, error) {
+func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (scheduler.ScheduledTask, error) {
+	release, err := releaseversiondatastore.GetArtifact(s.releaseVersionIndex, f.Release)
+	if err != nil {
+		return nil, errors.Wrap(err, "finding release")
+	}
+
+	// TODO switch to receiving stemcell; override iaas to scheduler config settings
+	stemcell, err := stemcellversiondatastore.GetArtifact(s.stemcellVersionIndex, stemcellversiondatastore.FilterParams{
+		OSExpected:      true,
+		OS:              f.OS.Name,
+		VersionExpected: true,
+		Version:         f.OS.Version,
+		IaaSExpected:    true,
+		IaaS:            "aws",
+		FlavorExpected:  true,
+		Flavor:          "light",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "filtering stemcell")
+	}
+
 	tt, err := compilationtask.New(release, stemcell)
 	if err != nil {
 		return nil, errors.Wrap(err, "preparing task")
@@ -59,10 +84,10 @@ func (s Scheduler) ScheduleCompilation(release releaseversion.Artifact, stemcell
 
 	tt = storecommon.AppendCompilationStore(tt, release, stemcell)
 
-	return s.schedule(tt)
+	return s.schedule(tt, f)
 }
 
-func (s Scheduler) schedule(tt *task.Task) (scheduler.ScheduledTask, error) {
+func (s Scheduler) schedule(tt *task.Task, subject interface{}) (scheduler.ScheduledTask, error) {
 	fly := NewFly(s.config)
 
 	pipelineBytes, pipelineVars, pipelineOps, err := s.buildBasePipeline(tt)
@@ -135,7 +160,7 @@ func (s Scheduler) schedule(tt *task.Task) (scheduler.ScheduledTask, error) {
 		return nil, errors.Wrap(err, "unpausing pipeline")
 	}
 
-	return newScheduledTask(fly, pipelineName), nil
+	return newScheduledTask(fly, pipelineName, subject), nil
 }
 
 func (s *Scheduler) pipelineName(t *task.Task, pipelineBytes []byte) string {

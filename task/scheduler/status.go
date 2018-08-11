@@ -11,4 +11,4 @@ var (
 	StatusSucceeded Status = "finished"
 )
 
-type StatusChangeCallback func(Status)
+type StatusChangeCallback func(ScheduledTask, Status) // TODO pass only ScheduledTask.Subject()?

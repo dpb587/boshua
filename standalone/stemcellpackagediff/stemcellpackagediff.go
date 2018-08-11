@@ -41,7 +41,7 @@ func (c *cmd) Execute(_ []string) error {
 	// only support remote api server
 	cfg.SetAnalysisFactory(analysisV2.NewFactory(cfg.GetLogger()))
 	cfg.SetStemcellFactory(stemcellversionV2.NewFactory(cfg.GetLogger()))
-	cfg.SetSchedulerFactory(schedulerV2.NewFactory(cfg.Marshal, cfg.GetLogger()))
+	cfg.SetSchedulerFactory(schedulerV2.NewFactory(cfg.GetLogger()))
 
 	stemcellIndex, _ := cfg.GetStemcellIndex("default")
 	analysisIndex, _ := cfg.GetAnalysisIndexScheduler(analysis.Reference{})

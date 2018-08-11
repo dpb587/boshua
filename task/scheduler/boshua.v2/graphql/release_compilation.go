@@ -33,27 +33,15 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			releaseVersion, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, releaseFilter)
-			if err != nil {
-				return nil, errors.Wrap(err, "finding release")
-			}
-
-			stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
-				OSExpected:      true,
-				OS:              p.Args["osName"].(string), // TODO err checking
-				VersionExpected: true,
-				Version:         p.Args["osVersion"].(string), // TODO err checking
-				// TODO dynamic
-				IaaSExpected:   true,
-				IaaS:           "aws",
-				FlavorExpected: true,
-				Flavor:         "light",
+			scheduledTask, err := s.ScheduleCompilation(compilationdatastore.FilterParams{
+				Release: releaseFilter,
+				OS: osversiondatastore.FilterParams{
+					NameExpected:    true,
+					Name:            p.Args["osName"].(string), // TODO err checking
+					VersionExpected: true,
+					Version:         p.Args["osVersion"].(string), // TODO err checking
+				},
 			})
-			if err != nil {
-				return nil, errors.Wrap(err, "filtering stemcell")
-			}
-
-			scheduledTask, err := s.ScheduleCompilation(releaseVersion, stemcellVersion)
 			if err != nil {
 				return nil, errors.Wrap(err, "scheduling task")
 			}

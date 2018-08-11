@@ -10,19 +10,21 @@ import (
 type scheduledTask struct {
 	fly          *Fly
 	pipelineName string
+	subject      interface{}
 }
 
 var _ scheduler.ScheduledTask = &scheduledTask{}
 
-func newScheduledTask(fly *Fly, pipelineName string) *scheduledTask {
+func newScheduledTask(fly *Fly, pipelineName string, subject interface{}) *scheduledTask {
 	return &scheduledTask{
 		fly:          fly,
 		pipelineName: pipelineName,
+		subject:      subject,
 	}
 }
 
 func (t *scheduledTask) Subject() interface{} {
-	panic("TODO")
+	return t.subject
 }
 
 func (t *scheduledTask) Status() (scheduler.Status, error) {

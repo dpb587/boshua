@@ -15,7 +15,6 @@ import (
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
-	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
@@ -111,58 +110,14 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					return
 				}
 
-				releaseVersionIndex, err := c.AppOpts.GetReleaseIndex("default")
-				if err != nil {
-					parallelLog(errors.Wrap(err, "loading release index").Error())
-
-					return
-				}
-
-				releaseVersion, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, f.Release)
-				if err != nil {
-					parallelLog(errors.Wrap(err, "filtering release").Error())
-
-					return
-				}
-
-				stemcellVersionIndex, err := c.AppOpts.GetStemcellIndex("default")
-				if err != nil {
-					parallelLog(errors.Wrap(err, "loading stemcell index").Error())
-
-					return
-				}
-
-				stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
-					OSExpected:      true,
-					OS:              f.OS.Name,
-					VersionExpected: true,
-					Version:         f.OS.Version,
-					// TODO dynamic
-					IaaSExpected:   true,
-					IaaS:           "aws",
-					FlavorExpected: true,
-					Flavor:         "light",
-				})
-				if err != nil {
-					parallelLog(errors.Wrap(err, "filtering stemcell").Error())
-
-					return
-				}
-
-				scheduledTask, err := scheduler.ScheduleCompilation(releaseVersion, stemcellVersion)
+				scheduledTask, err := scheduler.ScheduleCompilation(f)
 				if err != nil {
 					parallelLog(errors.Wrap(err, "creating compilation").Error())
 
 					return
 				}
 
-				status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, func(status schedulerpkg.Status) {
-					if c.AppOpts.Quiet {
-						return
-					}
-
-					parallelLog(fmt.Sprintf("compilation is %s", status))
-				})
+				status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, schedulerpkg.DefaultStatusChangeCallback)
 				if err != nil {
 					parallelLog(errors.Wrap(err, "checking task").Error())
 

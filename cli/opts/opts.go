@@ -35,6 +35,7 @@ func (o *Opts) GetConfig() (*configprovider.Config, error) {
 				DefaultServer: o.DefaultServer,
 				DefaultWait:   time.Duration(o.DefaultWait),
 				LogLevel:      configtypes.LogLevel(o.LogLevel),
+				Quiet:         o.Quiet,
 			},
 		},
 	)

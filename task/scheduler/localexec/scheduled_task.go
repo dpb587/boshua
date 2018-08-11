@@ -16,20 +16,22 @@ type scheduledTask struct {
 	cmdFactory cmdFactory
 	tt         *task.Task
 
-	status *schedulerpkg.Status
+	subject interface{}
+	status  *schedulerpkg.Status
 }
 
 var _ schedulerpkg.ScheduledTask = &scheduledTask{}
 
-func newScheduledTask(cmdFactory cmdFactory, tt *task.Task) schedulerpkg.ScheduledTask {
+func newScheduledTask(cmdFactory cmdFactory, tt *task.Task, subject interface{}) schedulerpkg.ScheduledTask {
 	return &scheduledTask{
 		cmdFactory: cmdFactory,
 		tt:         tt,
+		subject:    subject,
 	}
 }
 
 func (t *scheduledTask) Subject() interface{} {
-	panic("TODO")
+	return t.subject
 }
 
 // TODO synchronous

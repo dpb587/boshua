@@ -2,8 +2,6 @@ package provider
 
 import (
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
@@ -51,7 +49,11 @@ func (c *Config) GetAnalysisIndexScheduler(ref analysis.Reference) (datastore.In
 		return nil, errors.Wrap(err, "loading scheduler")
 	}
 
-	return scheduler.New(index, s, func(status schedulerpkg.Status) {
-		fmt.Fprintf(os.Stderr, "%s [%s/%s] analysis is %s\n", time.Now().Format("15:04:05"), "TODO", "TODO", status)
-	}), nil
+	var callback schedulerpkg.StatusChangeCallback = nil
+
+	if !c.Config.General.Quiet {
+		callback = schedulerpkg.DefaultStatusChangeCallback
+	}
+
+	return scheduler.New(index, s, callback), nil
 }

@@ -5,6 +5,8 @@ import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/aggregate"
+	"github.com/dpb587/boshua/releaseversion/compilation/datastore/scheduler"
+	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
 
@@ -49,4 +51,28 @@ func (c *Config) GetCompiledReleaseIndex(name string) (datastore.Index, error) {
 	}
 
 	return aggregate.New(all...), nil
+}
+
+func (c *Config) GetCompiledReleaseIndexScheduler(name string) (datastore.Index, error) {
+	index, err := c.GetCompiledReleaseIndex(name)
+	if err != nil {
+		return nil, err
+	}
+
+	if !c.HasScheduler() {
+		return index, nil
+	}
+
+	s, err := c.GetScheduler()
+	if err != nil {
+		return nil, errors.Wrap(err, "loading scheduler")
+	}
+
+	var callback schedulerpkg.StatusChangeCallback = nil
+
+	if !c.Config.General.Quiet {
+		callback = schedulerpkg.DefaultStatusChangeCallback
+	}
+
+	return scheduler.New(index, s, callback), nil
 }

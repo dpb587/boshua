@@ -37,7 +37,7 @@ func (o *Opts) GetConfig() (*configprovider.Config, error) {
 		cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
 		cfg.SetReleaseCompilationFactory(compilationfactory.New(cfg.GetLogger()))
 		cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
-		cfg.SetSchedulerFactory(schedulerfactory.New(cfg.Marshal, cfg.GetLogger()))
+		cfg.SetSchedulerFactory(schedulerfactory.New(cfg, cfg.GetLogger()))
 
 		o.parsedConfig = cfg
 	}
@@ -49,6 +49,12 @@ func (o *Opts) GetAnalysisIndex(r analysis.Reference) (analysisdatastore.Index, 
 	o.mustConfig() // TODO cleaner error
 
 	return o.parsedConfig.GetAnalysisIndex(r)
+}
+
+func (o *Opts) GetAnalysisIndexScheduler(r analysis.Reference) (analysisdatastore.Index, error) {
+	o.mustConfig() // TODO cleaner error
+
+	return o.parsedConfig.GetAnalysisIndexScheduler(r)
 }
 
 func (o *Opts) GetReleaseIndex(name string) (releaseversiondatastore.Index, error) {

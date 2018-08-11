@@ -1,10 +1,6 @@
 package analysis
 
 import (
-	"fmt"
-	"os"
-	"time"
-
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
@@ -36,7 +32,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 	var artifactRef compilation.Reference
 
 	return cliutil.LoadAnalysis(
-		o.AppOpts.GetAnalysisIndex,
+		o.AppOpts.GetAnalysisIndexScheduler,
 		func() (analysis.Subject, error) {
 			artifact, err := o.CompiledReleaseOpts.Artifact()
 			artifactRef = artifact.Reference().(compilation.Reference)
@@ -44,13 +40,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 		},
 		o.AnalysisOpts,
 		o.AppOpts.GetScheduler,
-		func(status schedulerpkg.Status) {
-			if o.AppOpts.Quiet {
-				return
-			}
-
-			fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] analysis is %s\n", time.Now().Format("15:04:05"), artifactRef.OSVersion.Name, artifactRef.OSVersion.Version, artifactRef.ReleaseVersion.Name, artifactRef.ReleaseVersion.Version, status)
-		},
+		schedulerpkg.DefaultStatusChangeCallback,
 	)
 }
 

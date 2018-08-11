@@ -2,7 +2,6 @@ package opts
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/dpb587/boshua/cli/args"
@@ -11,7 +10,6 @@ import (
 	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
@@ -32,35 +30,12 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
-	result, err := datastore.GetCompilationArtifact(index, o.FilterParams())
+	f := o.FilterParams()
+
+	result, err := datastore.GetCompilationArtifact(index, f)
 	if err == datastore.NoMatchErr {
 		if o.NoWait {
 			return compilation.Artifact{}, errors.New("none found")
-		}
-
-		releaseVersion, err := o.ReleaseOpts.Artifact()
-		if err != nil {
-			return compilation.Artifact{}, errors.New("finding release")
-		}
-
-		stemcellVersionIndex, err := o.AppOpts.GetStemcellIndex("default")
-		if err != nil {
-			return compilation.Artifact{}, errors.Wrap(err, "loading stemcell index")
-		}
-
-		stemcellVersion, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
-			OSExpected:      true,
-			OS:              o.OS.Name,
-			VersionExpected: true,
-			Version:         o.OS.Version,
-			// TODO dynamic
-			IaaSExpected:   true,
-			IaaS:           "aws",
-			FlavorExpected: true,
-			Flavor:         "light",
-		})
-		if err != nil {
-			return compilation.Artifact{}, errors.Wrap(err, "filtering stemcell")
 		}
 
 		scheduler, err := o.AppOpts.GetScheduler()
@@ -68,18 +43,12 @@ func (o *Opts) Artifact() (compilation.Artifact, error) {
 			return compilation.Artifact{}, errors.Wrap(err, "loading scheduler")
 		}
 
-		scheduledTask, err := scheduler.ScheduleCompilation(releaseVersion, stemcellVersion)
+		scheduledTask, err := scheduler.ScheduleCompilation(f)
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "creating compilation")
 		}
 
-		status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, func(status schedulerpkg.Status) {
-			if o.AppOpts.Quiet {
-				return
-			}
-
-			fmt.Fprintf(os.Stderr, "%s [%s/%s %s/%s] compilation is %s\n", time.Now().Format("15:04:05"), stemcellVersion.OS, stemcellVersion.Version, releaseVersion.Name, releaseVersion.Version, status)
-		})
+		status, err := schedulerpkg.WaitForScheduledTask(scheduledTask, schedulerpkg.DefaultStatusChangeCallback)
 		if err != nil {
 			return compilation.Artifact{}, errors.Wrap(err, "checking task")
 		} else if status != schedulerpkg.StatusSucceeded {

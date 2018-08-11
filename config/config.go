@@ -21,6 +21,7 @@ type GeneralConfig struct {
 	DefaultServer string         `yaml:"default_server"`
 	DefaultWait   time.Duration  `yaml:"default_wait"`
 	LogLevel      types.LogLevel `yaml:"log_level"`
+	Quiet         bool           `yaml:"quiet"`
 }
 
 type ServerConfig struct {

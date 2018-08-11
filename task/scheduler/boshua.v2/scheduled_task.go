@@ -5,19 +5,21 @@ import (
 )
 
 type scheduledTask struct {
-	status func() (schedulerpkg.Status, error)
+	subject interface{}
+	status  func() (schedulerpkg.Status, error)
 }
 
 var _ schedulerpkg.ScheduledTask = &scheduledTask{}
 
-func newScheduledTask(status func() (schedulerpkg.Status, error)) *scheduledTask {
+func newScheduledTask(status func() (schedulerpkg.Status, error), subject interface{}) *scheduledTask {
 	return &scheduledTask{
-		status: status,
+		status:  status,
+		subject: subject,
 	}
 }
 
 func (t *scheduledTask) Subject() interface{} {
-	panic("TODO")
+	return t.subject
 }
 
 func (t *scheduledTask) Status() (schedulerpkg.Status, error) {
