@@ -3,7 +3,7 @@ package boshuaV2
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/config/configdef"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"

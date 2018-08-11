@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/config/configdef"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

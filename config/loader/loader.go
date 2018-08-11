@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/config"
-	"github.com/dpb587/boshua/config/configdef"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/dpb587/boshua/config/provider"
 	"github.com/pkg/errors"
 )

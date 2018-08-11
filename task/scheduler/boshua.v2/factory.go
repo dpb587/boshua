@@ -3,7 +3,7 @@ package boshuaV2
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/config/configdef"
+	"github.com/dpb587/boshua/util/configdef"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
