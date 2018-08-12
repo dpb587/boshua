@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dpb587/boshua/cli/args"
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"

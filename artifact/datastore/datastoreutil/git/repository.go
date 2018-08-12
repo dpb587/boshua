@@ -37,10 +37,14 @@ func (i *Repository) Path(args ...string) string {
 	return path.Join(append([]string{i.config.LocalPath}, args...)...)
 }
 
+func (i *Repository) WarmCache() bool {
+	return time.Now().Sub(i.lastReloaded) < i.config.PullInterval
+}
+
 func (i *Repository) Reload() error {
 	if i.config.SkipPull {
 		return nil
-	} else if time.Now().Sub(i.lastReloaded) < i.config.PullInterval {
+	} else if i.WarmCache() {
 		return nil
 	}
 

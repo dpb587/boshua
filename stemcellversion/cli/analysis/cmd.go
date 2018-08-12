@@ -4,7 +4,7 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"

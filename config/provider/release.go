@@ -17,6 +17,14 @@ func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
 		panic("TODO")
 	}
 
+	if c.releaseIndices == nil {
+		c.releaseIndices = map[string]datastore.Index{}
+	}
+
+	if idx, found := c.releaseIndices[name]; found {
+		return idx, nil
+	}
+
 	var all []datastore.Index
 
 	for _, cfg := range c.Config.Releases {

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation/cli/analysis"
 	"github.com/dpb587/boshua/releaseversion/compilation/cli/datastore"

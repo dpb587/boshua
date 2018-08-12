@@ -2,7 +2,7 @@ package opts
 
 import (
 	"github.com/dpb587/boshua/cli/args"
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"

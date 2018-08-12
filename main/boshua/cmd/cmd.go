@@ -4,7 +4,7 @@ import (
 	analysis "github.com/dpb587/boshua/analysis/cli"
 	artifact "github.com/dpb587/boshua/artifact/cli"
 	"github.com/dpb587/boshua/cli/args"
-	"github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/main/boshua/cmd/opts"
 	globalopts "github.com/dpb587/boshua/cli/opts"
 	deployment "github.com/dpb587/boshua/deployment/cli"
 	releaseversion "github.com/dpb587/boshua/releaseversion/cli"

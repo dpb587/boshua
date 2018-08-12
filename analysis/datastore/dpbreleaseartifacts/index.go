@@ -64,8 +64,9 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 
 	err = metalink.Unmarshal(analysisBytes, &analysisMeta4)
 	if err != nil {
-		// TODO warn and continue?
-		return nil, fmt.Errorf("unmarshalling %s: %v", analysisPath, err)
+		i.logger.Errorf("failed to unmarshal %s", analysisPath)
+
+		return nil, nil
 	}
 
 	return []analysis.Artifact{
@@ -163,7 +164,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 		sha1[2:],
 	)})
 	if err != nil {
-		return errors.Wrap(err, "Parsing source blob")
+		return errors.Wrap(err, "parsing source blob")
 	}
 
 	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
@@ -171,7 +172,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 
 	err = remote.WriteFrom(local, progress)
 	if err != nil {
-		return errors.Wrap(err, "Copying blob")
+		return errors.Wrap(err, "copying blob")
 	}
 
 	progress.Finish()

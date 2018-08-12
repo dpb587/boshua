@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/dpb587/boshua/analysis/cli/formatter"
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 )
 
 type CmdOpts struct {

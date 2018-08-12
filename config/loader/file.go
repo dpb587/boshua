@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/config"
-	"github.com/dpb587/boshua/util/configdef"
 	"github.com/dpb587/boshua/config/provider"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 )
 
@@ -27,6 +27,10 @@ func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
 		configBytes = []byte("--- {}")
 	}
 
+	if cfg == nil {
+		cfg = &config.Config{}
+	}
+
 	err = configdef.UnmarshalYAML(configBytes, cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "loading options")
@@ -39,6 +43,10 @@ func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
 }
 
 func absPath(path string) (string, bool) {
+	if path == "" {
+		path = DefaultPath
+	}
+
 	var isDefault = path == DefaultPath
 
 	if strings.HasPrefix(path, "~/") {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/cli/cmd/opts"
+	"github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/server/handlers"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
 	stemcellversionserver "github.com/dpb587/boshua/stemcellversion/server"

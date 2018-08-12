@@ -9,7 +9,15 @@ func (c *Config) SetSchedulerFactory(f scheduler.Factory) {
 }
 
 func (c *Config) GetScheduler() (scheduler.Scheduler, error) {
-	return c.schedulerFactory.Create(c.Config.Scheduler.Type, c.Config.Scheduler.Options)
+	if c.scheduler != nil {
+		return c.scheduler, nil
+	}
+
+	sched, err := c.schedulerFactory.Create(c.Config.Scheduler.Type, c.Config.Scheduler.Options)
+
+	c.scheduler = sched
+
+	return sched, err
 }
 
 func (c *Config) HasScheduler() bool {

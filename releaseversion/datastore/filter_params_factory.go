@@ -2,11 +2,28 @@ package datastore
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 )
+
+func FilterParamsFromSlug(slug string) FilterParams {
+	split := strings.SplitN(slug, "/", 2)
+
+	f := FilterParams{
+		NameExpected: true,
+		Name:         split[0],
+	}
+
+	if len(split) == 2 {
+		f.VersionExpected = true
+		f.Version = split[1]
+	}
+
+	return f
+}
 
 func FilterParamsFromArtifact(artifact releaseversion.Artifact) FilterParams {
 	f := FilterParams{

@@ -14,6 +14,7 @@ import (
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/dpb587/metalink"
 	"github.com/dpb587/metalink/file/metaurl"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
@@ -117,7 +118,10 @@ func (c *ArtifactCmd) ExecuteArtifact(loader artifact.Loader) error {
 		}
 
 		for _, cs := range metalinkutil.HashesToChecksums(artifactMetalinkFile.Hashes) {
-			fmt.Printf("%s\n", strings.Replace(cs.String(), ":", "\t", 1))
+			switch cs.Algorithm().Name() {
+			case algorithm.SHA1, algorithm.SHA256:
+				fmt.Printf("%s\n", strings.Replace(cs.String(), ":", "\t", 1))
+			}
 		}
 	} else {
 		return errors.New("invalid format")

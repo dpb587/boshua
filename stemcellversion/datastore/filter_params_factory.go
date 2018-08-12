@@ -2,10 +2,77 @@ package datastore
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/stemcellversion"
 )
+
+func FilterParamsFromSlug(slug string) FilterParams {
+	f := FilterParams{}
+
+	slugSplit := strings.SplitN(slug, "/", 2)
+	nameSplit := strings.Split(slugSplit[0], "-")
+
+	if nameSplit[0] == "light" {
+		f.FlavorExpected = true
+		f.Flavor = "light"
+
+		nameSplit = nameSplit[1:]
+	} else {
+		// TODO light-china?
+		f.FlavorExpected = true
+		f.Flavor = "heavy"
+	}
+
+	if nameSplit[0] != "bosh" {
+		// unexpected format
+		panic("TODO") // TODO !panic
+	}
+
+	nameSplit = nameSplit[1:]
+
+	f.IaaSExpected = true
+	f.IaaS = nameSplit[0]
+	nameSplit = nameSplit[1:]
+
+	f.HypervisorExpected = true
+	f.Hypervisor = nameSplit[0]
+	nameSplit = nameSplit[1:]
+
+	if f.Hypervisor == "xen" && nameSplit[0] == "hvm" {
+		f.Hypervisor = strings.Join([]string{f.Hypervisor, nameSplit[0]}, "-")
+		nameSplit = nameSplit[1:]
+	}
+
+	f.OSExpected = true
+	f.OS = nameSplit[0]
+	nameSplit = nameSplit[1:]
+
+	if !strings.HasPrefix(f.OS, "windows") {
+		f.OS = strings.Join([]string{f.OS, nameSplit[0]}, "-")
+		nameSplit = nameSplit[1:]
+	}
+
+	if nameSplit[0] != "go_agent" {
+		// undesired?
+		panic("TODO") // TODO !panic
+	}
+
+	nameSplit = nameSplit[1:]
+
+	if len(nameSplit) != 0 {
+		// probably disk type
+		panic("TODO") // TODO !panic
+	}
+
+	if len(slugSplit) > 1 {
+		f.VersionExpected = true
+		f.Version = slugSplit[1]
+	}
+
+	return f
+}
 
 func FilterParamsFromArtifact(artifact stemcellversion.Artifact) FilterParams {
 	return FilterParams{

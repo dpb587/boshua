@@ -18,6 +18,14 @@ func (c *Config) GetAnalysisIndex(_ analysis.Reference) (datastore.Index, error)
 	// TODO decide between name and analysis reference
 	name := "default"
 
+	if c.analysisIndices == nil {
+		c.analysisIndices = map[string]datastore.Index{}
+	}
+
+	if idx, found := c.analysisIndices[name]; found {
+		return idx, nil
+	}
+
 	for _, cfg := range c.Config.Analyses {
 		if cfg.Name != name {
 			continue
@@ -27,6 +35,8 @@ func (c *Config) GetAnalysisIndex(_ analysis.Reference) (datastore.Index, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating analysis datastore")
 		}
+
+		c.analysisIndices[name] = idx
 
 		return idx, nil
 	}

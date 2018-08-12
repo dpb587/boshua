@@ -17,12 +17,22 @@ type Config struct {
 	*config.Config
 	RawConfig []byte
 
-	logger                    logrus.FieldLogger
-	releaseFactory            releaseversiondatastore.Factory
+	logger logrus.FieldLogger
+
+	releaseFactory releaseversiondatastore.Factory
+	releaseIndices map[string]releaseversiondatastore.Index
+
 	releaseCompilationFactory compilationdatastore.Factory
-	stemcellFactory           stemcellversiondatastore.Factory
-	analysisFactory           analysisdatastore.Factory
-	schedulerFactory          scheduler.Factory
+	releaseCompilationIndices map[string]compilationdatastore.Index
+
+	stemcellFactory stemcellversiondatastore.Factory
+	stemcellIndices map[string]stemcellversiondatastore.Index
+
+	analysisFactory analysisdatastore.Factory
+	analysisIndices map[string]analysisdatastore.Index
+
+	schedulerFactory scheduler.Factory
+	scheduler        scheduler.Scheduler
 }
 
 func (c *Config) Marshal() ([]byte, error) {

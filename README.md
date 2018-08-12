@@ -5,26 +5,54 @@ For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 > bosh unofficial artifacts
 
 
+## Core Concepts
+
+First, let's define some of the terminology this uses...
+
+ * **Artifact** - an artifact represents something of interest and generally refers to a permanent blob of data somewhere (e.g. a BOSH release tarball stored on Amazon S3). Artifacts are usually identified by a couple pieces of canonical information (e.g. name, version, URI, checksum). There are several primary types of artifacts, each represented by a top-level CLI command or API endpoint.
+    * **Stemcell** - a particular version of a BOSH stemcell for a given IaaS
+    * **Release** - a particular version of a BOSH release
+       * **Compilation** - a particular version of a BOSH release that has been compiled against a particular stemcell or OS and version
+    * **Labels** - used to label artifacts for logical categorization. For hierarchical taxonomies, path-style values with forward slashes can be used. Some standardized label conventions are...
+       * `repo/*` - to identify the source of the release; e.g. `repo/github.com/dpb587/openvpn-bosh-release`
+       * `stability/(alpha|beta|rc|stable)` - identify stability of artifacts
+       * `tag/*` - general, tag-based navigation; e.g. `tag/cpi`, `tag/networking`
+       * `deprecated` - to identify artifacts which are deprecated
+ * **Analysis** - an artifact is independently useful, but there is often much more information which can be derived from it (e.g. what OS packages are included in a particular stemcell version). Analysis results are generated metadata which is affiliated with a particular artifact.
+    * **Analyzer** - analyzers are used to generate specific types of metadata about an artifact. Each artifact type has several builtin analyzers.
+    * **Formatters** - formatters are built-in tools for interpreting the raw results and providing them in a more meaningful way.
+ * **Datastore** - a datastore is something which can find and/or store details about artifacts and analysis in a permanent way (e.g. a BOSH release repository having release information). Each artifact type has several supported datastores, and datastores can delegate to other, possibly remote datastores (e.g. through APIs).
+ * **Scheduler** - a scheduler is used for executing work when the results are not already available (e.g. compiling a release). Several types of schedulers are supported to support running work locally or in Docker, remotely on Concourse, or remotely through an API.
+
+
 ## Usage
+
+
+### CLI
 
 See the following for some specific examples of usage.
 
 
-### Releases
+#### Releases
 
-Showing the tarball of a release...
+Finding the tarball of a release...
 
     $ boshua release --release=openvpn/5.0.0
-    file	openvpn-5.0.0.tgz
-    url	https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/artifacts/release/1b77cbd51a3debefcb06f2ad5311d872f056dbe9
-    sha1	1b77cbd51a3debefcb06f2ad5311d872f056dbe9
+    file   openvpn-5.0.0.tgz
+    url    https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/artifacts/release/1b77cbd51a3debefcb06f2ad5311d872f056dbe9
+    sha1   1b77cbd51a3debefcb06f2ad5311d872f056dbe9
+    sha256 02965881f86b36b311768b154dadbef4522a8cccb81e1b6531c7db05848869aa
+
+Showing the `release.MF` data of a release...
+
+    $ boshua release --release=openvpn/5.0.0 analysis --analyzer=releasemanifests.v1 results -- spec --release
+    name: openvpn
+    version: 5.0.0
+    commit_hash: 0f8966c
+    uncommitted_changes: false
     ...
 
-Getting the manifest files of a release...
-
-    $ boshua release --release=openvpn/5.0.0 analysis --analyzer=releasemanifests.v1 results --raw
-
-Getting the properties for a job of a release...
+Showing the properties for a job of a release...
 
     $ boshua release --release=openvpn/5.0.0 analysis --analyzer=releasemanifests.v1 results -- properties --job=openvpn
     server     VPN IP and netmask (basis of the IP pool which the server will allocate to clients)
@@ -34,35 +62,58 @@ Getting the properties for a job of a release...
     ...
 
 
-#### Compilations
+##### Compilations
 
-Finding the compilation of a release...
+Getting the compilation of a release on a stemcell...
 
     $ boshua release --release=openvpn/4.1.0 compilation --os=ubuntu-trusty/3468.13
-    file	openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13.tgz
-    url	https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/compiled_releases/openvpn/openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13-compiled-1.20171209113453.0.tgz
-    sha1	d278e2a37c486beabd0a9ffd2426e58b38172842
-    ...
+    file   openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13.tgz
+    url    https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/compiled_releases/openvpn/openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13-compiled-1.20171209113453.0.tgz
+    sha1   d278e2a37c486beabd0a9ffd2426e58b38172842
+    sha256 02120c9f1d084e232c0a996f7fa54e0e41c8b53c72cdb1003085108311929362
+
+Uploading the compilation to the director (or showing the command to)...
+
+    $ boshua release --release=openvpn/4.1.0 compilation --os=ubuntu-trusty/3468.13 upload-release --cmd
+    bosh upload-release --name=openvpn --version=4.1.0 \
+      https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/compiled_releases/openvpn/openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13-compiled-1.20171209113453.0.tgz \
+      --sha1=d278e2a37c486beabd0a9ffd2426e58b38172842 \
+      --stemcell=ubuntu-trusty/3468.13
+
+Getting an ops file for using the compiled release in a manifest...
+
+    $ boshua release --release=openvpn/4.1.0 compilation --os=ubuntu-trusty/3468.13 ops-file
+    - path: /releases/name=openvpn?
+      type: replace
+      value:
+        name: openvpn
+        sha1: md5:9cc79bee6180ef5e9f9b96606bf252bd
+        stemcell:
+          os: ubuntu-trusty
+          version: "3468.13"
+        url: https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/compiled_releases/openvpn/openvpn-4.1.0-on-ubuntu-trusty-stemcell-3468.13-compiled-1.20171209113453.0.tgz
+        version: 4.1.0
 
 Showing the checksums of the files of a compiled release...
 
     $ boshua release --release=openvpn/4.1.0 compilation --os=ubuntu-trusty/3468.12 analysis --analyzer=releaseartifactfiles.v1 results -- sha1sum
-    fd01d7b1fa7929906db7486943e3c68510794d01  compiled_packages/openvpn.tgz!external/openssl/include/openssl/aes.h
-    3df405ed1c9876d25551b732f9c2985ecbf1fdf6  compiled_packages/openvpn.tgz!external/openssl/include/openssl/asn1.h
-    9fe8dd066ed9109c09862222a25b15bf109ad34c  compiled_packages/openvpn.tgz!external/openssl/include/openssl/asn1_mac.h
-    4642be4516e5af219da061da7b4edfa948bd590e  compiled_packages/openvpn.tgz!external/openssl/include/openssl/asn1t.h
     ...
+    7edc92307679f49446037387effa6c642c05e2e0  compiled_packages/openvpn.tgz!share/doc/openvpn/COPYRIGHT.GPL
+    67766b2d0c67c36841e77c6b05673a702559371b  compiled_packages/openvpn.tgz!share/doc/openvpn/COPYING
+    99e42912c49c8cd676000c00f2dd51c1795cb4f4  compiled_packages/openvpn.tgz!share/man/man8/openvpn.8
+    e0ebceb7f4f638aca7210001c828d6f889a8128f  compiled_packages/openvpn.tgz!lib/openvpn/plugins/openvpn-plugin-down-root.so
+    6eb2e481af90d6060a61a889a8641dc1e5e75331  compiled_packages/openvpn.tgz!lib/openvpn/plugins/openvpn-plugin-down-root.la
 
 
-### Stemcells
+#### Stemcells
 
-Showing the tarball of a stemcell...
+Finding the tarball of a stemcell...
 
     $ boshua stemcell --stemcell=bosh-aws-xen-hvm-ubuntu-trusty-go_agent/3541.12 --stemcell-flavor=light
-    file	light-bosh-stemcell-3541.12-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
-    url	https://s3.amazonaws.com/bosh-aws-light-stemcells/light-bosh-stemcell-3541.12-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
-    sha1	e2f9840e7ed3eb2ccdf4c39f3a7b49e35e1ad8ec
-    ...
+    file  light-bosh-stemcell-3541.12-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
+    url   https://s3.amazonaws.com/bosh-aws-light-stemcells/light-bosh-stemcell-3541.12-aws-xen-hvm-ubuntu-trusty-go_agent.tgz
+    sha1  e2f9840e7ed3eb2ccdf4c39f3a7b49e35e1ad8ec
+    sha256 23884d534e4f5f946234ff3caf4240f20a37473b6afa0fcb5ba0f5bca3f9de3c
 
 Show the filesystem of a stemcell...
 
@@ -72,10 +123,6 @@ Show the filesystem of a stemcell...
     -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bunzip2
     -rwxr-xr-x - root root   31152 Oct 21  2013 /bin/bzcat
     lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzcmp -> bzdiff
-    -rwxr-xr-x - root root    2140 Oct 21  2013 /bin/bzdiff
-    lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzegrep -> bzgrep
-    -rwxr-xr-x - root root    4877 Oct 21  2013 /bin/bzexe
-    lrwxrwxrwx - root root       6 Oct 21  2013 /bin/bzfgrep -> bzgrep
     ...
 
 Show the packages of a stemcell...
@@ -94,163 +141,154 @@ Show the packages of a stemcell...
     ...
 
 
-### Deployment Manifests
-
-*TODO resurrecting post-refactor*
+#### Deployment Manifests
 
 Convert a manifest referencing release sources to compiled releases...
 
-    $ bosh deployment use-compiled-releases < manifest.yml
+    $ bosh deploy <( boshua deployment use-compiled-releases < manifest.yml )
+      - name: openvpn
+        version: 5.1.0
+    -   sha1: b42eb85e5f074c26b065956cc9b8a6d69208f8a0
+    +   sha1: sha512:ea3c1185076d52b87064951e91dd8885ca62f045dd4e1a17305e6a90a1901cb8d89ea097773e232bdbca2455be746672ea7be93371915597c574cb6933b7c13b
+    -   url: https://s3-external-1.amazonaws.com/dpb587-bosh-release-openvpn-us-east-1/artifacts/release/b42eb85e5f074c26b065956cc9b8a6d69208f8a0
+    +   url: https://s3-external-1.amazonaws.com/dpb587-test-20140414a-us-east-1/compiled-release/2f/474fe4787338086f4e0cb34207c3f687dabe16
+    +   stemcell:
+    +     os: ubuntu-trusty
+    +     version: '3586.27'
+
+Some caveats for automatically converting manifests...
+
+ * explicit versions must be used for `releases` and `stemcells` (not `latest` or `x.latest`)
+ * releases should specify canonical properties (e.g. absolute URLs or tarball checksums)
+ * manifests with multiple stemcells are not supported
 
 
-### GraphQL
+#### Server
 
- > http://localhost:4508/api/v2/graphql?query={...}
+The CLI provides an HTTP server to allow remote querying and execution of commands. By default, it will listen on `127.0.0.1:4508`.
 
-*TODO experimental/planning*
+    $ boshua server
 
-Fetch tarball of a compiled release...
+
+##### CLI Downloads
+
+The `/cli/` endpoint can be used for providing binaries for download.
+
+
+##### Web UI
+
+The `/ui/` endpoint can be used for hosting simple HTML pages.
+
+
+##### GraphQL API
+
+The `/api/v2/graphql` endpoint provides a GraphQL API with query and mutation support.
+
+*This API has further changes pending; it is not stable.*
+
+
+###### Query: `release`
+
+Get information about a release...
 
     {
-      release(name: "openvpn", version: "5.1.0") {
-        compilation(os: "ubuntu-trusty", version: "3586.12") {
-          tarball {
-            hash(type: "sha1"),
-            url
-          }
-        }
-      }
-    }
+      release(name: String, version: String, url: String, checksum: String, labels: [String]) {
+        name
+        version
+        labels
 
-Fetch jobs and packages of a release (this would need to error if the analysis had not been performed? better to recommend analysis?)...
+        tarball { #artifact }
 
-    {
-      release(name: "openvpn", version: "5.1.0") {
-        jobs {
-          name,
-          consumes,
-          provides,
-          dependencies,
-          properties
+        compilation(os: String, version: String) {
+          tarball { #artifact }
+          analysis { #analysis }
         }
 
-        packages {
-          name,
-          dependencies
-        }
-      }
-    }
-
-Fetch analysis artifacts of a release...
-
-    {
-      release(name: "openvpn", version: "5.1.0") {
         analysis {
-          results(analyzers: ["releaseartifactfiles.v1", "releasemanifests.v1"]) {
+          results(analyzers: [String]) {
             analyzer
-            artifact {
-              hash(type: "sha1"),
-              url
-            }
+            artifact { #artifact }
           }
         }
       }
     }
 
-Fetch specialized analysis results...
+
+###### Query: `stemcell`
+
+Get information about a stemcell...
 
     {
-      release(name: "openvpn", version: "5.1.0") {
-        analysis {
-          releaseartifactfilesV1 {
-            results {
-              totalCount
-              pageInfo {
-                endCursor
-                hasNextPage
-              }
-              nodes {
-                artifact
-                result {
-                  type
-                  path
-                  link
-                  size
-                  mode
-                }
-              }
-            }
-          }
-        }
+      stemcell(iaas: String, hypervisor: String, os: String, version: String, diskFormat: String, flavor: String, labels: [String]) {
+        iaas
+        hypervisor
+        os
+        flavor
+        diskFormat
+        version
+
+        tarball { #artifact }
+        analysis { #analysis }
       }
     }
 
-Request an analysis be made...
+
+    ###### Mutation: `scheduleCompilation`
+
+    Schedule compilation for a release...
+
+        mutation {
+          scheduleReleaseCompilation(name: String, version: String, url: String, checksum: String, osName: String, osVersion: String) {
+            status
+          }
+        }
+
+###### Mutation: `scheduleStemcellAnalysis`
+
+Schedule analysis of a stemcell...
 
     mutation {
-      executeAnalysis(
-        analyzer: "releaseartifactfiles.v1",
-        subject: {
-          release: {
-            name: "openvpn",
-            version: "5.1.0",
-            checksum: "sha1:b42eb85e5f074c26b065956cc9b8a6d69208f8a0"
-          }
-        }
-      ) {
+      scheduleStemcellAnalysis( #stemcellParams, analyzer: String) {
         status
       }
     }
 
-Lookup a stemcell...
+###### Mutation: `scheduleReleaseAnalysis`
 
-    {
-      stemcell(os: "ubuntu-xenial", version: "87.3", iaas: "aws") {
-        url
-        sha1
+Schedule analysis of a stemcell...
+
+    mutation {
+      scheduleReleaseAnalysis( #releaseParams, analyzer: String) {
+        status
+      }
+    }
+
+###### Mutation: `scheduleReleaseCompilationAnalysis`
+
+Schedule analysis of a stemcell...
+
+    mutation {
+      scheduleReleaseAnalysis( #releaseParams, #releaseCompilationParams, analyzer: String) {
+        status
       }
     }
 
 
-### Web UI
-
-> http://localhost:4508/ui/
-
-*TODO experimental/playing*
-
- * [releases.html](http://localhost:4508/ui/releases.html)
- * [stemcells.html](http://localhost:4508/ui/stemcells.html)
+### Library
 
 
-## Concepts
 
- * **Artifact** - an artifact represents something of interest and generally refers to a permanent blob of data somewhere, such as a BOSH release tarball stored on Amazon S3. Artifacts are usually identified by a couple pieces of information (e.g. name, version, checksum). There are several primary types of artifacts, each represented by a top-level CLI command.
-    * stemcell - a particular version of a BOSH stemcell for a given IaaS
-    * release - a particular version of a BOSH release
-    * compiled-release - a particular version of a BOSH release that has been compiled against a particular OS and version
- * **Analysis** - generated metadata about an artifact. There are several different analyzers, all of which generate JSON data. Most analyzers have default formatters for rendering the data in a meaningful way.
- * **Labels** - used to label/tag artifacts for logical categorization. Recommended to use path-style for hierarchical taxonomies. Examples...
-    * `repo/*` - to identify source of the release; e.g. `repo/github.com/dpb587/openvpn-bosh-release`
-    * `stability/(alpha|beta|rc|stable)` - identify stability of artifacts
-    * `tag/*` - tag-based navigation; e.g. `tag/cpi`, `tag/networking`
-    * `deprecated` - deprecated
+### Configuration
 
 
-## Limitations
+## History
 
- * when patching deployment manifests to use compiled releases...
-    * releases must already specify expected tarball checksums
-    * explicit versions (not `latest`) must be used for `releases` and `stemcells`
-    * multiple stemcells must not be used
+This project is the amalgamation of several former, smaller projects; but now focused on CLI+API, public+private deployability, and dynamic execution.
 
-
-## Futures
-
- * clean. up.
- * namespacing git repository settings in config
- * mirror rewrites for proxying upstream artifacts
- * authentication?
- * logging
+ * [bosh-stemcell-metadata-scripts](https://github.com/dpb587/bosh-stemcell-metadata-scripts) - repository of scripts for extracting package lists, filesystem details, and metadata from stemcells
+ * [bosh-stemcell-metadata](https://github.com/dpb587/bosh-stemcell-metadata) - repository of pre-computed results from `bosh-stemcell-metadata-scripts` for specific stemcell lines
+ * [bosh-release-compiler](https://github.com/dpb587/bosh-release-compiler) - simple repository of tasks for compiling releases with concourse
+ * [bosh-compiled-releases](https://github.com/dpb587/bosh-compiled-releases) - repository for tracking compiled releases from shared environments or imported from external sources, and CLI for rewriting deployment manifests to use them
 
 
 ## License

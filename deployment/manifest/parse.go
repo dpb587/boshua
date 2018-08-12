@@ -73,7 +73,7 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 		} else if release.Stemcell != nil {
 			// already compiled; ignore
 			continue
-		} else if release.Name == cloudProviderRelease.Release {
+		} else if cloudProviderRelease != nil && release.Name == cloudProviderRelease.Release {
 			if !cloudProviderReleaseInstalled {
 				// not installed and bosh-init can't use it; ignore for now
 				continue

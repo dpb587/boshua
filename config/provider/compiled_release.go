@@ -19,6 +19,14 @@ func (c *Config) GetCompiledReleaseIndex(name string) (datastore.Index, error) {
 		panic("TODO")
 	}
 
+	if c.releaseCompilationIndices == nil {
+		c.releaseCompilationIndices = map[string]datastore.Index{}
+	}
+
+	if idx, found := c.releaseCompilationIndices[name]; found {
+		return idx, nil
+	}
+
 	releaseIndex, err := c.GetReleaseIndex("default")
 	if err != nil {
 		return nil, errors.Wrap(err, "loading release index")

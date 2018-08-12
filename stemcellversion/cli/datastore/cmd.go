@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	cmdopts "github.com/dpb587/boshua/cli/cmd/opts"
+	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion/cli/datastore/opts"
 	stemcellopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"

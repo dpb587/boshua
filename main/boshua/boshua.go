@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/dpb587/boshua/cli/cmd"
+	"github.com/dpb587/boshua/main/boshua/cmd"
 
 	flags "github.com/jessevdk/go-flags"
 )
