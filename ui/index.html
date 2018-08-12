@@ -192,6 +192,16 @@
                 }
               });
 
+              repogroups.sort(function (a, b) {
+                return a.key.localeCompare(b.key);
+              });
+
+              repogroups.forEach(function (repogroup) {
+                repogroup.repos.sort(function (a, b) {
+                  return a.key.localeCompare(b.key);
+                });
+              });
+
               that.repogroups = repogroups
             })
             .finally(function() {
