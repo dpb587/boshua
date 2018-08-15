@@ -36,10 +36,10 @@ for name in $bin_list ; do
       echo "$filename"
       GOOS=$os GOARCH=$arch go build \
         -ldflags "
-          -X main.appName=$name \
-          -X main.appSemver=$version \
-          -X main.appCommit=$commit \
-          -X main.appBuilt=$built \
+          -X github.com/dpb587/boshua/cli/app.name=$name \
+          -X github.com/dpb587/boshua/cli/app.semver=$version \
+          -X github.com/dpb587/boshua/cli/app.commit=$commit \
+          -X github.com/dpb587/boshua/cli/app.built=$built \
           -X main.defaultServer=${BOSHUA_SERVER:-}
         " \
         -o tmp/$filename \

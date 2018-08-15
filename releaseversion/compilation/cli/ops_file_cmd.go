@@ -5,19 +5,22 @@ import (
 	"log"
 	"strings"
 
+	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
 type OpsFileCmd struct {
-	*CmdOpts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 }
 
 func (c *OpsFileCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/compilation/ops-file")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/compilation/ops-file"})
 
-	artifact, err := c.CompiledReleaseOpts.Artifact()
+	artifact, err := c.CompiledReleaseOpts.Artifact(c.AppConfig.Config)
 	if err != nil {
 		return errors.Wrap(err, "finding compiled release")
 	}

@@ -2,7 +2,7 @@ FROM golang:1.10 as build
 WORKDIR /go/src/github.com/dpb587/boshua
 COPY . .
 ENV CGO_ENABLED=0
-RUN go build -o /tmp/binaries/boshua ./cli
+RUN go build -o /tmp/binaries/boshua ./main/boshua
 
 FROM alpine:3.4 as binaries
 RUN apk --no-cache add wget

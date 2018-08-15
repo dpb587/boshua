@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"sync"
 
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -20,8 +21,9 @@ type index struct {
 	config     Config
 	repository *git.Repository
 
-	cacheWarm bool
-	cache     *inmemory.Index
+	cache      *inmemory.Index
+	cacheMutex *sync.Mutex
+	cacheWarm  bool
 }
 
 var _ datastore.Index = &index{}
@@ -32,6 +34,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 		config:     config,
 		repository: git.NewRepository(logger, config.RepositoryConfig),
 		cache:      inmemory.New(),
+		cacheMutex: &sync.Mutex{},
 	}
 }
 
@@ -45,11 +48,19 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 }
 
 func (i *index) fillCache() error {
+	i.cacheMutex.Lock()
+	defer i.cacheMutex.Unlock()
+
 	if i.cacheWarm && i.repository.WarmCache() {
 		return nil
 	}
 
-	err := i.repository.Reload()
+	err := i.cache.FlushCache()
+	if err != nil {
+		return errors.Wrap(err, "flushing in-memory")
+	}
+
+	err = i.repository.Reload()
 	if err != nil {
 		return errors.Wrap(err, "reloading repository")
 	}
@@ -93,11 +104,6 @@ func (i *index) fillCache() error {
 
 func (i *index) FlushCache() error {
 	i.cacheWarm = false
-
-	err := i.cache.FlushCache()
-	if err != nil {
-		return errors.Wrap(err, "flushing in-memory")
-	}
 
 	// TODO defer reload?
 	return i.repository.ForceReload()

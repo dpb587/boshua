@@ -27,6 +27,8 @@ First, let's define some of the terminology this uses...
 
 ## Usage
 
+*All APIs remain in beta and subject to change while it use cases continue to be tested and explored.*
+
 
 ### CLI
 
@@ -233,15 +235,16 @@ Get information about a stemcell...
     }
 
 
-    ###### Mutation: `scheduleCompilation`
+###### Mutation: `scheduleCompilation`
 
-    Schedule compilation for a release...
+Schedule compilation for a release...
 
-        mutation {
-          scheduleReleaseCompilation(name: String, version: String, url: String, checksum: String, osName: String, osVersion: String) {
-            status
-          }
-        }
+    mutation {
+      scheduleReleaseCompilation(name: String, version: String, url: String, checksum: String, osName: String, osVersion: String) {
+        status
+      }
+    }
+
 
 ###### Mutation: `scheduleStemcellAnalysis`
 
@@ -279,6 +282,14 @@ Schedule analysis of a stemcell...
 
 
 ### Configuration
+
+The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. The general structure looks like the following, with specific types documented below.
+
+    general:
+      # default remote boshua server
+      default_server: ~
+      # default wait duration when scheduling
+      default_wait: 30m
 
 
 ## History

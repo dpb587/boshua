@@ -8,8 +8,6 @@ import (
 type DownloadCmd struct {
 	clicommon.DownloadCmd `no-flag:"true"`
 
-	*CmdOpts `no-flag:"true"`
-
 	Args DownloadCmdArgs `positional-args:"true" required:"true"`
 }
 
@@ -19,8 +17,6 @@ type DownloadCmdArgs struct {
 }
 
 func (c *DownloadCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("artifact/download")
-
 	// cheat and inject targetdir
 	c.DownloadCmd.Args.TargetDir = c.Args.TargetDir
 

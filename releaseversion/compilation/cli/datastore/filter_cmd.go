@@ -3,18 +3,21 @@ package datastore
 import (
 	"fmt"
 
+	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type FilterCmd struct {
-	*CmdOpts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 }
 
 func (c *FilterCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "compiledrelease/datastore/filter"})
 
-	index, err := c.getDatastore()
+	index, err := c.Config.GetCompiledReleaseIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}

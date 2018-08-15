@@ -3,24 +3,21 @@ package cli
 import (
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
-	"github.com/pkg/errors"
+	"github.com/dpb587/boshua/config/provider/setter"
+	"github.com/sirupsen/logrus"
 )
 
 type DownloadCmd struct {
-	clicommon.DownloadCmd
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 
-	*CmdOpts `no-flag:"true"`
+	clicommon.DownloadCmd
 }
 
 func (c *DownloadCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("stemcell/download")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/download"})
 
 	return c.DownloadCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
-		artifact, err := c.StemcellOpts.Artifact()
-		if err != nil {
-			return nil, errors.Wrap(err, "finding stemcell")
-		}
-
-		return artifact, nil
+		return c.StemcellOpts.Artifact(c.AppConfig.Config)
 	})
 }

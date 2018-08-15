@@ -4,13 +4,15 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/cli/clicommon/opts"
 	"github.com/dpb587/boshua/analysis/cli/cliutil"
+	"github.com/dpb587/boshua/config/provider/setter"
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
-	"github.com/dpb587/boshua/releaseversion/compilation"
 	compiledreleaseopts "github.com/dpb587/boshua/releaseversion/compilation/cli/opts"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
+	"github.com/pkg/errors"
 )
 
 type Cmd struct {
+	setter.AppConfig `no-flag:"true"`
 	*opts.Opts
 
 	ArtifactCmd     ArtifactCmd     `command:"artifact" description:"For showing the analysis artifact"`
@@ -19,6 +21,7 @@ type Cmd struct {
 }
 
 func (c *Cmd) Execute(extra []string) error {
+	c.ArtifactCmd.AppConfig = c.AppConfig
 	return c.ArtifactCmd.Execute(extra)
 }
 
@@ -29,17 +32,18 @@ type CmdOpts struct {
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
-	var artifactRef compilation.Reference
+	cfgProvider, err := o.AppOpts.GetConfig()
+	if err != nil {
+		return analysis.Artifact{}, errors.Wrap(err, "loading config")
+	}
 
 	return cliutil.LoadAnalysis(
-		o.AppOpts.GetAnalysisIndexScheduler,
+		cfgProvider.GetAnalysisIndexScheduler,
 		func() (analysis.Subject, error) {
-			artifact, err := o.CompiledReleaseOpts.Artifact()
-			artifactRef = artifact.Reference().(compilation.Reference)
-			return artifact, err
+			return o.CompiledReleaseOpts.Artifact(cfgProvider)
 		},
 		o.AnalysisOpts,
-		o.AppOpts.GetScheduler,
+		cfgProvider.GetScheduler,
 		schedulerpkg.DefaultStatusChangeCallback,
 	)
 }

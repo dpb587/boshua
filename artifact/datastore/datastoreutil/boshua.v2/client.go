@@ -7,7 +7,6 @@ import (
 	"reflect"
 
 	"github.com/machinebox/graphql"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +31,7 @@ func (c *Client) Execute(req *graphql.Request, responseData interface{}) error {
 	ctx := context.Background()
 
 	if err := c.client.Run(ctx, req, &responseData); err != nil {
-		return errors.Wrap(err, "running request")
+		return err
 	}
 
 	return nil

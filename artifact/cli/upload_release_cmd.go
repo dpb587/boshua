@@ -8,8 +8,6 @@ import (
 type UploadReleaseCmd struct {
 	clicommon.UploadReleaseCmd
 
-	*CmdOpts `no-flag:"true"`
-
 	Name     string `long:"name" description:"Release name"`
 	Version  string `long:"version" description:"Release version"`
 	Stemcell string `long:"stemcell" description:"Compiled release stemcell (os/version format)"`
@@ -22,8 +20,6 @@ type UploadReleaseCmdArgs struct {
 }
 
 func (c *UploadReleaseCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("artifact/upload-release")
-
 	return c.UploadReleaseCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink), clicommon.UploadReleaseOpts{
 		Name:     c.Name,
 		Version:  c.Version,

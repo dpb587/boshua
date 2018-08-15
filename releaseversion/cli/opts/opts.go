@@ -2,6 +2,7 @@ package opts
 
 import (
 	"github.com/dpb587/boshua/cli/args"
+	"github.com/dpb587/boshua/config/provider"
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
@@ -20,8 +21,8 @@ type Opts struct {
 	Labels []string `long:"release-label" description:"The label(s) to filter releases by"`
 }
 
-func (o *Opts) Artifact() (releaseversion.Artifact, error) {
-	index, err := o.AppOpts.GetReleaseIndex("default")
+func (o *Opts) Artifact(config *provider.Config) (releaseversion.Artifact, error) {
+	index, err := config.GetReleaseIndex("default")
 	if err != nil {
 		return releaseversion.Artifact{}, errors.Wrap(err, "loading release index")
 	}

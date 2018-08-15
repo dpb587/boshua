@@ -9,11 +9,14 @@ import (
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type ExportReleaseCmd struct {
-	*CmdOpts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 
 	Args ExportReleaseCmdArgs `positional-args:"true" required:"true"`
 }
@@ -23,7 +26,7 @@ type ExportReleaseCmdArgs struct {
 }
 
 func (c *ExportReleaseCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/compilation/export-release")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/compilation/export-release"})
 
 	manifestFile, err := ioutil.TempFile("", "boshua-export-release")
 	if err != nil {

@@ -21,5 +21,5 @@ func (c *Config) GetScheduler() (scheduler.Scheduler, error) {
 }
 
 func (c *Config) HasScheduler() bool {
-	return c.Config.Scheduler.Type != ""
+	return c.Config.Scheduler != nil && c.Config.Scheduler.Type != ""
 }

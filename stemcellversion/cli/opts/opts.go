@@ -1,15 +1,13 @@
 package opts
 
 import (
-	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
+	"github.com/dpb587/boshua/config/provider"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/pkg/errors"
 )
 
 type Opts struct {
-	AppOpts *cmdopts.Opts `no-flag:"true"`
-
 	Stemcell   *Stemcell `long:"stemcell" description:"The stemcell name and version"`
 	OS         string    `long:"stemcell-os" description:"The stemcell OS"`
 	Version    string    `long:"stemcell-version" description:"The stemcell version"`
@@ -20,19 +18,10 @@ type Opts struct {
 	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
 }
 
-func (o *Opts) Index(name string) (datastore.Index, error) {
-	cfg, err := o.AppOpts.GetConfig()
+func (o *Opts) Artifact(config *provider.Config) (stemcellversion.Artifact, error) {
+	index, err := config.GetStemcellIndex("default")
 	if err != nil {
-		return nil, errors.Wrap(err, "loading config")
-	}
-
-	return cfg.GetStemcellIndex(name)
-}
-
-func (o *Opts) Artifact() (stemcellversion.Artifact, error) {
-	index, err := o.Index("default")
-	if err != nil {
-		return stemcellversion.Artifact{}, errors.Wrap(err, "loading stemcell index")
+		return stemcellversion.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
 	result, err := datastore.GetArtifact(index, o.FilterParams())

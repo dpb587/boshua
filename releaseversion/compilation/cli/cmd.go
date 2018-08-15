@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/dpb587/boshua/config/provider/setter"
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation/cli/analysis"
@@ -14,6 +15,7 @@ type CmdOpts struct {
 }
 
 type Cmd struct {
+	setter.AppConfig `no-flag:"true"`
 	*opts.Opts
 
 	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing artifacts" subcommands-optional:"true" subcommands-optional:"true"`
@@ -28,13 +30,13 @@ type Cmd struct {
 }
 
 func (c *Cmd) Execute(extra []string) error {
+	c.ArtifactCmd.SetConfig(c.AppConfig.Config)
 	return c.ArtifactCmd.Execute(extra)
 }
 
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	cmd := &Cmd{
 		Opts: &opts.Opts{
-			AppOpts:     app,
 			ReleaseOpts: release,
 		},
 	}
@@ -43,7 +45,6 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	cmd.DatastoreCmd = datastore.New(app, cmd.Opts)
 
 	cmdOpts := &CmdOpts{
-		AppOpts:             app,
 		CompiledReleaseOpts: cmd.Opts,
 	}
 

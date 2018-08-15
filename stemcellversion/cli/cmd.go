@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/dpb587/boshua/config/provider/setter"
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/stemcellversion/cli/analysis"
 	"github.com/dpb587/boshua/stemcellversion/cli/datastore"
@@ -8,11 +9,11 @@ import (
 )
 
 type CmdOpts struct {
-	AppOpts      *cmdopts.Opts `no-flag:"true"`
 	StemcellOpts *opts.Opts
 }
 
 type Cmd struct {
+	setter.AppConfig `no-flag:"true"`
 	*opts.Opts
 
 	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the stemcell artifact" subcommands-optional:"true"`
@@ -25,21 +26,19 @@ type Cmd struct {
 }
 
 func (c *Cmd) Execute(extra []string) error {
+	c.ArtifactCmd.SetConfig(c.AppConfig.Config)
 	return c.ArtifactCmd.Execute(extra)
 }
 
 func New(app *cmdopts.Opts) *Cmd {
 	cmd := &Cmd{
-		Opts: &opts.Opts{
-			AppOpts: app,
-		},
+		Opts: &opts.Opts{},
 	}
 
 	cmd.AnalysisCmd = analysis.New(app, cmd.Opts)
 	cmd.DatastoreCmd = datastore.New(app, cmd.Opts)
 
 	cmdOpts := &CmdOpts{
-		AppOpts:      app,
 		StemcellOpts: cmd.Opts,
 	}
 

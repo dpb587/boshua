@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type LabelsCmd struct {
-	*CmdOpts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 }
 
 func (c *LabelsCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("release/datastore/filter")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/datastore/labels"})
 
-	index, err := c.getDatastore()
+	index, err := c.Config.GetReleaseIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}

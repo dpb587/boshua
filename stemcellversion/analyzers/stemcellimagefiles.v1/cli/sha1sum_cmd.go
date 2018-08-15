@@ -7,13 +7,9 @@ import (
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 )
 
-type Sha1sumCmd struct {
-	*CmdOpts `no-flag:"true"`
-}
+type Sha1sumCmd struct{}
 
 func (c *Sha1sumCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/formatter/stemcellimagefiles.v1/sha1sum")
-
 	f := formatter.Shasum{Algorithm: algorithm.MustLookupName("sha1")}
 	return f.Format(os.Stdout, os.Stdin)
 }

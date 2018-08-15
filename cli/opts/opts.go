@@ -23,6 +23,48 @@ type Opts struct {
 	parsedConfig *configprovider.Config
 }
 
+// func NewDefaultOpts(o Opts) (Opts, error) {
+// 	var err error
+//
+// 	if v := os.Getenv("BOSHUA_CONFIG"); v != "" {
+// 		o.Config = v
+// 	}
+//
+// 	if v := os.Getenv("BOSHUA_SERVER"); v != "" {
+// 		o.DefaultServer = v
+// 	}
+//
+// 	if v := os.Getenv("BOSHUA_WAIT"); v != "" {
+// 		if err = o.DefaultWait.UnmarshalFlag(v); err != nil {
+// 			return Opts{}, errors.Wrap(err, "parsing BOSHUA_WAIT")
+// 		}
+// 	}
+//
+// 	if v := os.Getenv("BOSHUA_LOG_LEVEL"); v != "" {
+// 		if err = o.LogLevel.UnmarshalFlag(v); err != nil {
+// 			return Opts{}, errors.Wrap(err, "parsing BOSHUA_LOG_LEVEL")
+// 		}
+// 	}
+//
+// 	if v := os.Getenv("BOSHUA_QUIET"); v != "" {
+// 		o.Quiet, err = strconv.ParseBool(v)
+// 		if err != nil {
+// 			return Opts{}, errors.Wrap(err, "parsing BOSHUA_QUIET")
+// 		}
+// 	}
+//
+// 	return o, nil
+// }
+//
+// func MustDefaultOpts(o Opts) Opts {
+// 	res, err := NewDefaultOpts(o)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	return res
+// }
+
 func (o *Opts) GetConfig() (*configprovider.Config, error) {
 	if o.parsedConfig != nil {
 		return o.parsedConfig, nil

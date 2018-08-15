@@ -4,10 +4,6 @@ import (
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 )
 
-type CmdOpts struct {
-	AppOpts *cmdopts.Opts `no-flag:"true"`
-}
-
 type Cmd struct {
 	Download       DownloadCmd       `command:"download" description:"For downloading an artifact"`
 	UploadRelease  UploadReleaseCmd  `command:"upload-release" description:"For uploading a release to BOSH"`
@@ -15,15 +11,5 @@ type Cmd struct {
 }
 
 func New(app *cmdopts.Opts) *Cmd {
-	cmd := &Cmd{}
-
-	cmdOpts := &CmdOpts{
-		AppOpts: app,
-	}
-
-	cmd.Download.CmdOpts = cmdOpts
-	cmd.UploadRelease.CmdOpts = cmdOpts
-	cmd.UploadStemcell.CmdOpts = cmdOpts
-
-	return cmd
+	return &Cmd{}
 }

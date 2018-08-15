@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type StoreCmd struct {
-	*CmdOpts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 
 	Version string `long:"version" description:"A specific version to use" default:"0.0.0"`
 
@@ -24,19 +27,19 @@ type StoreCmdArgs struct {
 }
 
 func (c *StoreCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("compiledrelease/datastore/filter")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "compiledrelease/datastore/store"})
 
-	index, err := c.getDatastore()
+	index, err := c.Config.GetCompiledReleaseIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}
 
-	releaseVersion, err := c.CompiledReleaseOpts.ReleaseOpts.Artifact()
+	releaseVersion, err := c.CompiledReleaseOpts.ReleaseOpts.Artifact(c.AppConfig.Config)
 	if err != nil {
 		return errors.Wrap(err, "finding release")
 	}
 
-	osVersionIndex, err := c.AppOpts.GetOSIndex("default")
+	osVersionIndex, err := c.Config.GetOSIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading os index")
 	}

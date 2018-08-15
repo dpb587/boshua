@@ -4,27 +4,23 @@ import (
 	"net/http"
 
 	"github.com/dpb587/boshua/analysis"
-	"github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/server/handlers"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
+	"github.com/dpb587/boshua/config/provider/setter"
 	stemcellversionserver "github.com/dpb587/boshua/stemcellversion/server"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type Cmd struct {
-	AppOpts *opts.Opts `no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
 }
 
 func (c *Cmd) Execute(extra []string) error {
-	c.AppOpts.ConfigureLogger("server")
+	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "server"})
 
-	cfgProvider, err := c.AppOpts.GetConfig()
-	if err != nil {
-		return errors.Wrap(err, "getting server config")
-	}
-
-	cfg := cfgProvider.Config.Server
+	cfg := c.AppConfig.Config.Server
 
 	r := mux.NewRouter()
 
@@ -44,33 +40,33 @@ func (c *Cmd) Execute(extra []string) error {
 		}))
 	}
 
-	releaseIndex, err := c.AppOpts.GetReleaseIndex("default")
+	releaseIndex, err := c.AppConfig.GetReleaseIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	releaseComilationIndex, err := c.AppOpts.GetCompiledReleaseIndex("default")
+	releaseComilationIndex, err := c.AppConfig.GetCompiledReleaseIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	stemcellIndex, err := c.AppOpts.GetStemcellIndex("default")
+	stemcellIndex, err := c.AppConfig.GetStemcellIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading stemcell index")
 	}
 
-	analysisIndex, err := c.AppOpts.GetAnalysisIndex(analysis.Reference{}) // TODO
+	analysisIndex, err := c.AppConfig.GetAnalysisIndex(analysis.Reference{}) // TODO
 	if err != nil {
 		return errors.Wrap(err, "loading analysis index")
 	}
 
-	scheduler, err := c.AppOpts.GetScheduler()
+	scheduler, err := c.AppConfig.GetScheduler()
 	if err != nil {
 		return errors.Wrap(err, "loading scheduler")
 	}
 
 	stemcellversionserver.NewHandlers(stemcellIndex, analysisIndex).Mount(r)
-	handlers.NewGraphqlV2(c.AppOpts.GetLogger(), releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
+	handlers.NewGraphqlV2(c.AppConfig.GetLogger(), releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)
 }

@@ -3,6 +3,8 @@ package provider
 import (
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
+	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/aggregate"
 	"github.com/pkg/errors"
@@ -52,4 +54,18 @@ func (c *Config) GetStemcellIndex(name string) (datastore.Index, error) {
 	}
 
 	return aggregate.New(all...), nil
+}
+
+// TODO remove/move
+func (c *Config) GetOSIndex(name string) (osversiondatastore.Index, error) {
+	if name != "default" {
+		panic("TODO")
+	}
+
+	stemcellVersionIndex, err := c.GetStemcellIndex("default")
+	if err != nil {
+		return nil, errors.Wrap(err, "loading stemcell index")
+	}
+
+	return osversionstemcellversionindex.New(stemcellVersionIndex, c.GetLogger()), nil
 }

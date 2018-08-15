@@ -4,7 +4,6 @@ import (
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion/cli/datastore/opts"
 	releaseopts "github.com/dpb587/boshua/releaseversion/cli/opts"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 )
 
 type Cmd struct {
@@ -15,13 +14,8 @@ type Cmd struct {
 }
 
 type CmdOpts struct {
-	AppOpts       *cmdopts.Opts     `no-flag:"true"`
-	ReleaseOpts   *releaseopts.Opts `no-flag:"true"`
-	DatastoreOpts *opts.Opts
-}
-
-func (o *CmdOpts) getDatastore() (releaseversiondatastore.Index, error) {
-	return o.AppOpts.GetReleaseIndex(o.DatastoreOpts.Datastore)
+	AppOpts     *cmdopts.Opts     `no-flag:"true"`
+	ReleaseOpts *releaseopts.Opts `no-flag:"true"`
 }
 
 func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
@@ -30,9 +24,8 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	}
 
 	cmdOpts := &CmdOpts{
-		AppOpts:       app,
-		ReleaseOpts:   release,
-		DatastoreOpts: cmd.Opts,
+		AppOpts:     app,
+		ReleaseOpts: release,
 	}
 
 	cmd.FilterCmd.CmdOpts = cmdOpts

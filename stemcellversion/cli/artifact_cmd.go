@@ -3,24 +3,21 @@ package cli
 import (
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
-	"github.com/pkg/errors"
+	"github.com/dpb587/boshua/config/provider/setter"
+	"github.com/sirupsen/logrus"
 )
 
 type ArtifactCmd struct {
-	clicommon.ArtifactCmd
+	setter.AppConfig `no-flag:"true"`
+	*CmdOpts         `no-flag:"true"`
 
-	*CmdOpts `no-flag:"true"`
+	clicommon.ArtifactCmd
 }
 
 func (c *ArtifactCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("stemcell/artifact")
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/artifact"})
 
 	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
-		artifact, err := c.StemcellOpts.Artifact()
-		if err != nil {
-			return nil, errors.Wrap(err, "finding stemcell")
-		}
-
-		return artifact, nil
+		return c.StemcellOpts.Artifact(c.AppConfig.Config)
 	})
 }

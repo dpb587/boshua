@@ -13,8 +13,6 @@ import (
 )
 
 type GenerateCmd struct {
-	*CmdOpts `no-flag:"true"`
-
 	Analyzer   analysis.AnalyzerName `long:"analyzer" description:"The analyzer to use"`
 	NoCompress bool                  `long:"no-compress" description:"Skip gzip compression when writing results to file"`
 
@@ -27,8 +25,6 @@ type GenerateArgs struct {
 }
 
 func (c *GenerateCmd) Execute(_ []string) error {
-	c.AppOpts.ConfigureLogger("analysis/generate")
-
 	analyzer, err := factory.Factory{}.Create(c.Analyzer, c.Args.Artifact)
 	if err != nil {
 		return fmt.Errorf("finding analyzer: %s", c.Analyzer)

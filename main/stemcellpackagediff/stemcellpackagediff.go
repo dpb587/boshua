@@ -62,7 +62,7 @@ func (c *cmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading after")
 	}
 
-	packages := mergePackages(packagesBefore, packagesAfter)
+	packages := diffPackages(packagesBefore, packagesAfter)
 
 	for _, pkg := range packages {
 		if pkg.Before == nil {
@@ -77,10 +77,13 @@ func (c *cmd) Execute(_ []string) error {
 	return nil
 }
 
+var defaultServer string
+
 func main() {
 	c := cmd{
 		AppOpts: &opts.Opts{
-			LogLevel: args.LogLevel(logrus.FatalLevel),
+			DefaultServer: defaultServer,
+			LogLevel:      args.LogLevel(logrus.FatalLevel),
 		},
 	}
 
@@ -99,19 +102,19 @@ func main() {
 	}
 }
 
-type PackageDiff struct {
+type packageDiff struct {
 	Name   string
 	Before *stemcellpackagesV1result.RecordPackage
 	After  *stemcellpackagesV1result.RecordPackage
 }
 
-func mergePackages(before, after []stemcellpackagesV1result.RecordPackage) []PackageDiff {
-	mappedResults := map[string]PackageDiff{}
+func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []packageDiff {
+	mappedResults := map[string]packageDiff{}
 
 	for idx := range before {
 		name := before[idx].Name
 
-		mappedResults[name] = PackageDiff{
+		mappedResults[name] = packageDiff{
 			Name:   name,
 			Before: &before[idx],
 		}
@@ -121,20 +124,20 @@ func mergePackages(before, after []stemcellpackagesV1result.RecordPackage) []Pac
 		name := after[idx].Name
 
 		if _, found := mappedResults[name]; found {
-			mappedResults[name] = PackageDiff{
+			mappedResults[name] = packageDiff{
 				Name:   name,
 				Before: mappedResults[name].Before,
 				After:  &after[idx],
 			}
 		} else {
-			mappedResults[name] = PackageDiff{
+			mappedResults[name] = packageDiff{
 				Name:  name,
 				After: &after[idx],
 			}
 		}
 	}
 
-	var results []PackageDiff
+	var results []packageDiff
 
 	for rIdx := range mappedResults {
 		results = append(results, mappedResults[rIdx])
