@@ -152,6 +152,8 @@ func (s Scheduler) schedule(tt *task.Task, subject interface{}) (scheduler.Sched
 		return nil, errors.Wrap(err, "setting pipeline")
 	}
 
+	s.logger.Debugf("configured pipeline %s", pipelineName)
+
 	_, _, err = fly.Run(
 		"unpause-pipeline",
 		"--pipeline", pipelineName,
@@ -160,7 +162,9 @@ func (s Scheduler) schedule(tt *task.Task, subject interface{}) (scheduler.Sched
 		return nil, errors.Wrap(err, "unpausing pipeline")
 	}
 
-	return newScheduledTask(fly, pipelineName, subject), nil
+	s.logger.Debugf("unpaused pipeline %s", pipelineName)
+
+	return newScheduledTask(fly, pipelineName, subject, s.logger), nil
 }
 
 func (s *Scheduler) pipelineName(t *task.Task, pipelineBytes []byte) string {

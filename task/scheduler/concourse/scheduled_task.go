@@ -5,20 +5,23 @@ import (
 
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type scheduledTask struct {
 	fly          *Fly
 	pipelineName string
+	logger       logrus.FieldLogger
 	subject      interface{}
 }
 
 var _ scheduler.ScheduledTask = &scheduledTask{}
 
-func newScheduledTask(fly *Fly, pipelineName string, subject interface{}) *scheduledTask {
+func newScheduledTask(fly *Fly, pipelineName string, subject interface{}, logger logrus.FieldLogger) *scheduledTask {
 	return &scheduledTask{
 		fly:          fly,
 		pipelineName: pipelineName,
+		logger:       logger,
 		subject:      subject,
 	}
 }
@@ -36,6 +39,8 @@ func (t *scheduledTask) Status() (scheduler.Status, error) {
 
 		return scheduler.StatusUnknown, errors.Wrap(err, "listing jobs")
 	}
+
+	t.logger.Debugf("checked status of pipeline %s", t.pipelineName)
 
 	lines := strings.Split(string(stdout), "\n")
 	if len(lines) < 1 {
