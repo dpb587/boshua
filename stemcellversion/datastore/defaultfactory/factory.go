@@ -10,8 +10,8 @@ import (
 
 func New(logger logrus.FieldLogger) datastore.Factory {
 	f := factory.New()
-	f.Add(boshuaV2.Provider, boshuaV2.NewFactory(logger))
-	f.Add(boshioindex.Provider, boshioindex.NewFactory(logger))
+	f.Add(boshuaV2.ProviderName, boshuaV2.NewFactory(logger))
+	f.Add(boshioindex.ProviderName, boshioindex.NewFactory(logger))
 
 	return f
 }

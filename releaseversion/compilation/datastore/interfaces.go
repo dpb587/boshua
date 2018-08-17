@@ -3,12 +3,15 @@ package datastore
 import (
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 )
 
+type ProviderName string
+
 type Factory interface {
-	Create(provider, name string, options map[string]interface{}, releaseVersionIndex releaseversiondatastore.Index) (Index, error)
+	Create(provider ProviderName, name string, options map[string]interface{}) (Index, error)
 }
+
+type NamedGetter func(name string) (Index, error)
 
 type Index interface {
 	GetCompilationArtifacts(f FilterParams) ([]compilation.Artifact, error)

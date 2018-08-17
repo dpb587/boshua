@@ -7,14 +7,13 @@ import (
 )
 
 type Config struct {
-	General   GeneralConfig              `yaml:"general,omitempty"`
-	Scheduler *AbstractComponentConfig   `yaml:"scheduler,omitempty"`
-	Stemcells []StemcellVersionDatastore `yaml:"stemcell_versions"`
-	Releases  []AbstractComponentConfig  `yaml:"release_versions"` // TODO ReleaseDatastore
-	// TODO release-specific indices for compiled release datastores
-	CompiledReleases []AbstractComponentConfig `yaml:"compiled_release_versions"` // TODO ReleaseCompilationDatastore
-	Analyses         []AnalysisDatastore       `yaml:"analyses"`
-	Server           ServerConfig              `yaml:"server"`
+	General             GeneralConfig                 `yaml:"general,omitempty"`
+	Scheduler           *AbstractComponentConfig      `yaml:"scheduler,omitempty"`
+	Stemcells           []StemcellDatastore           `yaml:"stemcells"`
+	Releases            []ReleaseDatastore            `yaml:"releases"`
+	ReleaseCompilations []ReleaseCompilationDatastore `yaml:"release_compilations"`
+	Analyses            []AnalysisDatastore           `yaml:"analyses"`
+	Server              ServerConfig                  `yaml:"server"`
 }
 
 type GeneralConfig struct {
@@ -39,27 +38,20 @@ type ServerRedirectConfig struct {
 	Root string `yaml:"root"`
 }
 
-type ServerTLSConfig struct {
-	CA          string `yaml:"ca"`
-	Certificate string `yaml:"certificate"`
-	PrivateKey  string `yaml:"private_key"`
+type ReleaseDatastore struct {
+	AbstractComponentConfig `yaml:",inline"`
+	Compilation             *ReleaseCompilationDatastore `yaml:"compilation"`
+	Analysis                *AnalysisDatastore           `yaml:"analysis"`
 }
 
-//
-// type ReleaseVersionDatastore struct {
-// 	AbstractComponentConfig `yaml:",inline"`
-// 	Compilation             *ReleaseVersionCompilationDatastore `yaml:"compilation"`
-// 	Analysis                *AnalysisDatastore                  `yaml:"analysis"`
-// }
-//
-// type ReleaseVersionCompilationDatastore struct {
-// 	AbstractComponentConfig `yaml:",inline"`
-// 	Analysis                *AnalysisDatastore `yaml:"analysis"`
-// }
-
-type StemcellVersionDatastore struct {
+type ReleaseCompilationDatastore struct {
 	AbstractComponentConfig `yaml:",inline"`
-	Analyses                []AnalysisDatastore `yaml:"analyses"`
+	Analysis                *AnalysisDatastore `yaml:"analysis"`
+}
+
+type StemcellDatastore struct {
+	AbstractComponentConfig `yaml:",inline"`
+	Analysis                *AnalysisDatastore `yaml:"analysis"`
 }
 
 type AnalysisDatastore struct {

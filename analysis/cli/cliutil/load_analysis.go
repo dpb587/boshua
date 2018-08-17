@@ -9,7 +9,7 @@ import (
 )
 
 func LoadAnalysis(
-	analysisIndexLoader func(analysis.Reference) (analysisdatastore.Index, error),
+	analysisIndexLoader func(string) (analysisdatastore.Index, error),
 	subjectLoader func() (analysis.Subject, error),
 	analysisOpts *opts.Opts,
 	schedulerLoader func() (schedulerpkg.Scheduler, error),
@@ -25,7 +25,7 @@ func LoadAnalysis(
 		Analyzer: analysisOpts.Analyzer,
 	}
 
-	analysisIndex, err := analysisIndexLoader(analysisRef)
+	analysisIndex, err := analysisIndexLoader("default")
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
 	}

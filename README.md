@@ -20,9 +20,9 @@ First, let's define some of the terminology this uses...
        * `deprecated` - to identify artifacts which are deprecated
  * **Analysis** - an artifact is independently useful, but there is often much more information which can be derived from it (e.g. what OS packages are included in a particular stemcell version). Analysis results are generated metadata which is affiliated with a particular artifact.
     * **Analyzer** - analyzers are used to generate specific types of metadata about an artifact. Each artifact type has several builtin analyzers.
-    * **Formatters** - formatters are built-in tools for interpreting the raw results and providing them in a more meaningful way.
+    * **Formatters** - formatters are tools for interpreting the raw results and providing them in a more meaningful way. Most analyzers have several builtin formatters.
  * **Datastore** - a datastore is something which can find and/or store details about artifacts and analysis in a permanent way (e.g. a BOSH release repository having release information). Each artifact type has several supported datastores, and datastores can delegate to other, possibly remote datastores (e.g. through APIs).
- * **Scheduler** - a scheduler is used for executing work when the results are not already available (e.g. compiling a release). Several types of schedulers are supported to support running work locally or in Docker, remotely on Concourse, or remotely through an API.
+ * **Scheduler** - a scheduler is used for executing work when results are not already available (e.g. compiling a release). Several types of schedulers are supported to support running work locally or in Docker, remotely on Concourse, or remotely through an API.
 
 
 ## Usage
@@ -32,7 +32,41 @@ First, let's define some of the terminology this uses...
 
 ### CLI
 
-See the following for some specific examples of usage.
+The primary tool is the `boshua` CLI. Generally, `-h` should be used to learn more about specific commands and available options.
+
+The first level of commands are primarily geared towards specific artifacts (e.g. `release`, `stemcell`)...
+
+    $ boshua -h
+    Available commands:
+      release     For working with releases
+      stemcell    For working with stemcells
+
+When working with a specific artifact type, several flags can be used for finding specific versions of the artifact...
+
+    $ boshua release -h
+    [release command options]
+          --release=          The release in name/version format
+          --release-name=     The release name
+          --release-version=  The release version
+          --release-checksum= The release checksum
+          --release-url=      The release source URL
+          --release-label=    The label(s) to filter releases by
+
+Further subcommands can be used which deal with a specific artifact type...
+
+    $ boshua release --release=openvpn/5.1.0 -h
+    Available commands:
+      analysis        For analyzing the release artifact
+      analyzers       For showing the supported analyzers
+      artifact        For showing the release artifact
+      compilation     For working with compiled releases
+      datastore       For interacting with release datastores
+      download        For downloading the release locally
+      upload-release  For uploading the release to BOSH
+
+Most notably, these subcommands are common across most artifacts: `analysis`, `analyzers`, `artifact`, `datastore`, and `download`.
+
+For more specific examples, see below.
 
 
 #### Releases

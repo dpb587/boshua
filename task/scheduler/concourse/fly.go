@@ -109,18 +109,7 @@ func (f *Fly) prepare() error {
 	}
 
 	if f.needsSync {
-		args := []string{
-			"-c", f.config.URL,
-			"-n", f.config.Team,
-			"-u", f.config.Username,
-			"-p", f.config.Password,
-		}
-
-		if f.config.Insecure {
-			args = append(args, "-k")
-		}
-
-		_, _, err := f.Run("sync", args...)
+		_, _, err := f.Run("sync")
 		if err != nil {
 			return errors.Wrap(err, "syncing")
 		}

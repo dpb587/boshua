@@ -17,7 +17,7 @@ type FilterCmd struct {
 func (c *FilterCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "compiledrelease/datastore/filter"})
 
-	index, err := c.Config.GetCompiledReleaseIndex("default")
+	index, err := c.Config.GetReleaseCompilationIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}

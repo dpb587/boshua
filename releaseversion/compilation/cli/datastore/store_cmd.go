@@ -29,7 +29,7 @@ type StoreCmdArgs struct {
 func (c *StoreCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "compiledrelease/datastore/store"})
 
-	index, err := c.Config.GetCompiledReleaseIndex("default")
+	index, err := c.Config.GetReleaseCompilationIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}

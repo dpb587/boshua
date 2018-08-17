@@ -3,14 +3,13 @@ package boshuaV2
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/util/configdef"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-const Provider = "boshua.v2"
+const ProviderName datastore.ProviderName = "boshua.v2"
 
 type factory struct {
 	logger logrus.FieldLogger
@@ -22,8 +21,8 @@ func NewFactory(logger logrus.FieldLogger) datastore.Factory {
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}, _ releaseversiondatastore.Index) (datastore.Index, error) {
-	if Provider != provider {
+func (f *factory) Create(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
+	if ProviderName != provider {
 		return nil, fmt.Errorf("unsupported type: %s", provider)
 	}
 

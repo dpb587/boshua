@@ -11,9 +11,9 @@ import (
 
 func New(logger logrus.FieldLogger) datastore.Factory {
 	f := factory.New()
-	f.Add(boshuaV2.Provider, boshuaV2.NewFactory(logger))
-	f.Add(dpbreleaseartifacts.Provider, dpbreleaseartifacts.NewFactory(logger))
-	f.Add(localcache.Provider, localcache.NewFactory(logger))
+	f.Add(boshuaV2.ProviderName, boshuaV2.NewFactory(logger))
+	f.Add(dpbreleaseartifacts.ProviderName, dpbreleaseartifacts.NewFactory(logger))
+	f.Add(localcache.ProviderName, localcache.NewFactory(logger))
 
 	return f
 }

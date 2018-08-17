@@ -3,27 +3,29 @@ package contextualosmetalinkrepository
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/util/configdef"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
-const Provider = "contextualosmetalinkrepository"
+const ProviderName datastore.ProviderName = "contextualosmetalinkrepository"
 
 type factory struct {
-	logger logrus.FieldLogger
+	releaseVersionIndex releaseversiondatastore.NamedGetter
+	logger              logrus.FieldLogger
 }
 
-func NewFactory(logger logrus.FieldLogger) datastore.Factory {
+func NewFactory(releaseVersionIndex releaseversiondatastore.NamedGetter, logger logrus.FieldLogger) datastore.Factory {
 	return &factory{
-		logger: logger,
+		releaseVersionIndex: releaseVersionIndex,
+		logger:              logger,
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}, releaseVersionIndex releaseversiondatastore.Index) (datastore.Index, error) {
-	if Provider != provider {
+func (f *factory) Create(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
+	if ProviderName != provider {
 		return nil, fmt.Errorf("unsupported type: %s", provider)
 	}
 
@@ -33,6 +35,11 @@ func (f *factory) Create(provider, name string, options map[string]interface{}, 
 	err := configdef.RemarshalYAML(options, &cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "loading options")
+	}
+
+	releaseVersionIndex, err := f.releaseVersionIndex("default") // TODO configurable
+	if err != nil {
+		return nil, errors.Wrap(err, "loading release index")
 	}
 
 	return New(releaseVersionIndex, cfg, logger), nil

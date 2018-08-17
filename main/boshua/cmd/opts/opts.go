@@ -25,7 +25,7 @@ func (o *Opts) GetConfig() (*configprovider.Config, error) {
 
 		cfg.SetAnalysisFactory(analysisfactory.New(cfg.GetLogger()))
 		cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
-		cfg.SetReleaseCompilationFactory(compilationfactory.New(cfg.GetLogger()))
+		cfg.SetReleaseCompilationFactory(compilationfactory.New(cfg.GetReleaseIndex, cfg.GetLogger()))
 		cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
 		cfg.SetSchedulerFactory(schedulerfactory.New(cfg, cfg.GetLogger()))
 

@@ -60,7 +60,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "parsing manifest")
 	}
 
-	index, err := c.Config.GetCompiledReleaseIndexScheduler("default")
+	index, err := c.Config.GetReleaseCompilationIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading index")
 	}

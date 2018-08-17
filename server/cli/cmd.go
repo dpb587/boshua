@@ -3,7 +3,6 @@ package cli
 import (
 	"net/http"
 
-	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/server/handlers"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
 	"github.com/dpb587/boshua/config/provider/setter"
@@ -45,7 +44,7 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	releaseComilationIndex, err := c.AppConfig.GetCompiledReleaseIndex("default")
+	releaseComilationIndex, err := c.AppConfig.GetReleaseCompilationIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading release index")
 	}
@@ -55,7 +54,7 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading stemcell index")
 	}
 
-	analysisIndex, err := c.AppConfig.GetAnalysisIndex(analysis.Reference{}) // TODO
+	analysisIndex, err := c.AppConfig.GetAnalysisIndex("default")
 	if err != nil {
 		return errors.Wrap(err, "loading analysis index")
 	}

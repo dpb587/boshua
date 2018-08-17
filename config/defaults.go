@@ -25,15 +25,19 @@ func (c *Config) ApplyDefaults() {
 		}
 
 		if len(c.Releases) == 0 { // TODO check for name = default instead?
-			c.Releases = append(c.Releases, defaultServer)
+			c.Releases = append(c.Releases, ReleaseDatastore{
+				AbstractComponentConfig: defaultServer,
+			})
 		}
 
-		if len(c.CompiledReleases) == 0 { // TODO check for name = default instead?
-			c.CompiledReleases = append(c.CompiledReleases, defaultServer)
+		if len(c.ReleaseCompilations) == 0 { // TODO check for name = default instead?
+			c.ReleaseCompilations = append(c.ReleaseCompilations, ReleaseCompilationDatastore{
+				AbstractComponentConfig: defaultServer,
+			})
 		}
 
 		if len(c.Stemcells) == 0 { // TODO check for name = default instead?
-			c.Stemcells = append(c.Stemcells, StemcellVersionDatastore{
+			c.Stemcells = append(c.Stemcells, StemcellDatastore{
 				AbstractComponentConfig: defaultServer,
 			})
 		}

@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const Provider = "boshua.v2"
+const ProviderName datastore.ProviderName = "boshua.v2"
 
 type factory struct {
 	logger logrus.FieldLogger
@@ -21,8 +21,8 @@ func NewFactory(logger logrus.FieldLogger) datastore.Factory {
 	}
 }
 
-func (f *factory) Create(provider, name string, options map[string]interface{}) (datastore.Index, error) {
-	if Provider != provider {
+func (f *factory) Create(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
+	if ProviderName != provider {
 		return nil, fmt.Errorf("unsupported type: %s", provider)
 	}
 

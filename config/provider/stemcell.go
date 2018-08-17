@@ -1,7 +1,8 @@
 package provider
 
 import (
-	"github.com/dpb587/boshua/analysis"
+	"fmt"
+
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
@@ -15,45 +16,67 @@ func (c *Config) SetStemcellFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetStemcellIndex(name string) (datastore.Index, error) {
-	if name != "default" {
-		panic("TODO")
+	for _, cfg := range c.Config.Stemcells {
+		if cfg.Name == name {
+			return c.requireStemcellIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
+		}
 	}
 
+	if name == "default" {
+		var all []datastore.Index
+
+		for _, cfg := range c.Config.Stemcells {
+			idx, err := c.requireStemcellIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
+			if err != nil {
+				return nil, err
+			}
+
+			all = append(all, idx)
+		}
+
+		return aggregate.New(all...), nil
+	}
+
+	return nil, fmt.Errorf("unrecognized stemcell datastore (name: %s)", name)
+}
+
+func (c *Config) requireStemcellIndex(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
 	if c.stemcellIndices == nil {
 		c.stemcellIndices = map[string]datastore.Index{}
 	}
 
-	if idx, found := c.stemcellIndices[name]; found {
-		return idx, nil
+	if _, found := c.stemcellIndices[name]; !found {
+		idx, err := c.stemcellFactory.Create(provider, name, options)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating stemcell datastore (name: %s)", name)
+		}
+
+		c.stemcellIndices[name] = idx
 	}
 
-	var all []datastore.Index
+	return c.stemcellIndices[name], nil
+}
 
+func (c *Config) GetStemcellAnalysisIndex(name string) (analysisdatastore.Index, error) {
 	for _, cfg := range c.Config.Stemcells {
-		var idx datastore.Index
-		var err error
-
-		idx, err = c.stemcellFactory.Create(cfg.Type, cfg.Name, cfg.Options)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating stemcell version datastore")
+		if cfg.Name != name {
+			continue
 		}
 
-		// if cfg.Analysis != nil { // TODO configurable
-		var analysisIdx analysisdatastore.Index
+		if cfg.Analysis != nil {
+			if cfg.Analysis.Type == "" {
+				return c.GetAnalysisIndex(cfg.Analysis.Name)
+			}
 
-		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		analysisIdx, err = c.GetAnalysisIndex(analysis.Reference{}) // TODO
-		if err != nil {
-			return nil, errors.Wrap(err, "loading stemcell analysis")
+			return c.requireAnalysisIndex(
+				analysisdatastore.ProviderName(cfg.Analysis.Type),
+				fmt.Sprintf("release/%s/%s", name, cfg.Analysis.Name),
+				cfg.Analysis.Options,
+			)
 		}
-
-		idx = datastore.NewAnalysisIndex(idx, analysisIdx)
-		// }
-
-		all = append(all, idx)
 	}
 
-	return aggregate.New(all...), nil
+	return c.GetAnalysisIndex("default")
 }
 
 // TODO remove/move

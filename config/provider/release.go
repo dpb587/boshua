@@ -1,7 +1,8 @@
 package provider
 
 import (
-	"github.com/dpb587/boshua/analysis"
+	"fmt"
+
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/aggregate"
@@ -13,43 +14,65 @@ func (c *Config) SetReleaseFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
-	if name != "default" {
-		panic("TODO")
+	for _, cfg := range c.Config.Releases {
+		if cfg.Name == name {
+			return c.requireReleaseIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
+		}
 	}
 
+	if name == "default" {
+		var all []datastore.Index
+
+		for _, cfg := range c.Config.Releases {
+			idx, err := c.requireReleaseIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
+			if err != nil {
+				return nil, err
+			}
+
+			all = append(all, idx)
+		}
+
+		return aggregate.New(all...), nil
+	}
+
+	return nil, fmt.Errorf("unrecognized release datastore (name: %s)", name)
+}
+
+func (c *Config) requireReleaseIndex(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
 	if c.releaseIndices == nil {
 		c.releaseIndices = map[string]datastore.Index{}
 	}
 
-	if idx, found := c.releaseIndices[name]; found {
-		return idx, nil
+	if _, found := c.releaseIndices[name]; !found {
+		idx, err := c.releaseFactory.Create(provider, name, options)
+		if err != nil {
+			return nil, errors.Wrapf(err, "creating release datastore (name: %s)", name)
+		}
+
+		c.releaseIndices[name] = idx
 	}
 
-	var all []datastore.Index
+	return c.releaseIndices[name], nil
+}
 
+func (c *Config) GetReleaseAnalysisIndex(name string) (analysisdatastore.Index, error) {
 	for _, cfg := range c.Config.Releases {
-		var idx datastore.Index
-		var err error
-
-		idx, err = c.releaseFactory.Create(cfg.Type, cfg.Name, cfg.Options)
-		if err != nil {
-			return nil, errors.Wrap(err, "creating release version datastore")
+		if cfg.Name != name {
+			continue
 		}
 
-		// if cfg.Analysis != nil { // TODO configurable
-		var analysisIdx analysisdatastore.Index
+		if cfg.Analysis != nil {
+			if cfg.Analysis.Type == "" {
+				return c.GetAnalysisIndex(cfg.Analysis.Name)
+			}
 
-		// analysisIndex, err = o.GetAnalysisIndex(cfg.Analysis.Name)
-		analysisIdx, err = c.GetAnalysisIndex(analysis.Reference{}) // TODO
-		if err != nil {
-			return nil, errors.Wrap(err, "loading release analysis")
+			return c.requireAnalysisIndex(
+				analysisdatastore.ProviderName(cfg.Analysis.Type),
+				fmt.Sprintf("release/%s/%s", name, cfg.Analysis.Name),
+				cfg.Analysis.Options,
+			)
 		}
-
-		idx = datastore.NewAnalysisIndex(idx, analysisIdx)
-		// }
-
-		all = append(all, idx)
 	}
 
-	return aggregate.New(all...), nil
+	return c.GetAnalysisIndex("default")
 }

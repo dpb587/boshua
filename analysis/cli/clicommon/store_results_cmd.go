@@ -21,7 +21,7 @@ type StoreResultsArgs struct {
 }
 
 func (c *StoreResultsCmd) ExecuteStore(
-	analysisIndexLoader func(analysis.Reference) (datastore.Index, error),
+	analysisIndexLoader func(string) (datastore.Index, error),
 	subjectLoader func() (analysis.Subject, error),
 	analyzer analysis.AnalyzerName,
 ) error {
@@ -35,7 +35,7 @@ func (c *StoreResultsCmd) ExecuteStore(
 		Analyzer: analyzer,
 	}
 
-	index, err := analysisIndexLoader(ref)
+	index, err := analysisIndexLoader("default")
 	if err != nil {
 		return errors.Wrap(err, "loading analysis datastore")
 	}

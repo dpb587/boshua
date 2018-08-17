@@ -16,7 +16,7 @@ type Opts struct {
 }
 
 func (o *Opts) Artifact(config *provider.Config) (compilation.Artifact, error) {
-	index, err := config.GetCompiledReleaseIndexScheduler("default")
+	index, err := config.GetReleaseCompilationIndex("default")
 	if err != nil {
 		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}

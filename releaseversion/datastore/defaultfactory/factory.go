@@ -12,10 +12,10 @@ import (
 
 func New(logger logrus.FieldLogger) datastore.Factory {
 	f := factory.New()
-	f.Add(boshuaV2.Provider, boshuaV2.NewFactory(logger))
-	f.Add(boshioreleasesindex.Provider, boshioreleasesindex.NewFactory(logger))
-	f.Add(boshreleasedir.Provider, boshreleasedir.NewFactory(logger))
-	f.Add(metalinkrepository.Provider, metalinkrepository.NewFactory(logger))
+	f.Add(boshuaV2.ProviderName, boshuaV2.NewFactory(logger))
+	f.Add(boshioreleasesindex.ProviderName, boshioreleasesindex.NewFactory(logger))
+	f.Add(boshreleasedir.ProviderName, boshreleasedir.NewFactory(logger))
+	f.Add(metalinkrepository.ProviderName, metalinkrepository.NewFactory(logger))
 
 	return f
 }

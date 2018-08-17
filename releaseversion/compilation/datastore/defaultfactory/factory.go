@@ -6,14 +6,15 @@ import (
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualosmetalinkrepository"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/contextualrepoosmetalinkrepository"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/factory"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/sirupsen/logrus"
 )
 
-func New(logger logrus.FieldLogger) datastore.Factory {
+func New(releaseVersionGetter releaseversiondatastore.NamedGetter, logger logrus.FieldLogger) datastore.Factory {
 	f := factory.New()
-	f.Add(boshuaV2.Provider, boshuaV2.NewFactory(logger))
-	f.Add(contextualosmetalinkrepository.Provider, contextualosmetalinkrepository.NewFactory(logger))
-	f.Add(contextualrepoosmetalinkrepository.Provider, contextualrepoosmetalinkrepository.NewFactory(logger))
+	f.Add(boshuaV2.ProviderName, boshuaV2.NewFactory(logger))
+	f.Add(contextualosmetalinkrepository.ProviderName, contextualosmetalinkrepository.NewFactory(releaseVersionGetter, logger))
+	f.Add(contextualrepoosmetalinkrepository.ProviderName, contextualrepoosmetalinkrepository.NewFactory(releaseVersionGetter, logger))
 
 	return f
 }
