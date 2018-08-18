@@ -12,7 +12,8 @@ import (
 	"github.com/cheggaaa/pb"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
+	"github.com/dpb587/boshua/metalink/template"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -28,7 +29,7 @@ import (
 type index struct {
 	logger              logrus.FieldLogger
 	config              Config
-	repository          *git.Repository
+	repository          *repository.Repository
 	releaseVersionIndex releaseversiondatastore.Index
 }
 
@@ -39,7 +40,7 @@ func New(releaseVersionIndex releaseversiondatastore.Index, config Config, logge
 		logger:              logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		releaseVersionIndex: releaseVersionIndex,
 		config:              config,
-		repository:          git.NewRepository(logger, config.RepositoryConfig),
+		repository:          repository.NewRepository(logger, config.RepositoryConfig),
 	}
 }
 
@@ -59,7 +60,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, "*", "*", "*.meta4"))
+	paths, err := filepath.Glob(i.repository.Path(i.config.Path, "*", "*", "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}
@@ -132,67 +133,53 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 		return errors.Wrap(err, "parsing origin destination")
 	}
 
-	var sha1 string
+	mirroredFile := metalink.File{
+		Name:   file.Name,
+		Size:   file.Size,
+		Hashes: file.Hashes,
+	}
 
-	for _, hash := range file.Hashes {
-		if hash.Type == "sha-1" {
-			sha1 = hash.Hash
-
-			break
+	for _, mirror := range i.config.StorageConfig {
+		tmpl, err := template.New(mirror.URI)
+		if err != nil {
+			return errors.Wrap(err, "parsing mirror destination")
 		}
+
+		mirrorWriterURI, err := tmpl.ExecuteString(mirroredFile)
+		if err != nil {
+			return errors.Wrap(err, "generating mirror uri")
+		}
+
+		for k, v := range mirror.Options {
+			// TODO unset/revert after?
+			os.Setenv(k, v)
+		}
+
+		remote, err := urlLoader.Load(metalink.URL{URL: mirrorWriterURI})
+		if err != nil {
+			return errors.Wrap(err, "loading upload destination")
+		}
+
+		progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+		progress.Start()
+
+		err = remote.WriteFrom(local, progress)
+		if err != nil {
+			return errors.Wrap(err, "copying blob")
+		}
+
+		progress.Finish()
+
+		mirroredFile.URLs = append(mirroredFile.URLs, metalink.URL{
+			URL:      remote.ReaderURI(),
+			Location: mirror.Location,
+			Priority: mirror.Priority,
+		})
 	}
-
-	if sha1 == "" {
-		return errors.New("sha-1 hash not found")
-	}
-
-	// not a good way to inject configs
-	priorAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	os.Setenv("AWS_ACCESS_KEY_ID", i.config.BlobstoreConfig.S3.AccessKey)
-	defer os.Setenv("AWS_ACCESS_KEY_ID", priorAccessKey)
-
-	priorSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", i.config.BlobstoreConfig.S3.SecretKey)
-	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
-
-	// TODO configurable? e.g. metalink-repository-resource?
-	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
-		"s3://%s/%s/%s%s/%s",
-		i.config.BlobstoreConfig.S3.Host,
-		i.config.BlobstoreConfig.S3.Bucket,
-		i.config.BlobstoreConfig.S3.Prefix,
-		sha1[0:2],
-		sha1[2:],
-	)})
-	if err != nil {
-		return errors.Wrap(err, "Parsing source blob")
-	}
-
-	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
-	progress.Start()
-
-	err = remote.WriteFrom(local, progress)
-	if err != nil {
-		return errors.Wrap(err, "Copying blob")
-	}
-
-	progress.Finish()
 
 	commitMeta4 := metalink.Metalink{
-		Files: []metalink.File{
-			{
-				Name:    file.Name, // TODO rebuild name
-				Version: artifactRef.ReleaseVersion.Version,
-				Size:    file.Size,
-				URLs: []metalink.URL{
-					{
-						URL: remote.ReaderURI(),
-					},
-				},
-				Hashes: file.Hashes,
-			},
-		},
-		Generator: "boshua/boshreleasedpb",
+		Files:     []metalink.File{mirroredFile},
+		Generator: "boshua/contextualosmetalinkrepository",
 	}
 
 	commitMeta4Bytes, err := metalink.MarshalXML(commitMeta4)
@@ -201,7 +188,7 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	}
 
 	path := filepath.Join(
-		i.config.Prefix,
+		i.config.Path,
 		artifactRef.OSVersion.Name,
 		artifactRef.OSVersion.Version,
 		fmt.Sprintf("v%s.meta4", artifactRef.ReleaseVersion.Version),

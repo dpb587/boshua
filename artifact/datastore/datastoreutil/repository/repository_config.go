@@ -1,4 +1,4 @@
-package git
+package repository
 
 import (
 	"crypto/sha1"
@@ -11,7 +11,7 @@ import (
 )
 
 type RepositoryConfig struct {
-	Repository    string                 `yaml:"repository"`
+	URI           string                 `yaml:"uri"`
 	Branch        string                 `yaml:"branch"`
 	LocalPath     string                 `yaml:"local_path"`
 	PrivateKey    string                 `yaml:"private_key"`
@@ -32,7 +32,7 @@ func (c *RepositoryConfig) ApplyDefaults() {
 
 	if c.LocalPath == "" {
 		hasher := sha1.New()
-		hasher.Write([]byte(c.Repository))
+		hasher.Write([]byte(c.URI))
 		c.LocalPath = filepath.Join(os.TempDir(), fmt.Sprintf("boshua-%x", hasher.Sum(nil)))
 	}
 

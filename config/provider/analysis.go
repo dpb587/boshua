@@ -14,7 +14,7 @@ func (c *Config) SetAnalysisFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetAnalysisIndex(name string) (datastore.Index, error) {
-	for _, cfg := range c.Config.Analyses {
+	for _, cfg := range c.Config.Analyses.Datastores {
 		if cfg.Name == name {
 			return c.requireAnalysisIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
 		}
@@ -52,7 +52,7 @@ func (c *Config) withScheduler(index datastore.Index) (datastore.Index, error) {
 
 	var callback schedulerpkg.StatusChangeCallback = nil
 
-	if !c.Config.General.Quiet {
+	if !c.Config.Global.Quiet {
 		callback = schedulerpkg.DefaultStatusChangeCallback
 	}
 

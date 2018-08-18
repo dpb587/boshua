@@ -14,7 +14,7 @@ func (c *Config) SetReleaseFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
-	for _, cfg := range c.Config.Releases {
+	for _, cfg := range c.Config.Releases.Datastores {
 		if cfg.Name == name {
 			return c.requireReleaseIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
 		}
@@ -23,7 +23,7 @@ func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
 	if name == "default" {
 		var all []datastore.Index
 
-		for _, cfg := range c.Config.Releases {
+		for _, cfg := range c.Config.Releases.Datastores {
 			idx, err := c.requireReleaseIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
 			if err != nil {
 				return nil, err
@@ -56,20 +56,20 @@ func (c *Config) requireReleaseIndex(provider datastore.ProviderName, name strin
 }
 
 func (c *Config) GetReleaseAnalysisIndex(name string) (analysisdatastore.Index, error) {
-	for _, cfg := range c.Config.Releases {
+	for _, cfg := range c.Config.Releases.Datastores {
 		if cfg.Name != name {
 			continue
 		}
 
-		if cfg.Analysis != nil {
-			if cfg.Analysis.Type == "" {
-				return c.GetAnalysisIndex(cfg.Analysis.Name)
+		if cfg.Analyses != nil {
+			if cfg.Analyses.Type == "" {
+				return c.GetAnalysisIndex(cfg.Analyses.Name)
 			}
 
 			return c.requireAnalysisIndex(
-				analysisdatastore.ProviderName(cfg.Analysis.Type),
-				fmt.Sprintf("release/%s/%s", name, cfg.Analysis.Name),
-				cfg.Analysis.Options,
+				analysisdatastore.ProviderName(cfg.Analyses.Type),
+				fmt.Sprintf("release/%s/%s", name, cfg.Analyses.Name),
+				cfg.Analyses.Options,
 			)
 		}
 	}

@@ -5,22 +5,24 @@ import (
 )
 
 type Config struct {
-	Fly string `yaml:"fly"`
+	Fly   FlyConfig    `yaml:"fly"`
+	Tasks []TaskConfig `yaml:"tasks"`
+}
 
+func (c *Config) ApplyDefaults() {
+	if c.Fly.Exec == "" {
+		c.Fly.Exec = "/usr/local/bin/fly"
+	}
+}
+
+type FlyConfig struct {
+	Exec     string `yaml:"exec"`
 	Target   string `yaml:"target"`
 	Insecure bool   `yaml:"insecure"`
 	URL      string `yaml:"url"`
 	Team     string `yaml:"team"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
-
-	Tasks []TaskConfig `yaml:"tasks"`
-}
-
-func (c *Config) ApplyDefaults() {
-	if c.Fly == "" {
-		c.Fly = "/usr/local/bin/fly"
-	}
 }
 
 type TaskConfig struct {

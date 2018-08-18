@@ -16,7 +16,7 @@ func (c *Config) SetReleaseCompilationFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetReleaseCompilationIndex(name string) (datastore.Index, error) {
-	for _, cfg := range c.Config.ReleaseCompilations {
+	for _, cfg := range c.Config.ReleaseCompilations.Datastores {
 		if cfg.Name == name {
 			return c.requireReleaseCompilationIndex(cfg.Name, cfg.Type, cfg.Options)
 		}
@@ -25,7 +25,7 @@ func (c *Config) GetReleaseCompilationIndex(name string) (datastore.Index, error
 	if name == "default" {
 		var all []datastore.Index
 
-		for _, cfg := range c.Config.ReleaseCompilations {
+		for _, cfg := range c.Config.ReleaseCompilations.Datastores {
 			idx, err := c.requireReleaseCompilationIndex(cfg.Name, cfg.Type, cfg.Options)
 			if err != nil {
 				return nil, err
@@ -69,7 +69,7 @@ func (c *Config) withReleaseCompilationScheduler(index datastore.Index) (datasto
 
 	var callback schedulerpkg.StatusChangeCallback = nil
 
-	if !c.Config.General.Quiet {
+	if !c.Config.Global.Quiet {
 		callback = schedulerpkg.DefaultStatusChangeCallback
 	}
 
@@ -77,20 +77,20 @@ func (c *Config) withReleaseCompilationScheduler(index datastore.Index) (datasto
 }
 
 func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatastore.Index, error) {
-	for _, cfg := range c.Config.ReleaseCompilations {
+	for _, cfg := range c.Config.ReleaseCompilations.Datastores {
 		if cfg.Name != name {
 			continue
 		}
 
-		if cfg.Analysis != nil {
-			if cfg.Analysis.Type == "" {
-				return c.GetAnalysisIndex(cfg.Analysis.Name)
+		if cfg.Analyses != nil {
+			if cfg.Analyses.Type == "" {
+				return c.GetAnalysisIndex(cfg.Analyses.Name)
 			}
 
 			return c.requireAnalysisIndex(
-				analysisdatastore.ProviderName(cfg.Analysis.Type),
-				fmt.Sprintf("release-compilation/%s/%s", name, cfg.Analysis.Name),
-				cfg.Analysis.Options,
+				analysisdatastore.ProviderName(cfg.Analyses.Type),
+				fmt.Sprintf("release-compilation/%s/%s", name, cfg.Analyses.Name),
+				cfg.Analyses.Options,
 			)
 		}
 

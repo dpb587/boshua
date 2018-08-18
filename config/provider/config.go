@@ -63,7 +63,7 @@ func (c *Config) requireLogger() {
 	var logger = logrus.New()
 	logger.Out = os.Stderr
 	logger.Formatter = &logrus.JSONFormatter{}
-	logger.Level = logrus.Level(c.Config.General.LogLevel)
+	logger.Level = logrus.Level(c.Config.Global.LogLevel)
 
 	c.logger = logger
 }

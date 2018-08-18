@@ -14,7 +14,8 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
+	"github.com/dpb587/boshua/metalink/template"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -27,7 +28,7 @@ import (
 type index struct {
 	logger     logrus.FieldLogger
 	config     Config
-	repository *git.Repository
+	repository *repository.Repository
 }
 
 var _ datastore.Index = &index{}
@@ -36,7 +37,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
-		repository: git.NewRepository(logger, config.RepositoryConfig),
+		repository: repository.NewRepository(logger, config.RepositoryConfig),
 	}
 }
 
@@ -85,7 +86,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	switch subjectRef := subjectRef.(type) {
 	case compilation.Reference:
 		return filepath.Join(
-			i.config.CompiledReleasePrefix,
+			i.config.CompiledReleasePath,
 			subjectRef.OSVersion.Name,
 			subjectRef.OSVersion.Version,
 			"analysis",
@@ -94,14 +95,14 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 		), nil
 	case releaseversion.Reference:
 		return filepath.Join(
-			i.config.ReleasePrefix,
+			i.config.ReleasePath,
 			"analysis",
 			string(ref.Analyzer),
 			fmt.Sprintf("%s.meta4", subjectRef.Version),
 		), nil
 	case stemcellversion.Reference:
 		return filepath.Join(
-			i.config.StemcellPrefix,
+			i.config.StemcellPath,
 			"analysis",
 			subjectRef.OS,
 			subjectRef.Version,
@@ -131,66 +132,53 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 		return errors.Wrap(err, "parsing origin destination")
 	}
 
-	var sha1 string
+	mirroredFile := metalink.File{
+		Name:   fmt.Sprintf("%s.jsonl", ref.Analyzer),
+		Size:   file.Size,
+		Hashes: file.Hashes,
+	}
 
-	for _, hash := range file.Hashes {
-		if hash.Type == "sha-1" {
-			sha1 = hash.Hash
-
-			break
+	for _, mirror := range i.config.StorageConfig {
+		tmpl, err := template.New(mirror.URI)
+		if err != nil {
+			return errors.Wrap(err, "parsing mirror destination")
 		}
+
+		mirrorWriterURI, err := tmpl.ExecuteString(mirroredFile)
+		if err != nil {
+			return errors.Wrap(err, "generating mirror uri")
+		}
+
+		for k, v := range mirror.Options {
+			// TODO unset/revert after?
+			os.Setenv(k, v)
+		}
+
+		remote, err := urlLoader.Load(metalink.URL{URL: mirrorWriterURI})
+		if err != nil {
+			return errors.Wrap(err, "loading upload destination")
+		}
+
+		progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+		progress.Start()
+
+		err = remote.WriteFrom(local, progress)
+		if err != nil {
+			return errors.Wrap(err, "copying blob")
+		}
+
+		progress.Finish()
+
+		mirroredFile.URLs = append(mirroredFile.URLs, metalink.URL{
+			URL:      remote.ReaderURI(),
+			Location: mirror.Location,
+			Priority: mirror.Priority,
+		})
 	}
-
-	if sha1 == "" {
-		return errors.New("sha-1 hash not found")
-	}
-
-	// not a good way to inject configs
-	priorAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	os.Setenv("AWS_ACCESS_KEY_ID", i.config.BlobstoreConfig.S3.AccessKey)
-	defer os.Setenv("AWS_ACCESS_KEY_ID", priorAccessKey)
-
-	priorSecretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", i.config.BlobstoreConfig.S3.SecretKey)
-	defer os.Setenv("AWS_SECRET_ACCESS_KEY", priorSecretKey)
-
-	// TODO configurable?
-	remote, err := urlLoader.Load(metalink.URL{URL: fmt.Sprintf(
-		"s3://%s/%s/%s%s/%s",
-		i.config.BlobstoreConfig.S3.Host,
-		i.config.BlobstoreConfig.S3.Bucket,
-		i.config.BlobstoreConfig.S3.Prefix,
-		sha1[0:2],
-		sha1[2:],
-	)})
-	if err != nil {
-		return errors.Wrap(err, "parsing source blob")
-	}
-
-	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
-	progress.Start()
-
-	err = remote.WriteFrom(local, progress)
-	if err != nil {
-		return errors.Wrap(err, "copying blob")
-	}
-
-	progress.Finish()
 
 	commitMeta4 := metalink.Metalink{
-		Files: []metalink.File{
-			{
-				Name: fmt.Sprintf("%s.jsonl", ref.Analyzer),
-				Size: file.Size,
-				URLs: []metalink.URL{
-					{
-						URL: remote.ReaderURI(),
-					},
-				},
-				Hashes: file.Hashes,
-			},
-		},
-		Generator: "boshua/boshreleasedpb",
+		Files:     []metalink.File{mirroredFile},
+		Generator: "boshua/dpbreleaseartifacts",
 	}
 
 	commitMeta4Bytes, err := metalink.MarshalXML(commitMeta4)

@@ -1,17 +1,17 @@
 package dpbreleaseartifacts
 
 import (
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
-	"github.com/dpb587/boshua/blobstore"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/storage"
 )
 
 type Config struct {
-	git.RepositoryConfig      `yaml:",inline"`
-	blobstore.BlobstoreConfig `yaml:"blobstore"`
+	repository.RepositoryConfig `yaml:"repository"`
+	storage.StorageConfig       `yaml:"storage"`
 
 	Release string `yaml:"release"`
 
-	CompiledReleasePrefix string `yaml:"compiled_release_prefix"`
-	ReleasePrefix         string `yaml:"release_prefix"`
-	StemcellPrefix        string `yaml:"stemcell_prefix"`
+	CompiledReleasePath string `yaml:"compiled_release_path"`
+	ReleasePath         string `yaml:"release_path"`
+	StemcellPath        string `yaml:"stemcell_path"`
 }

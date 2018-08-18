@@ -1,13 +1,13 @@
 package contextualrepoosmetalinkrepository
 
 import (
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
-	"github.com/dpb587/boshua/blobstore"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/storage"
 )
 
 type Config struct {
-	git.RepositoryConfig      `yaml:",inline"`
-	blobstore.BlobstoreConfig `yaml:"blobstore"`
+	repository.RepositoryConfig `yaml:"repository"`
+	storage.StorageConfig       `yaml:"storage"`
 
-	Prefix string `yaml:"prefix"`
+	Path string `yaml:"path"`
 }

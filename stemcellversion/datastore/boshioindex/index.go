@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore/inmemory"
@@ -19,7 +19,7 @@ import (
 type index struct {
 	logger     logrus.FieldLogger
 	config     Config
-	repository *git.Repository
+	repository *repository.Repository
 
 	cache      *inmemory.Index
 	cacheMutex *sync.Mutex
@@ -32,7 +32,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
-		repository: git.NewRepository(logger, config.RepositoryConfig),
+		repository: repository.NewRepository(logger, config.RepositoryConfig),
 		cache:      inmemory.New(),
 		cacheMutex: &sync.Mutex{},
 	}
@@ -65,7 +65,7 @@ func (i *index) fillCache() error {
 		return errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.repository.Path(i.config.Prefix)))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.repository.Path(i.config.Path)))
 	if err != nil {
 		return errors.Wrap(err, "globbing")
 	}

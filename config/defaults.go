@@ -5,12 +5,12 @@ func (c *Config) ApplyDefaults() {
 		c.Server.Bind = "127.0.0.1:4508"
 	}
 
-	if c.General.DefaultServer != "" {
+	if c.Global.DefaultServer != "" {
 		defaultServer := AbstractComponentConfig{
 			Name: "default",
 			Type: "boshua.v2",
 			Options: map[string]interface{}{
-				"url": c.General.DefaultServer,
+				"url": c.Global.DefaultServer,
 			},
 		}
 
@@ -18,26 +18,26 @@ func (c *Config) ApplyDefaults() {
 			c.Scheduler = &defaultServer
 		}
 
-		if len(c.Analyses) == 0 { // TODO check for name = default instead?
-			c.Analyses = append(c.Analyses, AnalysisDatastore{
+		if len(c.Analyses.Datastores) == 0 { // TODO check for name = default instead?
+			c.Analyses.Datastores = append(c.Analyses.Datastores, AnalysisDatastoreConfig{
 				AbstractComponentConfig: defaultServer,
 			})
 		}
 
-		if len(c.Releases) == 0 { // TODO check for name = default instead?
-			c.Releases = append(c.Releases, ReleaseDatastore{
+		if len(c.Releases.Datastores) == 0 { // TODO check for name = default instead?
+			c.Releases.Datastores = append(c.Releases.Datastores, ReleaseDatastoreConfig{
 				AbstractComponentConfig: defaultServer,
 			})
 		}
 
-		if len(c.ReleaseCompilations) == 0 { // TODO check for name = default instead?
-			c.ReleaseCompilations = append(c.ReleaseCompilations, ReleaseCompilationDatastore{
+		if len(c.ReleaseCompilations.Datastores) == 0 { // TODO check for name = default instead?
+			c.ReleaseCompilations.Datastores = append(c.ReleaseCompilations.Datastores, ReleaseCompilationDatastoreConfig{
 				AbstractComponentConfig: defaultServer,
 			})
 		}
 
-		if len(c.Stemcells) == 0 { // TODO check for name = default instead?
-			c.Stemcells = append(c.Stemcells, StemcellDatastore{
+		if len(c.Stemcells.Datastores) == 0 { // TODO check for name = default instead?
+			c.Stemcells.Datastores = append(c.Stemcells.Datastores, StemcellDatastoreConfig{
 				AbstractComponentConfig: defaultServer,
 			})
 		}

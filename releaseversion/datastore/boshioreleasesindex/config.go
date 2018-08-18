@@ -1,9 +1,9 @@
 package boshioreleasesindex
 
-import "github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+import "github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 
 type Config struct {
-	git.RepositoryConfig `yaml:",inline"`
+	repository.RepositoryConfig `yaml:"repository"`
 
 	Labels []string `yaml:"labels"`
 }

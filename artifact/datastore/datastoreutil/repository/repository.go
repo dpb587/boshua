@@ -1,4 +1,4 @@
-package git
+package repository
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func NewRepository(
 	logger logrus.FieldLogger,
 	config RepositoryConfig,
 ) *Repository {
-	logger.Infof("initialized (repository: %s; branch: %s; local: %s)", config.Repository, config.Branch, config.LocalPath)
+	logger.Infof("initialized (repository: %s; branch: %s; local: %s)", config.URI, config.Branch, config.LocalPath)
 
 	return &Repository{
 		logger: logger,
@@ -59,7 +59,7 @@ func (i *Repository) ForceReload() error {
 	i.logger.Debug("reloading repository")
 
 	if _, err := os.Stat(i.Path(".git")); os.IsNotExist(err) {
-		args = []string{"clone", "--quiet", i.config.Repository}
+		args = []string{"clone", "--quiet", i.config.URI}
 
 		if i.config.Branch != "" {
 			args = append(args, "--branch", i.config.Branch)
@@ -72,7 +72,7 @@ func (i *Repository) ForceReload() error {
 			return errors.Wrap(err, "mkdir local repo")
 		}
 	} else {
-		args = []string{"pull", "--ff-only", "--quiet", i.config.Repository}
+		args = []string{"pull", "--ff-only", "--quiet", i.config.URI}
 
 		if i.config.Branch != "" {
 			args = append(args, i.config.Branch)
@@ -140,7 +140,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 	if !i.config.SkipPush {
 		i.logger.Debug("pushing repository")
 
-		err := i.run("push", i.config.Repository, fmt.Sprintf("HEAD:%s", i.config.Branch))
+		err := i.run("push", i.config.URI, fmt.Sprintf("HEAD:%s", i.config.Branch))
 		if err != nil {
 			return errors.Wrap(err, "pushing")
 		}

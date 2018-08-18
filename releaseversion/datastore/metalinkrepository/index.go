@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/metalink"
@@ -17,7 +17,7 @@ import (
 type index struct {
 	logger     logrus.FieldLogger
 	config     Config
-	repository *git.Repository
+	repository *repository.Repository
 }
 
 var _ datastore.Index = &index{}
@@ -26,7 +26,7 @@ func New(config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
-		repository: git.NewRepository(logger, config.RepositoryConfig),
+		repository: repository.NewRepository(logger, config.RepositoryConfig),
 	}
 }
 
@@ -42,7 +42,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		return nil, errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(i.repository.Path(i.config.Prefix, "*.meta4"))
+	paths, err := filepath.Glob(i.repository.Path(i.config.Path, "*.meta4"))
 	if err != nil {
 		return nil, errors.Wrap(err, "globbing")
 	}

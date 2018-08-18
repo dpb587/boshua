@@ -12,13 +12,13 @@ import (
 )
 
 type Fly struct {
-	config Config
+	config FlyConfig
 
 	needsLogin bool
 	needsSync  bool
 }
 
-func NewFly(config Config) *Fly {
+func NewFly(config FlyConfig) *Fly {
 	return &Fly{
 		config: config,
 	}
@@ -33,7 +33,7 @@ func (f *Fly) RunWithStdin(stdin io.Reader, command string, args ...string) ([]b
 	}
 
 	allArgs := append([]string{"-t", f.config.Target, command}, args...)
-	cmd := exec.Command(f.config.Fly, allArgs...)
+	cmd := exec.Command(f.config.Exec, allArgs...)
 
 	outbuf := bytes.NewBuffer(nil)
 	errbuf := bytes.NewBuffer(nil)

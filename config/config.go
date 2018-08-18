@@ -7,16 +7,16 @@ import (
 )
 
 type Config struct {
-	General             GeneralConfig                 `yaml:"general,omitempty"`
-	Scheduler           *AbstractComponentConfig      `yaml:"scheduler,omitempty"`
-	Stemcells           []StemcellDatastore           `yaml:"stemcells"`
-	Releases            []ReleaseDatastore            `yaml:"releases"`
-	ReleaseCompilations []ReleaseCompilationDatastore `yaml:"release_compilations"`
-	Analyses            []AnalysisDatastore           `yaml:"analyses"`
-	Server              ServerConfig                  `yaml:"server"`
+	Global              GlobalConfig              `yaml:"global,omitempty"`
+	Scheduler           *AbstractComponentConfig  `yaml:"scheduler,omitempty"`
+	Stemcells           StemcellsConfig           `yaml:"stemcells,omitempty"`
+	Releases            ReleasesConfig            `yaml:"releases,omitempty"`
+	ReleaseCompilations ReleaseCompilationConfigs `yaml:"release_compilations,omitempty"`
+	Analyses            AnalysesConfig            `yaml:"analyses,omitempty"`
+	Server              ServerConfig              `yaml:"server,omitempty"`
 }
 
-type GeneralConfig struct {
+type GlobalConfig struct {
 	DefaultServer string         `yaml:"default_server"`
 	DefaultWait   time.Duration  `yaml:"default_wait"`
 	LogLevel      types.LogLevel `yaml:"log_level"`
@@ -38,23 +38,41 @@ type ServerRedirectConfig struct {
 	Root string `yaml:"root"`
 }
 
-type ReleaseDatastore struct {
-	AbstractComponentConfig `yaml:",inline"`
-	Compilation             *ReleaseCompilationDatastore `yaml:"compilation"`
-	Analysis                *AnalysisDatastore           `yaml:"analysis"`
+type ReleasesConfig struct {
+	DefaultLabels []string                 `yaml:"default_labels"`
+	Datastores    []ReleaseDatastoreConfig `yaml:"datastores"`
 }
 
-type ReleaseCompilationDatastore struct {
+type ReleaseDatastoreConfig struct {
 	AbstractComponentConfig `yaml:",inline"`
-	Analysis                *AnalysisDatastore `yaml:"analysis"`
+	Compilations            *ReleaseCompilationDatastoreConfig `yaml:"compilations"`
+	Analyses                *AnalysisDatastoreConfig           `yaml:"analyses"`
 }
 
-type StemcellDatastore struct {
-	AbstractComponentConfig `yaml:",inline"`
-	Analysis                *AnalysisDatastore `yaml:"analysis"`
+type ReleaseCompilationConfigs struct {
+	Datastores []ReleaseCompilationDatastoreConfig `yaml:"datastores"`
 }
 
-type AnalysisDatastore struct {
+type ReleaseCompilationDatastoreConfig struct {
+	AbstractComponentConfig `yaml:",inline"`
+	Analyses                *AnalysisDatastoreConfig `yaml:"analyses"`
+}
+
+type StemcellsConfig struct {
+	DefaultLabels []string                  `yaml:"default_labels"`
+	Datastores    []StemcellDatastoreConfig `yaml:"datastores"`
+}
+
+type StemcellDatastoreConfig struct {
+	AbstractComponentConfig `yaml:",inline"`
+	Analyses                *AnalysisDatastoreConfig `yaml:"analyses"`
+}
+
+type AnalysesConfig struct {
+	Datastores []AnalysisDatastoreConfig `yaml:"datastores"`
+}
+
+type AnalysisDatastoreConfig struct {
 	AbstractComponentConfig `yaml:",inline"`
 }
 

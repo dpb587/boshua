@@ -1,11 +1,11 @@
 package metalinkrepository
 
-import "github.com/dpb587/boshua/artifact/datastore/datastoreutil/git"
+import "github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 
 type Config struct {
-	git.RepositoryConfig `yaml:",inline"`
+	repository.RepositoryConfig `yaml:",inline"`
 
 	Labels  []string `yaml:"labels"`
 	Release string   `yaml:"release"`
-	Prefix  string   `yaml:"prefix"`
+	Path    string   `yaml:"path"`
 }

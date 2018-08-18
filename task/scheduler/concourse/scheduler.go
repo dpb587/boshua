@@ -88,7 +88,7 @@ func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (sch
 }
 
 func (s Scheduler) schedule(tt *task.Task, subject interface{}) (scheduler.ScheduledTask, error) {
-	fly := NewFly(s.config)
+	fly := NewFly(s.config.Fly)
 
 	pipelineBytes, pipelineVars, pipelineOps, err := s.buildBasePipeline(tt)
 	if err != nil {
