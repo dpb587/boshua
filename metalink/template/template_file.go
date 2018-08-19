@@ -28,10 +28,10 @@ func (tf templateFile) SHA256() string {
 
 func (tf templateFile) SHA512() string {
 	for _, hash := range tf.Hashes {
-		if hash.Type == "sha-256" {
+		if hash.Type == "sha-512" {
 			return hash.Hash
 		}
 	}
 
-	panic("sha-256 missing")
+	panic("sha-512 missing")
 }
