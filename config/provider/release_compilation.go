@@ -88,15 +88,15 @@ func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatast
 			continue
 		}
 
-		if cfg.Analyses != nil {
-			if cfg.Analyses.Type == "" {
-				return c.getAnalysisIndex(cfg.Analyses.Name)
+		if cfg.AnalysisDatastore != nil {
+			if cfg.AnalysisDatastore.Type == "" {
+				return c.getAnalysisIndex(cfg.AnalysisDatastore.Name)
 			}
 
 			return c.requireAnalysisIndex(
-				analysisdatastore.ProviderName(cfg.Analyses.Type),
-				fmt.Sprintf("release-compilation/%s/%s", name, cfg.Analyses.Name),
-				cfg.Analyses.Options,
+				analysisdatastore.ProviderName(cfg.AnalysisDatastore.Type),
+				fmt.Sprintf("release-compilation/%s/%s", name, cfg.AnalysisDatastore.Name),
+				cfg.AnalysisDatastore.Options,
 			)
 		}
 

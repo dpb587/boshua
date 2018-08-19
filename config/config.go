@@ -88,10 +88,10 @@ type ReleaseDatastoreConfig struct {
 
 	// Compilations defines an explicit inline or reference to a compilation
 	// datastore.
-	Compilations *ReleaseCompilationDatastoreConfig `yaml:"compilation_datastore"`
+	CompilationDatastore *ReleaseCompilationDatastoreConfig `yaml:"compilation_datastore"`
 
 	// Analyses defines an explicit inline or reference to an analysis datastore.
-	Analyses *AnalysisDatastoreConfig `yaml:"analyses"`
+	AnalysisDatastore *AnalysisDatastoreConfig `yaml:"analysis_datastore"`
 }
 
 // ReleaseCompilationConfigs defines release compilation datastores and
@@ -106,7 +106,7 @@ type ReleaseCompilationDatastoreConfig struct {
 	AbstractComponentConfig `yaml:",inline"`
 
 	// Analyses defines an explicit inline or reference to an analysis datastore.
-	Analyses *AnalysisDatastoreConfig `yaml:"analyses"`
+	AnalysisDatastore *AnalysisDatastoreConfig `yaml:"analysis_datastore"`
 }
 
 // StemcellsConfig defines stemcell datastores and settings.
@@ -117,7 +117,7 @@ type StemcellsConfig struct {
 
 type StemcellDatastoreConfig struct {
 	AbstractComponentConfig `yaml:",inline"`
-	Analyses                *AnalysisDatastoreConfig `yaml:"analyses"`
+	AnalysisDatastore       *AnalysisDatastoreConfig `yaml:"analysis_datastore"`
 }
 
 type AnalysesConfig struct {
