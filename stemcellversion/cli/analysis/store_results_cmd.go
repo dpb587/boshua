@@ -18,7 +18,7 @@ func (c *StoreResultsCmd) Execute(_ []string) error {
 	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/analysis/store-results"})
 
 	return c.StoreResultsCmd.ExecuteStore(
-		c.Config.GetAnalysisIndex,
+		c.Config.GetStemcellAnalysisIndex,
 		func() (analysis.Subject, error) {
 			return c.StemcellOpts.Artifact(c.AppConfig.Config)
 		},

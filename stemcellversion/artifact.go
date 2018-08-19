@@ -11,6 +11,8 @@ import (
 )
 
 type Artifact struct {
+	Datastore string `json:"-"`
+
 	OS         string        `json:"os"`
 	Version    string        `json:"version"`
 	IaaS       string        `json:"iaas"`
@@ -51,6 +53,14 @@ func (s Artifact) Reference() interface{} {
 
 func (s Artifact) MetalinkFile() metalink.File {
 	return s.Tarball
+}
+
+func (s Artifact) GetLabels() []string {
+	return s.Labels
+}
+
+func (s Artifact) GetDatastoreName() string {
+	return s.Datastore
 }
 
 func (s Artifact) Semver() *semver.Version {

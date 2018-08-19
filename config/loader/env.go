@@ -11,11 +11,11 @@ func LoadFromEnv() (*config.Config, error) {
 	c := &config.Config{}
 
 	if v := os.Getenv("BOSHUA_SERVER"); v != "" {
-		c.General.DefaultServer = v
+		c.Global.DefaultServer = v
 	}
 
 	if v := os.Getenv("BOSHUA_SERVER"); v != "" {
-		c.General.DefaultServer = v
+		c.Global.DefaultServer = v
 	}
 
 	return nil, nil

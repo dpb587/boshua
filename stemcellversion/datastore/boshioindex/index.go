@@ -17,6 +17,7 @@ import (
 )
 
 type index struct {
+	name       string
 	logger     logrus.FieldLogger
 	config     Config
 	repository *repository.Repository
@@ -28,8 +29,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:       name,
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
 		repository: repository.NewRepository(logger, config.RepositoryConfig),
@@ -65,7 +67,7 @@ func (i *index) fillCache() error {
 		return errors.Wrap(err, "reloading repository")
 	}
 
-	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.repository.Path(i.config.Path)))
+	paths, err := filepath.Glob(fmt.Sprintf("%s/**/**/*.meta4", i.repository.Path("published")))
 	if err != nil {
 		return errors.Wrap(err, "globbing")
 	}
@@ -80,18 +82,22 @@ func (i *index) fillCache() error {
 
 		err = metalink.Unmarshal(meta4Bytes, &meta4)
 		if err != nil {
-			return errors.Wrap(err, "unmarshaling metalink")
+			i.logger.Errorf("failed to unmarshal metalink: %s", meta4Path)
+
+			continue
 		}
 
 		for _, file := range meta4.Files {
 			result := ConvertFileNameToReference(file.Name)
 			if result == nil {
-				// TODO log warning?
+				i.logger.Errorf("failed to extract metadata from file name: %s", file.Name)
+
 				continue
 			}
 
+			result.Datastore = i.name
 			result.Tarball = file
-			result.Labels = i.config.Labels
+			result.Labels = append(i.config.Labels, "stability/stable")
 
 			i.cache.Add(*result)
 		}

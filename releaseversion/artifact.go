@@ -9,6 +9,8 @@ import (
 )
 
 type Artifact struct {
+	Datastore string `json:"-"`
+
 	Name          string        `json:"name"`
 	Version       string        `json:"version"`
 	SourceTarball metalink.File `json:"tarball"` // TODO rename to Tarball
@@ -30,6 +32,14 @@ func (s Artifact) Reference() interface{} {
 		Name:    s.Name,
 		Version: s.Version,
 	}
+}
+
+func (s Artifact) GetLabels() []string {
+	return s.Labels
+}
+
+func (s Artifact) GetDatastoreName() string {
+	return s.Datastore
 }
 
 func (s Artifact) PreferredChecksum() checksum.ImmutableChecksum {

@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *graphql.Field {
+func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index, analysisIndexGetter analysisdatastore.NamedGetter) *graphql.Field {
 	args := stemcellversiongraphql.NewFilterArgs()
 	args["analyzer"] = &graphql.ArgumentConfig{
 		Type: graphql.String,
@@ -52,12 +52,15 @@ func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index) *gra
 			}
 
 			if status == scheduler.StatusSucceeded {
+				analysisIndex, err := analysisIndexGetter(result.GetDatastoreName())
+				if err != nil {
+					return nil, errors.Wrap(err, "loading analysis datastore")
+				}
+
 				// TODO better way to avoid repeated flushes?
-				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
-					err = analysisIndex.FlushAnalysisCache()
-					if err != nil {
-						return nil, errors.Wrap(err, "flushing cache")
-					}
+				err = analysisIndex.FlushAnalysisCache()
+				if err != nil {
+					return nil, errors.Wrap(err, "flushing cache")
 				}
 			}
 

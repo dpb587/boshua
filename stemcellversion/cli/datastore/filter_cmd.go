@@ -17,7 +17,7 @@ type FilterCmd struct {
 func (c *FilterCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/datastore/filter"})
 
-	index, err := c.Config.GetStemcellIndex("default")
+	index, err := c.Config.GetStemcellIndex(c.CmdOpts.DatastoreOpts.Datastore)
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}

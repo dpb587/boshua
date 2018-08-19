@@ -26,6 +26,7 @@ import (
 )
 
 type index struct {
+	name       string
 	logger     logrus.FieldLogger
 	config     Config
 	repository *repository.Repository
@@ -33,8 +34,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:       name,
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
 		repository: repository.NewRepository(logger, config.RepositoryConfig),
@@ -71,7 +73,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	}
 
 	return []analysis.Artifact{
-		analysis.New(ref, analysisMeta4.Files[0]),
+		analysis.New(i.name, ref, analysisMeta4.Files[0]),
 	}, nil
 }
 
@@ -86,7 +88,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	switch subjectRef := subjectRef.(type) {
 	case compilation.Reference:
 		return filepath.Join(
-			i.config.CompiledReleasePath,
+			i.config.ReleaseCompilationPath,
 			subjectRef.OSVersion.Name,
 			subjectRef.OSVersion.Version,
 			"analysis",

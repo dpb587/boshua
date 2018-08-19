@@ -14,7 +14,7 @@ func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
 	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
 		artifact, err := loader()
 		if err != nil {
-			return nil, errors.Wrap(err, "finding artifact")
+			return nil, errors.Wrap(err, "finding analysis")
 		}
 
 		return artifact, nil

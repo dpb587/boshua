@@ -67,7 +67,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 
 	var parallelize []func()
 
-	requirements := man.Requirements()
+	requirements := man.ReleaseRequirements()
 
 	for relIdx := range requirements {
 		rel := requirements[relIdx]

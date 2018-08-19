@@ -6,12 +6,22 @@ import (
 )
 
 type Config struct {
+	// RepositoryConfig defines how to access the repository.
 	repository.RepositoryConfig `yaml:"repository"`
-	storage.StorageConfig       `yaml:"storage"`
 
+	// StorageConfig defines where results should be stored.
+	storage.StorageConfig `yaml:"storage"`
+
+	// Release defines a static release name for release-related results.
 	Release string `yaml:"release"`
 
-	CompiledReleasePath string `yaml:"compiled_release_path"`
-	ReleasePath         string `yaml:"release_path"`
-	StemcellPath        string `yaml:"stemcell_path"`
+	// ReleasePath defines a custom prefix when storing release analyses.
+	ReleasePath string `yaml:"release_path"`
+
+	// ReleaseCompilationPath defines a custom prefix when storing release
+	// compilation analyses.
+	ReleaseCompilationPath string `yaml:"release_compilation_path"`
+
+	// StemcellPath defines a custom prefix when storing stemcell analyses.
+	StemcellPath string `yaml:"stemcell_path"`
 }

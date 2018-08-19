@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/osversion"
@@ -29,7 +30,7 @@ type StoreCmdArgs struct {
 func (c *StoreCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "compiledrelease/datastore/store"})
 
-	index, err := c.Config.GetReleaseCompilationIndex("default")
+	index, err := c.Config.GetReleaseCompilationIndex(c.CmdOpts.DatastoreOpts.Datastore)
 	if err != nil {
 		return errors.Wrap(err, "loading datastore")
 	}
@@ -39,7 +40,7 @@ func (c *StoreCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "finding release")
 	}
 
-	osVersionIndex, err := c.Config.GetOSIndex("default")
+	osVersionIndex, err := c.Config.GetOSIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading os index")
 	}
@@ -59,11 +60,9 @@ func (c *StoreCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "building metalink")
 	}
 
-	return index.StoreCompilationArtifact(compilation.New(
-		compilation.Reference{
-			ReleaseVersion: releaseVersion.Reference().(releaseversion.Reference),
-			OSVersion:      osVersion.Reference().(osversion.Reference),
-		},
-		meta4.Files[0],
-	))
+	return index.StoreCompilationArtifact(compilation.Artifact{
+		Release: releaseVersion.Reference().(releaseversion.Reference),
+		OS:      osVersion.Reference().(osversion.Reference),
+		Tarball: meta4.Files[0],
+	})
 }

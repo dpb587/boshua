@@ -1,6 +1,7 @@
 package opts
 
 import (
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -18,8 +19,8 @@ type Opts struct {
 	Labels []string `long:"stemcell-label" description:"The label(s) to filter stemcells by"`
 }
 
-func (o *Opts) Artifact(config *provider.Config) (stemcellversion.Artifact, error) {
-	index, err := config.GetStemcellIndex("default")
+func (o *Opts) Artifact(cfg *provider.Config) (stemcellversion.Artifact, error) {
+	index, err := cfg.GetStemcellIndex(config.DefaultName)
 	if err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading index")
 	}

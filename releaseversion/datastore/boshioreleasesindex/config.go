@@ -7,3 +7,11 @@ type Config struct {
 
 	Labels []string `yaml:"labels"`
 }
+
+func (c *Config) ApplyDefaults() {
+	if c.RepositoryConfig.URI == "" {
+		c.RepositoryConfig.URI = "https://github.com/bosh-io/releases-index.git"
+	}
+
+	c.RepositoryConfig.ApplyDefaults()
+}

@@ -38,7 +38,7 @@ func (i *Repository) Path(args ...string) string {
 }
 
 func (i *Repository) WarmCache() bool {
-	return time.Now().Sub(i.lastReloaded) < i.config.PullInterval
+	return time.Now().Sub(i.lastReloaded) < time.Duration(*i.config.PullInterval)
 }
 
 func (i *Repository) Reload() error {

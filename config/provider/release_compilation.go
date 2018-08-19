@@ -34,7 +34,11 @@ func (c *Config) GetReleaseCompilationIndex(name string) (datastore.Index, error
 			all = append(all, idx)
 		}
 
-		return aggregate.New(all...), nil
+		if len(all) == 0 {
+			return nil, errors.New("no release compilation datastores configured")
+		}
+
+		return aggregate.New(name, all...), nil
 	}
 
 	return nil, fmt.Errorf("unrecognized release compilation datastore (name: %s)", name)
@@ -60,6 +64,8 @@ func (c *Config) requireReleaseCompilationIndex(name, provider string, options m
 func (c *Config) withReleaseCompilationScheduler(index datastore.Index) (datastore.Index, error) {
 	if !c.HasScheduler() {
 		return index, nil
+	} else if c.Global.DefaultWait == 0 {
+		return index, nil
 	}
 
 	s, err := c.GetScheduler()
@@ -84,7 +90,7 @@ func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatast
 
 		if cfg.Analyses != nil {
 			if cfg.Analyses.Type == "" {
-				return c.GetAnalysisIndex(cfg.Analyses.Name)
+				return c.getAnalysisIndex(cfg.Analyses.Name)
 			}
 
 			return c.requireAnalysisIndex(
@@ -94,12 +100,12 @@ func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatast
 			)
 		}
 
-		return c.GetAnalysisIndex("default")
+		return c.getAnalysisIndex("default")
 	}
 
 	if name != "default" {
 		return nil, fmt.Errorf("unrecognized release compilation datastore (name: %s)", name)
 	}
 
-	return c.GetAnalysisIndex("default")
+	return c.getAnalysisIndex("default")
 }

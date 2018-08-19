@@ -4,10 +4,11 @@ import (
 	"github.com/dpb587/metalink"
 )
 
-func New(ref Reference, meta4File metalink.File) Artifact {
+func New(datastore string, ref Reference, meta4File metalink.File) Artifact {
 	return Artifact{
-		Release: ref.ReleaseVersion,
-		OS:      ref.OSVersion,
-		Tarball: meta4File,
+		Datastore: datastore,
+		Release:   ref.ReleaseVersion,
+		OS:        ref.OSVersion,
+		Tarball:   meta4File,
 	}
 }

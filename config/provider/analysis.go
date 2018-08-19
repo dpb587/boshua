@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/analysis/datastore/aggregate"
 	"github.com/dpb587/boshua/analysis/datastore/scheduler"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
@@ -13,11 +14,30 @@ func (c *Config) SetAnalysisFactory(f datastore.Factory) {
 	c.analysisFactory = f
 }
 
-func (c *Config) GetAnalysisIndex(name string) (datastore.Index, error) {
+func (c *Config) getAnalysisIndex(name string) (datastore.Index, error) {
 	for _, cfg := range c.Config.Analyses.Datastores {
 		if cfg.Name == name {
 			return c.requireAnalysisIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
 		}
+	}
+
+	if name == "default" {
+		var all []datastore.Index
+
+		for _, cfg := range c.Config.Analyses.Datastores {
+			idx, err := c.requireAnalysisIndex(datastore.ProviderName(cfg.Type), cfg.Name, cfg.Options)
+			if err != nil {
+				return nil, err
+			}
+
+			all = append(all, idx)
+		}
+
+		if len(all) == 0 {
+			return nil, errors.New("no analysis datastores configured")
+		}
+
+		return aggregate.New(name, all...), nil
 	}
 
 	return nil, fmt.Errorf("unrecognized analysis datastore (name: %s)", name)
@@ -42,6 +62,8 @@ func (c *Config) requireAnalysisIndex(provider datastore.ProviderName, name stri
 
 func (c *Config) withScheduler(index datastore.Index) (datastore.Index, error) {
 	if !c.HasScheduler() {
+		return index, nil
+	} else if c.Global.DefaultWait == 0 {
 		return index, nil
 	}
 

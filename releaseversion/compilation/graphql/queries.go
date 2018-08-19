@@ -3,6 +3,7 @@ package graphql
 import (
 	"fmt"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
@@ -17,10 +18,10 @@ var FilterArgs = graphql.FieldConfigArgument{
 	"labels":  labelsArgument, // TODO unsupport?
 }
 
-func NewQuery(index datastore.Index) *graphql.Field {
+func NewQuery(index datastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Field {
 	return &graphql.Field{
 		Name: "ReleaseCompilationQuery",
-		Type: graphql.NewList(newCompilationObject(index)),
+		Type: graphql.NewList(newCompilationObject(index, analysisGetter)),
 		Args: FilterArgs,
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			release, ok := p.Source.(releaseversion.Artifact)

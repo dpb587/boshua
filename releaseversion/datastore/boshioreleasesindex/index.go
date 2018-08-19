@@ -21,6 +21,7 @@ import (
 )
 
 type index struct {
+	name       string
 	logger     logrus.FieldLogger
 	config     Config
 	repository *repository.Repository
@@ -32,8 +33,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:       name,
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
 		repository: repository.NewRepository(logger, config.RepositoryConfig),
@@ -112,6 +114,7 @@ func (i *index) fillCache() error {
 		labels := append(i.config.Labels, fmt.Sprintf("repo/%s", strings.Join(sourcePathSplit[len(sourcePathSplit)-5:len(sourcePathSplit)-2], "/")))
 
 		i.cache.Add(releaseversion.Artifact{
+			Datastore:     i.name,
 			Name:          release.Name,
 			Version:       release.Version,
 			SourceTarball: sourceMeta4.Files[0],

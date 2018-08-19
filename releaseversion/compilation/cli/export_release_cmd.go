@@ -49,7 +49,7 @@ releases:
 - name: "%s"
   version: "%s"
 stemcells:
-- alias: "default"
+- alias: default
   os: "%s"
   version: "%s"
 update:

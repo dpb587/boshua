@@ -34,5 +34,5 @@ func (f *factory) Create(provider datastore.ProviderName, name string, options m
 		return nil, errors.Wrap(err, "loading options")
 	}
 
-	return New(cfg, logger), nil
+	return New(name, cfg, logger), nil
 }

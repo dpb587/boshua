@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/graphql-go/graphql"
 	"github.com/pkg/errors"
@@ -34,10 +35,10 @@ func NewListQuery(index datastore.Index) *graphql.Field {
 	}
 }
 
-func NewQuery(index datastore.Index) *graphql.Field {
+func NewQuery(index datastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Field {
 	return &graphql.Field{
 		Name: "StemcellQuery",
-		Type: newStemcellObject(index),
+		Type: newStemcellObject(index, analysisGetter),
 		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)

@@ -22,6 +22,7 @@ import (
 )
 
 type index struct {
+	name   string
 	logger logrus.FieldLogger
 	config Config
 	client *boshuaV2.Client
@@ -29,8 +30,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:   name,
 		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config: config,
 		client: boshuaV2.NewClient(http.DefaultClient, config.BoshuaConfig, logger),
@@ -62,7 +64,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	var results []analysis.Artifact
 
 	for _, a := range resp.GetAnalysis() {
-		results = append(results, analysis.New(ref, a.Artifact))
+		results = append(results, analysis.New(i.name, ref, a.Artifact))
 	}
 
 	return results, nil

@@ -18,7 +18,7 @@ func (c *StoreResultsCmd) Execute(_ []string) error {
 	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "release/analysis/store-results"})
 
 	return c.StoreResultsCmd.ExecuteStore(
-		c.Config.GetAnalysisIndex,
+		c.Config.GetReleaseAnalysisIndex,
 		func() (analysis.Subject, error) {
 			return c.ReleaseOpts.Artifact(c.AppConfig.Config)
 		},

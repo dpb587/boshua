@@ -15,7 +15,7 @@ func RemarshalYAML(from interface{}, to interface{}) error {
 }
 
 func UnmarshalYAML(from []byte, to interface{}) error {
-	err := yaml.Unmarshal(from, to)
+	err := yaml.UnmarshalStrict(from, to)
 	if err != nil {
 		return errors.Wrap(err, "unmarshalling")
 	}

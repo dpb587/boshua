@@ -66,7 +66,7 @@ func NewReleaseCompilationField(s scheduler.Scheduler, releaseVersionIndex relea
 	}
 }
 
-func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilationdatastore.Index) *graphql.Field {
+func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilationdatastore.Index, analysisIndexGetter analysisdatastore.NamedGetter) *graphql.Field {
 	args := releaseversiongraphql.NewFilterArgs()
 	// TODO support stemcell precision; objects
 	args["osName"] = &graphql.ArgumentConfig{
@@ -123,12 +123,15 @@ func NewReleaseCompilationAnalysisField(s scheduler.Scheduler, index compilation
 			}
 
 			if status == scheduler.StatusSucceeded {
+				analysisIndex, err := analysisIndexGetter(result.GetDatastoreName())
+				if err != nil {
+					return nil, errors.Wrap(err, "loading analysis datastore")
+				}
+
 				// TODO better way to avoid repeated flushes?
-				if analysisIndex, ok := index.(analysisdatastore.Index); ok {
-					err = analysisIndex.FlushAnalysisCache()
-					if err != nil {
-						return nil, errors.Wrap(err, "flushing cache")
-					}
+				err = analysisIndex.FlushAnalysisCache()
+				if err != nil {
+					return nil, errors.Wrap(err, "flushing cache")
 				}
 			}
 

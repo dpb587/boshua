@@ -1,0 +1,22 @@
+---
+stemcells:
+  datastores:
+  - name: bosh-io/stemcells-core-index
+    type: boshioindex
+    options:
+      repository:
+        uri: https://github.com/bosh-io/stemcells-core-index.git
+  - name: bosh-io/stemcells-cpi-index
+    type: boshioindex
+    options:
+      repository:
+        uri: https://github.com/bosh-io/stemcells-cpi-index.git
+  - name: bosh-io/stemcells-windows-index
+    type: boshioindex
+    options:
+      repository:
+        uri: https://github.com/bosh-io/stemcells-windows-index.git
+releases:
+  datastores:
+  - name: bosh-io/releases-index
+    type: boshioreleasesindex

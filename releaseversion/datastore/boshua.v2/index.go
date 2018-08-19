@@ -15,6 +15,7 @@ import (
 )
 
 type index struct {
+	name   string
 	logger logrus.FieldLogger
 	config Config
 	client *boshuaV2.Client
@@ -22,8 +23,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:   name,
 		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config: config,
 		client: boshuaV2.NewClient(http.DefaultClient, config.BoshuaConfig, logger),
@@ -76,7 +78,13 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		return nil, errors.Wrap(err, "executing remote request")
 	}
 
-	return resp.Releases, nil
+	results := resp.Releases
+
+	for resultIdx := range results {
+		results[resultIdx].Datastore = i.name
+	}
+
+	return results, nil
 }
 
 func (i *index) GetLabels() ([]string, error) {

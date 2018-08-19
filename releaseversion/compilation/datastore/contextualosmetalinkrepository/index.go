@@ -27,6 +27,7 @@ import (
 
 // ./{os_name}/{os_version}/*.meta4
 type index struct {
+	name                string
 	logger              logrus.FieldLogger
 	config              Config
 	repository          *repository.Repository
@@ -35,8 +36,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(releaseVersionIndex releaseversiondatastore.Index, config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, releaseVersionIndex releaseversiondatastore.Index, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:                name,
 		logger:              logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		releaseVersionIndex: releaseVersionIndex,
 		config:              config,
@@ -49,7 +51,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		return nil, nil
 	}
 
-	release, err := releaseversiondatastore.GetArtifact(i.releaseVersionIndex, f.Release)
+	release, err := releaseversiondatastore.GetArtifact(i.releaseVersionIndex, f.Release) // TODO switch to use Release.Datastore
 	if err != nil {
 		// TODO warn and continue?
 		return nil, errors.Wrap(err, "finding release")
@@ -101,6 +103,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		results = append(
 			results,
 			compilation.New(
+				i.name,
 				compilation.Reference{
 					ReleaseVersion: release.Reference().(releaseversion.Reference),
 					OSVersion:      osVersionReference,

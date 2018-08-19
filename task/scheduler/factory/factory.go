@@ -3,7 +3,7 @@ package factory
 import (
 	"fmt"
 
-	"github.com/dpb587/boshua/util/configdef"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
@@ -11,6 +11,7 @@ import (
 	boshuaV2 "github.com/dpb587/boshua/task/scheduler/boshua.v2"
 	"github.com/dpb587/boshua/task/scheduler/concourse"
 	"github.com/dpb587/boshua/task/scheduler/localexec"
+	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -73,12 +74,12 @@ func (f *factory) Create(provider string, options map[string]interface{}) (sched
 }
 
 func (f *factory) getIndexDependencies() (releaseversiondatastore.Index, stemcellversiondatastore.Index, error) {
-	releaseIdx, err := f.config.GetReleaseIndex("default")
+	releaseIdx, err := f.config.GetReleaseIndex(config.DefaultName)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "loading release index")
 	}
 
-	stemcellIdx, err := f.config.GetStemcellIndex("default")
+	stemcellIdx, err := f.config.GetStemcellIndex(config.DefaultName)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "loading stemcell index")
 	}

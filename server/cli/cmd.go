@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/server/handlers"
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider/setter"
 	stemcellversionserver "github.com/dpb587/boshua/stemcellversion/server"
 	"github.com/gorilla/mux"
@@ -39,24 +40,19 @@ func (c *Cmd) Execute(extra []string) error {
 		}))
 	}
 
-	releaseIndex, err := c.AppConfig.GetReleaseIndex("default")
+	releaseIndex, err := c.AppConfig.GetReleaseIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	releaseComilationIndex, err := c.AppConfig.GetReleaseCompilationIndex("default")
+	releaseComilationIndex, err := c.AppConfig.GetReleaseCompilationIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	stemcellIndex, err := c.AppConfig.GetStemcellIndex("default")
+	stemcellIndex, err := c.AppConfig.GetStemcellIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading stemcell index")
-	}
-
-	analysisIndex, err := c.AppConfig.GetAnalysisIndex("default")
-	if err != nil {
-		return errors.Wrap(err, "loading analysis index")
 	}
 
 	scheduler, err := c.AppConfig.GetScheduler()
@@ -64,8 +60,16 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading scheduler")
 	}
 
-	stemcellversionserver.NewHandlers(stemcellIndex, analysisIndex).Mount(r)
-	handlers.NewGraphqlV2(c.AppConfig.GetLogger(), releaseIndex, releaseComilationIndex, stemcellIndex, scheduler).Mount(r)
+	stemcellversionserver.NewHandlers(stemcellIndex).Mount(r)
+	handlers.NewGraphqlV2(
+		c.AppConfig.GetLogger(),
+		releaseIndex,
+		c.AppConfig.GetReleaseAnalysisIndex,
+		releaseComilationIndex,
+		stemcellIndex,
+		c.AppConfig.GetStemcellAnalysisIndex,
+		scheduler,
+	).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)
 }

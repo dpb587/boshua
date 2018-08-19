@@ -38,7 +38,7 @@ func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {
 	}
 
 	return cliutil.LoadAnalysis(
-		cfgProvider.GetAnalysisIndex,
+		cfgProvider.GetReleaseAnalysisIndex,
 		func() (analysis.Subject, error) {
 			return o.ReleaseOpts.Artifact(cfgProvider)
 		},

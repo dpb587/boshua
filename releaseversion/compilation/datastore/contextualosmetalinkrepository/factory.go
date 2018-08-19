@@ -42,5 +42,5 @@ func (f *factory) Create(provider datastore.ProviderName, name string, options m
 		return nil, errors.Wrap(err, "loading release index")
 	}
 
-	return New(releaseVersionIndex, cfg, logger), nil
+	return New(name, releaseVersionIndex, cfg, logger), nil
 }

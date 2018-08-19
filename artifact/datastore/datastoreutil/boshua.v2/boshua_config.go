@@ -1,6 +1,8 @@
 package boshuaV2
 
+// BoshuaConfig defines a remote server for boshua.v2 API.
 type BoshuaConfig struct {
+	// URL must define the remote HTTP endpoint.
 	URL string `yaml:"url"`
 }
 

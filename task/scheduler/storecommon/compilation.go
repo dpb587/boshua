@@ -22,6 +22,7 @@ func AppendCompilationStore(tt *task.Task, release releaseversion.Artifact, stem
 			"compilation",
 			fmt.Sprintf("--os=%s/%s", stemcell.OS, stemcell.Version),
 			"datastore",
+			fmt.Sprintf("--datastore=%s", release.GetDatastoreName()),
 			"store",
 			filepath.Join("input", fmt.Sprintf("%s-%s-on-%s-stemcell-%s.tgz", release.Name, release.Version, stemcell.OS, stemcell.Version)),
 		),

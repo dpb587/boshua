@@ -1,5 +1,7 @@
 package config
 
+const DefaultName = "default" // some implicit connotations
+
 func (c *Config) ApplyDefaults() {
 	if c.Server.Bind == "" {
 		c.Server.Bind = "127.0.0.1:4508"
@@ -7,7 +9,7 @@ func (c *Config) ApplyDefaults() {
 
 	if c.Global.DefaultServer != "" {
 		defaultServer := AbstractComponentConfig{
-			Name: "default",
+			Name: DefaultName,
 			Type: "boshua.v2",
 			Options: map[string]interface{}{
 				"url": c.Global.DefaultServer,
@@ -15,7 +17,9 @@ func (c *Config) ApplyDefaults() {
 		}
 
 		if c.Scheduler == nil {
-			c.Scheduler = &defaultServer
+			c.Scheduler = &SchedulerConfig{
+				AbstractComponentConfig: defaultServer,
+			}
 		}
 
 		if len(c.Analyses.Datastores) == 0 { // TODO check for name = default instead?

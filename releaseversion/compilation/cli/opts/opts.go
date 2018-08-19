@@ -2,6 +2,7 @@ package opts
 
 import (
 	"github.com/dpb587/boshua/cli/args"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
@@ -15,8 +16,8 @@ type Opts struct {
 	OS          args.OS                  `long:"os" description:"The OS in name/version format"`
 }
 
-func (o *Opts) Artifact(config *provider.Config) (compilation.Artifact, error) {
-	index, err := config.GetReleaseCompilationIndex("default")
+func (o *Opts) Artifact(cfg *provider.Config) (compilation.Artifact, error) {
+	index, err := cfg.GetReleaseCompilationIndex(config.DefaultName)
 	if err != nil {
 		return compilation.Artifact{}, errors.Wrap(err, "loading index")
 	}

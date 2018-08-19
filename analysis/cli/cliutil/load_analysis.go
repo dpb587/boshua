@@ -17,7 +17,7 @@ func LoadAnalysis(
 ) (analysis.Artifact, error) {
 	subject, err := subjectLoader()
 	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "loading release")
+		return analysis.Artifact{}, errors.Wrap(err, "finding subject")
 	}
 
 	analysisRef := analysis.Reference{
@@ -25,7 +25,7 @@ func LoadAnalysis(
 		Analyzer: analysisOpts.Analyzer,
 	}
 
-	analysisIndex, err := analysisIndexLoader("default")
+	analysisIndex, err := analysisIndexLoader(subject.GetDatastoreName())
 	if err != nil {
 		return analysis.Artifact{}, errors.Wrap(err, "loading analysis index")
 	}

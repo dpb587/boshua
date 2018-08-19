@@ -32,7 +32,11 @@ func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
 			all = append(all, idx)
 		}
 
-		return aggregate.New(all...), nil
+		if len(all) == 0 {
+			return nil, errors.New("no release datastores configured")
+		}
+
+		return aggregate.New(name, all...), nil
 	}
 
 	return nil, fmt.Errorf("unrecognized release datastore (name: %s)", name)
@@ -63,7 +67,7 @@ func (c *Config) GetReleaseAnalysisIndex(name string) (analysisdatastore.Index, 
 
 		if cfg.Analyses != nil {
 			if cfg.Analyses.Type == "" {
-				return c.GetAnalysisIndex(cfg.Analyses.Name)
+				return c.getAnalysisIndex(cfg.Analyses.Name)
 			}
 
 			return c.requireAnalysisIndex(
@@ -74,5 +78,5 @@ func (c *Config) GetReleaseAnalysisIndex(name string) (analysisdatastore.Index, 
 		}
 	}
 
-	return c.GetAnalysisIndex("default")
+	return c.getAnalysisIndex("default")
 }

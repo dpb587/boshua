@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
@@ -22,20 +23,32 @@ import (
 )
 
 type GraphqlV2 struct {
-	releaseIndex            releaseversiondatastore.Index
-	releaseCompilationIndex compilationdatastore.Index
-	stemcellIndex           stemcellversiondatastore.Index
-	scheduler               schedulerpkg.Scheduler
-	logger                  logrus.FieldLogger
+	releaseIndex                releaseversiondatastore.Index
+	releaseAnalysisIndexGetter  analysisdatastore.NamedGetter
+	releaseCompilationIndex     compilationdatastore.Index
+	stemcellIndex               stemcellversiondatastore.Index
+	stemcellAnalysisIndexGetter analysisdatastore.NamedGetter
+	scheduler                   schedulerpkg.Scheduler
+	logger                      logrus.FieldLogger
 }
 
-func NewGraphqlV2(logger logrus.FieldLogger, releaseIndex releaseversiondatastore.Index, releaseCompilationIndex compilationdatastore.Index, stemcellIndex stemcellversiondatastore.Index, scheduler schedulerpkg.Scheduler) *GraphqlV2 {
+func NewGraphqlV2(
+	logger logrus.FieldLogger,
+	releaseIndex releaseversiondatastore.Index,
+	releaseAnalysisIndexGetter analysisdatastore.NamedGetter,
+	releaseCompilationIndex compilationdatastore.Index,
+	stemcellIndex stemcellversiondatastore.Index,
+	stemcellAnalysisIndexGetter analysisdatastore.NamedGetter,
+	scheduler schedulerpkg.Scheduler,
+) *GraphqlV2 {
 	return &GraphqlV2{
-		releaseIndex:            releaseIndex,
-		releaseCompilationIndex: releaseCompilationIndex,
-		stemcellIndex:           stemcellIndex,
-		scheduler:               scheduler,
-		logger:                  logger.WithField("build.package", reflect.TypeOf(GraphqlV2{}).PkgPath()),
+		releaseIndex:                releaseIndex,
+		releaseCompilationIndex:     releaseCompilationIndex,
+		releaseAnalysisIndexGetter:  releaseAnalysisIndexGetter,
+		stemcellIndex:               stemcellIndex,
+		stemcellAnalysisIndexGetter: stemcellAnalysisIndexGetter,
+		scheduler:                   scheduler,
+		logger:                      logger.WithField("build.package", reflect.TypeOf(GraphqlV2{}).PkgPath()),
 	}
 }
 
@@ -44,10 +57,10 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 		graphql.ObjectConfig{
 			Name: "Query",
 			Fields: graphql.Fields{
-				"release":        releaseversiongraphql.NewQuery(h.releaseIndex, h.releaseCompilationIndex),
+				"release":        releaseversiongraphql.NewQuery(h.releaseIndex, h.releaseCompilationIndex, h.releaseAnalysisIndexGetter),
 				"releases":       releaseversiongraphql.NewListQuery(h.releaseIndex),
 				"release_labels": releaseversiongraphql.NewLabelsQuery(h.releaseIndex),
-				"stemcell":       stemcellversiongraphql.NewQuery(h.stemcellIndex),
+				"stemcell":       stemcellversiongraphql.NewQuery(h.stemcellIndex, h.stemcellAnalysisIndexGetter),
 				"stemcells":      stemcellversiongraphql.NewListQuery(h.stemcellIndex),
 			},
 		},
@@ -56,9 +69,9 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 		Name: "Mutation",
 		Fields: graphql.Fields{
 			"scheduleReleaseCompilation":         schedulerboshuaV2.NewReleaseCompilationField(h.scheduler, h.releaseIndex, h.stemcellIndex, h.releaseCompilationIndex),
-			"scheduleReleaseCompilationAnalysis": schedulerboshuaV2.NewReleaseCompilationAnalysisField(h.scheduler, h.releaseCompilationIndex),
-			"scheduleReleaseAnalysis":            schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex),
-			"scheduleStemcellAnalysis":           schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex),
+			"scheduleReleaseCompilationAnalysis": schedulerboshuaV2.NewReleaseCompilationAnalysisField(h.scheduler, h.releaseCompilationIndex, h.releaseAnalysisIndexGetter),
+			"scheduleReleaseAnalysis":            schedulerboshuaV2.NewReleaseAnalysisField(h.scheduler, h.releaseIndex, h.releaseAnalysisIndexGetter),
+			"scheduleStemcellAnalysis":           schedulerboshuaV2.NewStemcellAnalysisField(h.scheduler, h.stemcellIndex, h.stemcellAnalysisIndexGetter),
 		},
 	})
 

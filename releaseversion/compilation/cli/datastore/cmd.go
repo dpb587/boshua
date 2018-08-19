@@ -14,8 +14,9 @@ type Cmd struct {
 }
 
 type CmdOpts struct {
-	AppOpts             *cmdopts.Opts `no-flag:"true"`
-	CompiledReleaseOpts *compiledreleaseopts.Opts
+	AppOpts             *cmdopts.Opts             `no-flag:"true"`
+	CompiledReleaseOpts *compiledreleaseopts.Opts `no-flag:"true"`
+	DatastoreOpts       *opts.Opts                `no-flag:"true"`
 }
 
 func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
@@ -26,6 +27,7 @@ func New(app *cmdopts.Opts, compiledrelease *compiledreleaseopts.Opts) *Cmd {
 	cmdOpts := &CmdOpts{
 		AppOpts:             app,
 		CompiledReleaseOpts: compiledrelease,
+		DatastoreOpts:       cmd.Opts,
 	}
 
 	cmd.FilterCmd.CmdOpts = cmdOpts

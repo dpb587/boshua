@@ -7,4 +7,6 @@ import (
 type Artifact interface {
 	Reference() interface{}
 	MetalinkFile() metalink.File
+	GetLabels() []string
+	GetDatastoreName() string
 }

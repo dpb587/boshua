@@ -25,7 +25,8 @@ type Cmd struct {
 	DeploymentCmd *deployment.Cmd      `command:"deployment" description:"For working with deployments"`
 	StemcellCmd   *stemcellversion.Cmd `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 
-	ServerCmd  server.Cmd           `command:"server" description:"For running an API server for remote access"`
+	ServerCmd server.Cmd `command:"server" description:"For running an API server for remote access"`
+
 	VersionCmd globalcmd.VersionCmd `command:"version" description:"For showing the version of this tool"`
 }
 

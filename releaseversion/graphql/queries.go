@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/graphql-go/graphql"
@@ -34,10 +35,10 @@ func NewListQuery(index datastore.Index) *graphql.Field {
 }
 
 // TODO compilation should be optional
-func NewQuery(index datastore.Index, compilationIndex compilationdatastore.Index) *graphql.Field {
+func NewQuery(index datastore.Index, compilationIndex compilationdatastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Field {
 	return &graphql.Field{
 		Name: "ReleaseQuery",
-		Type: newReleaseObject(index, compilationIndex),
+		Type: newReleaseObject(index, compilationIndex, analysisGetter),
 		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)

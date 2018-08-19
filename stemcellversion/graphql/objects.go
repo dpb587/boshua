@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisgraphql "github.com/dpb587/boshua/analysis/graphql"
 	artifactgraphql "github.com/dpb587/boshua/artifact/graphql"
 	"github.com/dpb587/boshua/stemcellversion"
@@ -9,20 +10,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-func newStemcellAnalysis(index datastore.AnalysisIndex) *graphql.Object {
+func newStemcellAnalysis(analysisGetter analysisdatastore.NamedGetter) *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name:        "StemcellAnalysis",
 			Description: "Analysis results of a stemcell.",
 			Fields: graphql.Fields{
-				"results": analysisgraphql.NewResultsField("Stemcell", index),
+				"results": analysisgraphql.NewResultsField("Stemcell", analysisGetter),
 				// "stemcellmanifestV1": github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/graphql.NewField(index),
 			},
 		},
 	)
 }
 
-func newStemcellObject(index datastore.Index) *graphql.Object {
+func newStemcellObject(index datastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name:        "Stemcell",
@@ -71,7 +72,7 @@ func newStemcellObject(index datastore.Index) *graphql.Object {
 				},
 				"analysis": &graphql.Field{
 					Name: "StemcellAnalysisField",
-					Type: newStemcellAnalysis(index.(datastore.AnalysisIndex)), // TODO unsafe
+					Type: newStemcellAnalysis(analysisGetter), // TODO unsafe
 					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 						// better way?
 						return p.Source, nil

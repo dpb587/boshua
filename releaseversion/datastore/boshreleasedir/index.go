@@ -18,6 +18,7 @@ import (
 )
 
 type index struct {
+	name       string
 	logger     logrus.FieldLogger
 	config     Config
 	repository *repository.Repository
@@ -25,8 +26,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:       name,
 		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
 		config:     config,
 		repository: repository.NewRepository(logger, config.RepositoryConfig),
@@ -106,8 +108,9 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 			}
 
 			results = append(results, releaseversion.Artifact{
-				Name:    release.Name,
-				Version: release.Version,
+				Datastore: i.name,
+				Name:      release.Name,
+				Version:   release.Version,
 				SourceTarball: metalink.File{
 					Name:     fmt.Sprintf("%s-%s.tgz", release.Name, release.Version),
 					MetaURLs: metaurls,

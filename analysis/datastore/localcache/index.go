@@ -22,6 +22,7 @@ import (
 )
 
 type index struct {
+	name    string
 	config  Config
 	logger  logrus.FieldLogger
 	storage string
@@ -29,8 +30,9 @@ type index struct {
 
 var _ datastore.Index = &index{}
 
-func New(config Config, logger logrus.FieldLogger) datastore.Index {
+func New(name string, config Config, logger logrus.FieldLogger) datastore.Index {
 	return &index{
+		name:    name,
 		config:  config,
 		logger:  logger,
 		storage: filepath.Join(os.Getenv("HOME"), ".cache", "boshua", "analysis-localcache"),
@@ -54,6 +56,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 
 	return []analysis.Artifact{
 		analysis.New(
+			i.name,
 			ref,
 			metalink.File{
 				Name: fmt.Sprintf("%s.jsonl.gz", ref.Analyzer),

@@ -1,6 +1,7 @@
 package graphql
 
 import (
+	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	analysisgraphql "github.com/dpb587/boshua/analysis/graphql"
 	"github.com/dpb587/boshua/releaseversion"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
@@ -28,20 +29,20 @@ var ReleaseLabel = graphql.NewObject(
 	},
 )
 
-func newReleaseAnalysis(index datastore.AnalysisIndex) *graphql.Object {
+func newReleaseAnalysis(analysisGetter analysisdatastore.NamedGetter) *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name:        "ReleaseAnalysis",
 			Description: "Analysis results of a release version.",
 			Fields: graphql.Fields{
-				"results": analysisgraphql.NewResultsField("Release", index),
+				"results": analysisgraphql.NewResultsField("Release", analysisGetter),
 				// "stemcellmanifestV1": github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/graphql.NewField(index),
 			},
 		},
 	)
 }
 
-func newReleaseObject(index datastore.Index, compilationIndex compilationdatastore.Index) *graphql.Object {
+func newReleaseObject(index datastore.Index, compilationIndex compilationdatastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Object {
 	return graphql.NewObject(
 		graphql.ObjectConfig{
 			Name:        "Release",
@@ -64,14 +65,14 @@ func newReleaseObject(index datastore.Index, compilationIndex compilationdatasto
 				},
 				"analysis": &graphql.Field{
 					Name: "ReleaseAnalysisField",
-					Type: newReleaseAnalysis(index.(datastore.AnalysisIndex)), // TODO unsafe
+					Type: newReleaseAnalysis(analysisGetter), // TODO unsafe
 					Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 						// better way?
 						return p.Source, nil
 					},
 				},
 				// TODO compilations for multiple
-				"compilations": compilationgraphql.NewQuery(compilationIndex),
+				"compilations": compilationgraphql.NewQuery(compilationIndex, analysisGetter),
 			},
 		},
 	)

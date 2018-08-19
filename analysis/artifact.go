@@ -6,6 +6,8 @@ import (
 )
 
 type Artifact struct {
+	Datastore string
+
 	reference    Reference
 	metalinkFile metalink.File
 }
@@ -18,4 +20,12 @@ func (s Artifact) MetalinkFile() metalink.File {
 
 func (s Artifact) Reference() interface{} {
 	return s.reference
+}
+
+func (Artifact) GetLabels() []string {
+	return nil
+}
+
+func (s Artifact) GetDatastoreName() string {
+	return s.Datastore
 }

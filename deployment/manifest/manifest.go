@@ -6,12 +6,12 @@ import (
 )
 
 type Manifest struct {
-	parsed       interface{}
-	requirements []ReleasePatch
+	parsed              interface{}
+	releaseRequirements []ReleasePatch
 }
 
-func (m *Manifest) Requirements() []ReleasePatch {
-	return m.requirements
+func (m *Manifest) ReleaseRequirements() []ReleasePatch {
+	return m.releaseRequirements
 }
 
 func (m *Manifest) UpdateRelease(release ReleasePatch) error {

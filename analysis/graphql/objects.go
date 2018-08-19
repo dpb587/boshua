@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis"
@@ -9,9 +8,10 @@ import (
 	artifactgraphql "github.com/dpb587/boshua/artifact/graphql"
 	"github.com/dpb587/metalink"
 	"github.com/graphql-go/graphql"
+	"github.com/pkg/errors"
 )
 
-func NewResultsField(namespace string, index datastore.Index) *graphql.Field {
+func NewResultsField(namespace string, indexGetter datastore.NamedGetter) *graphql.Field {
 	return &graphql.Field{
 		Name: fmt.Sprintf("%sAnalysisResults", namespace),
 		Args: graphql.FieldConfigArgument{
@@ -40,6 +40,11 @@ func NewResultsField(namespace string, index datastore.Index) *graphql.Field {
 			analyzers, ok := p.Args["analyzers"].([]interface{})
 			if !ok {
 				return nil, errors.New("analyzers: expected slice")
+			}
+
+			index, err := indexGetter(subject.GetDatastoreName())
+			if err != nil {
+				return nil, errors.Wrap(err, "loading analysis index")
 			}
 
 			var results []analysisResult

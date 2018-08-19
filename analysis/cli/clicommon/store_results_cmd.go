@@ -35,7 +35,7 @@ func (c *StoreResultsCmd) ExecuteStore(
 		Analyzer: analyzer,
 	}
 
-	index, err := analysisIndexLoader("default")
+	index, err := analysisIndexLoader(subject.GetDatastoreName())
 	if err != nil {
 		return errors.Wrap(err, "loading analysis datastore")
 	}

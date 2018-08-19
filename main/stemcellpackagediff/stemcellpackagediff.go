@@ -11,6 +11,7 @@ import (
 	analysisV2 "github.com/dpb587/boshua/analysis/datastore/boshua.v2"
 	"github.com/dpb587/boshua/cli/args"
 	"github.com/dpb587/boshua/cli/opts"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/metalink/analysisprocessor"
 	stemcellpackagesV1result "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -42,24 +43,24 @@ func (c *cmd) Execute(_ []string) error {
 	cfg.SetStemcellFactory(stemcellversionV2.NewFactory(cfg.GetLogger()))
 	cfg.SetSchedulerFactory(schedulerV2.NewFactory(cfg.GetLogger()))
 
-	stemcellIndex, err := cfg.GetStemcellIndex("default")
+	stemcellIndex, err := cfg.GetStemcellIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading stemcell index")
 	}
 
-	analysisIndex, err := cfg.GetAnalysisIndexScheduler(analysis.Reference{})
+	analysisIndex, err := cfg.GetStemcellAnalysisIndex(config.DefaultName)
 	if err != nil {
 		return errors.Wrap(err, "loading analysis index")
 	}
 
 	packagesBefore, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.Before)
 	if err != nil {
-		return errors.Wrap(err, "loading before")
+		return errors.Wrapf(err, "loading %s/%s", c.Args.OS, c.Args.Before)
 	}
 
 	packagesAfter, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.After)
 	if err != nil {
-		return errors.Wrap(err, "loading after")
+		return errors.Wrapf(err, "loading %s/%s", c.Args.OS, c.Args.After)
 	}
 
 	packages := diffPackages(packagesBefore, packagesAfter)

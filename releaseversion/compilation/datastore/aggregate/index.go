@@ -11,13 +11,15 @@ import (
 )
 
 type index struct {
+	name    string
 	indices []datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
-func New(indices ...datastore.Index) datastore.AnalysisIndex {
+func New(name string, indices ...datastore.Index) datastore.AnalysisIndex {
 	return &index{
+		name:    name,
 		indices: indices,
 	}
 }
@@ -34,7 +36,11 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 
-		results = append(results, found...)
+		for _, one := range found {
+			one.Datastore = i.name
+
+			results = append(results, one)
+		}
 	}
 
 	return results, nil
@@ -55,6 +61,7 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	return datastore.UnsupportedOperationErr
 }
 
+// TODO remove; no longer necessary?
 func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	var results []analysis.Artifact
 	var supported bool
@@ -85,6 +92,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 	return results, nil
 }
 
+// TODO remove; no longer necessary?
 func (i *index) StoreAnalysisResult(ref analysis.Reference, meta4 metalink.Metalink) error {
 	for idxIdx, idx := range i.indices {
 		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)
@@ -114,6 +122,7 @@ func (i *index) FlushCompilationCache() error {
 	return nil
 }
 
+// TODO remove; no longer necessary?
 func (i *index) FlushAnalysisCache() error {
 	for idxIdx, idx := range i.indices {
 		analysisIdx, analysisSupported := idx.(analysisdatastore.Index)

@@ -53,8 +53,14 @@ func ConvertFileNameToReference(name string) *stemcellversion.Artifact {
 
 	nameSplit = nameSplit[1:]
 
+	if len(nameSplit) > 0 {
+		ref.DiskFormat = nameSplit[0]
+
+		nameSplit = nameSplit[1:]
+	}
+
 	if len(nameSplit) != 0 {
-		// probably disk type
+		// dunno
 		return nil
 	}
 

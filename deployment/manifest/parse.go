@@ -25,7 +25,7 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 		return nil, errors.Wrap(err, "parsing raw manifest")
 	}
 
-	var requirements []ReleasePatch
+	var releaseRequirements []ReleasePatch
 
 	var stemcell parseManifestStemcell
 
@@ -97,11 +97,11 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 			pointer: patch.MustNewPointerFromString(fmt.Sprintf("/releases/%d", releaseIdx)),
 		}
 
-		requirements = append(requirements, releasePatch)
+		releaseRequirements = append(releaseRequirements, releasePatch)
 	}
 
 	return &Manifest{
-		parsed:       parsedRaw,
-		requirements: requirements,
+		parsed:              parsedRaw,
+		releaseRequirements: releaseRequirements,
 	}, nil
 }

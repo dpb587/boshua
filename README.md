@@ -317,13 +317,12 @@ Schedule analysis of a stemcell...
 
 ### Configuration
 
-The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. The general structure looks like the following, with specific types documented below.
+The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. See the documentation in [`config/config.go`](config/config.go) or examples in [`doc/config/examples`](doc/config/examples).
 
-    general:
-      # default remote boshua server
-      default_server: ~
-      # default wait duration when scheduling
-      default_wait: 30m
+
+## Development
+
+
 
 
 ## History

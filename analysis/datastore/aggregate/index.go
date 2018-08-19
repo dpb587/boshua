@@ -10,13 +10,15 @@ import (
 )
 
 type index struct {
+	name       string
 	aggregated []datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
-func New(aggregated ...datastore.Index) datastore.Index {
+func New(name string, aggregated ...datastore.Index) datastore.Index {
 	return &index{
+		name:       name,
 		aggregated: aggregated,
 	}
 }
@@ -30,7 +32,11 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 			return nil, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
-		results = append(results, found...)
+		for _, one := range found {
+			one.Datastore = i.name
+
+			results = append(results, one)
+		}
 	}
 
 	return results, nil

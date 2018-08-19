@@ -7,6 +7,8 @@ import (
 )
 
 type Artifact struct {
+	Datastore string `json:"-"`
+
 	Release releaseversion.Reference `json:"release"`
 	OS      osversion.Reference      `json:"os"`
 
@@ -24,4 +26,12 @@ func (s Artifact) Reference() interface{} {
 		ReleaseVersion: s.Release,
 		OSVersion:      s.OS,
 	}
+}
+
+func (s Artifact) GetLabels() []string {
+	return s.Labels
+}
+
+func (s Artifact) GetDatastoreName() string {
+	return s.Datastore
 }

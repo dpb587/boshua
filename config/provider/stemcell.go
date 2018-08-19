@@ -34,6 +34,10 @@ func (c *Config) GetStemcellIndex(name string) (datastore.Index, error) {
 			all = append(all, idx)
 		}
 
+		if len(all) == 0 {
+			return nil, errors.New("no stemcell datastores configured")
+		}
+
 		return aggregate.New(all...), nil
 	}
 
@@ -65,18 +69,18 @@ func (c *Config) GetStemcellAnalysisIndex(name string) (analysisdatastore.Index,
 
 		if cfg.Analyses != nil {
 			if cfg.Analyses.Type == "" {
-				return c.GetAnalysisIndex(cfg.Analyses.Name)
+				return c.getAnalysisIndex(cfg.Analyses.Name)
 			}
 
 			return c.requireAnalysisIndex(
 				analysisdatastore.ProviderName(cfg.Analyses.Type),
-				fmt.Sprintf("release/%s/%s", name, cfg.Analyses.Name),
+				fmt.Sprintf("stemcell/%s/%s", name, cfg.Analyses.Name),
 				cfg.Analyses.Options,
 			)
 		}
 	}
 
-	return c.GetAnalysisIndex("default")
+	return c.getAnalysisIndex("default")
 }
 
 // TODO remove/move

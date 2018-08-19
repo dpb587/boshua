@@ -113,15 +113,19 @@ func (c *ArtifactCmd) ExecuteArtifact(loader artifact.Loader) error {
 			fmt.Printf("url\t%s\n", url.URL)
 		}
 
-		for _, url := range artifactMetalinkFile.MetaURLs {
-			fmt.Printf("metaurl\t%s\t%s\n", url.URL, url.MediaType)
-		}
-
 		for _, cs := range metalinkutil.HashesToChecksums(artifactMetalinkFile.Hashes) {
 			switch cs.Algorithm().Name() {
 			case algorithm.SHA1, algorithm.SHA256:
 				fmt.Printf("%s\n", strings.Replace(cs.String(), ":", "\t", 1))
 			}
+		}
+
+		for _, metaurl := range artifactMetalinkFile.MetaURLs {
+			fmt.Printf("metaurl\t%s\t%s\n", metaurl.URL, metaurl.MediaType)
+		}
+
+		for _, label := range artifact.GetLabels() {
+			fmt.Printf("label\t%s\n", label)
 		}
 	} else {
 		return errors.New("invalid format")

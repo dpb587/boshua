@@ -19,3 +19,11 @@ func (s Artifact) MetalinkFile() metalink.File {
 func (s Artifact) Reference() interface{} {
 	return s.reference
 }
+
+func (Artifact) GetLabels() []string {
+	return nil
+}
+
+func (Artifact) GetDatastoreName() string {
+	return "unsupported"
+}

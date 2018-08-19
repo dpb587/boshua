@@ -6,6 +6,7 @@ import (
 
 	"github.com/dpb587/boshua/analysis"
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/presets/defaults"
 	"github.com/dpb587/boshua/metalink/analysisprocessor"
 	releasemanifestsV1 "github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/result"
@@ -18,7 +19,7 @@ func main() {
 		panic(err)
 	}
 
-	releases, err := cfg.GetReleaseIndex("default")
+	releases, err := cfg.GetReleaseIndex(config.DefaultName)
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	analyses, err := cfg.GetAnalysisIndex(analysis.Reference{})
+	analyses, err := cfg.GetReleaseAnalysisIndex(release.GetDatastoreName())
 	if err != nil {
 		panic(err)
 	}

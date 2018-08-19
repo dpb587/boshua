@@ -1,20 +1,17 @@
 package server
 
 import (
-	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	"github.com/gorilla/mux"
 )
 
 type Handlers struct {
-	index         datastore.Index
-	analysisIndex analysisdatastore.Index
+	index datastore.Index
 }
 
-func NewHandlers(index datastore.Index, analysisIndex analysisdatastore.Index) *Handlers {
+func NewHandlers(index datastore.Index) *Handlers {
 	return &Handlers{
-		index:         index,
-		analysisIndex: analysisIndex,
+		index: index,
 	}
 }
 

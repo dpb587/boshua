@@ -12,13 +12,15 @@ import (
 )
 
 type index struct {
+	name    string
 	indices []datastore.Index
 }
 
 var _ datastore.Index = &index{}
 
-func New(indices ...datastore.Index) datastore.AnalysisIndex {
+func New(name string, indices ...datastore.Index) datastore.AnalysisIndex {
 	return &index{
+		name:    name,
 		indices: indices,
 	}
 }
@@ -55,6 +57,10 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		}
 
 		results = append(results, aggregatedResult)
+	}
+
+	for resultIdx := range results {
+		results[resultIdx].Datastore = i.name
 	}
 
 	return results, nil
