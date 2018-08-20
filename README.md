@@ -23,6 +23,7 @@ First, let's define some of the terminology this uses...
     * **Formatters** - formatters are tools for interpreting the raw results and providing them in a more meaningful way. Most analyzers have several builtin formatters.
  * **Datastore** - a datastore is something which can find and/or store details about artifacts and analysis in a permanent way (e.g. a BOSH release repository having release information). Each artifact type has several supported datastores, and datastores can delegate to other, possibly remote datastores (e.g. through APIs).
  * **Scheduler** - a scheduler is used for executing work when results are not already available (e.g. compiling a release). Several types of schedulers are supported to support running work locally or in Docker, remotely on Concourse, or remotely through an API.
+ * **Provider** - a specific implementation of a datastore or scheduler. Providers are configured through the config file and their provider-specific `options`.
 
 
 ## Usage
@@ -313,6 +314,10 @@ Schedule analysis of a stemcell...
 
 ### Library
 
+Library usage is not yet trivial. See some of the examples in the [`main`](main) package for now.
+
+ * [`staticreleaselookup`](main/staticreleaselookup/staticreleaselookup.go) - "simplest" example to output the `release.MF` file of a hard-coded release
+ * [`stemcellpackagediff`](main/stemcellpackagediff/stemcellpackagediff.go) - diff the parsed `packages.txt` data between two stemcell versions
 
 
 ### Configuration
@@ -320,9 +325,43 @@ Schedule analysis of a stemcell...
 The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. See the documentation in [`config/config.go`](config/config.go) or examples in [`doc/config/examples`](doc/config/examples).
 
 
+#### Stemcell Providers
+
+ * [`boshioindex`](stemcellversion/datastore/boshioindex) - [bosh-io/stemcells-core-index](https://github.com/bosh-io/stemcells-core-index)-style
+ * [`boshua.v2`](stemcellversion/datastore/boshua.v2) - query a remote boshua API server
+
+
+#### Release Providers
+
+ * [`boshioreleasesindex`](releaseversion/datastore/boshioreleasesindex) - [bosh-io/releases-index](https://github.com/bosh-io/releases-index)-style
+ * [`boshreleasedir`](releaseversion/datastore/boshreleasedir) - directly reference a release repository
+ * [`boshua.v2`](releaseversion/datastore/boshua.v2) - query a remote boshua API server
+ * [`metalinkrepository`](releaseversion/datastore/metalinkrepository) - refer to a metalink repository of pre-built release tarballs
+ * [`trustedtarball`](releaseversion/datastore/trustedtarball) - dynamically generate artifacts for queried tarballs
+
+
+#### Release Compilation Providers
+
+ * [`boshua.v2`](releaseversion/compilation/datastore/boshua.v2) - query a remote boshua API server
+ * [`contextualosmetalinkrepository`](releaseversion/compilation/datastore/contextualosmetalinkrepository) - refer to a metalink repository, segmented by OS name and version
+ * [`contextualrepoosmetalinkrepository`](releaseversion/compilation/datastore/contextualrepoosmetalinkrepository) - refer to a metalink repository, segmented by `repo`-label and OS name and version
+
+
+#### Scheduler Providers
+
+ * [`boshua.v2`](task/scheduler/boshua.v2) - schedule via a remote boshua API server
+ * [`concourse`](task/scheduler/concourse) - schedule tasks via concourse pipelines
+ * [`localexec`](task/scheduler/localexec) - run tasks locally
+
+
 ## Development
 
 
+## Futures
+
+ * nicer wrapper libraries - `r, _ := boshua.Release("openvpn/5.1.0"); p, _ := r.Packages(); return p[0].Name`
+ * testing
+ * webui
 
 
 ## History
