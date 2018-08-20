@@ -6,6 +6,7 @@ import (
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/analysis/datastore/aggregate"
 	"github.com/dpb587/boshua/analysis/datastore/scheduler"
+	"github.com/dpb587/boshua/config"
 	schedulerpkg "github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
 )
@@ -21,7 +22,7 @@ func (c *Config) getAnalysisIndex(name string) (datastore.Index, error) {
 		}
 	}
 
-	if name == "default" {
+	if name == config.DefaultName {
 		var all []datastore.Index
 
 		for _, cfg := range c.Config.Analyses.Datastores {

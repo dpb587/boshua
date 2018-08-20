@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/boshua/releaseversion/datastore/aggregate"
 	"github.com/pkg/errors"
@@ -20,7 +21,7 @@ func (c *Config) GetReleaseIndex(name string) (datastore.Index, error) {
 		}
 	}
 
-	if name == "default" {
+	if name == config.DefaultName {
 		var all []datastore.Index
 
 		for _, cfg := range c.Config.Releases.Datastores {
@@ -78,5 +79,5 @@ func (c *Config) GetReleaseAnalysisIndex(name string) (analysisdatastore.Index, 
 		}
 	}
 
-	return c.getAnalysisIndex("default")
+	return c.getAnalysisIndex(config.DefaultName)
 }

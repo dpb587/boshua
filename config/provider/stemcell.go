@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/config"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	osversionstemcellversionindex "github.com/dpb587/boshua/osversion/datastore/stemcellversionindex"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
@@ -22,7 +23,7 @@ func (c *Config) GetStemcellIndex(name string) (datastore.Index, error) {
 		}
 	}
 
-	if name == "default" {
+	if name == config.DefaultName {
 		var all []datastore.Index
 
 		for _, cfg := range c.Config.Stemcells.Datastores {
@@ -38,7 +39,7 @@ func (c *Config) GetStemcellIndex(name string) (datastore.Index, error) {
 			return nil, errors.New("no stemcell datastores configured")
 		}
 
-		return aggregate.New(all...), nil
+		return aggregate.New(name, all...), nil
 	}
 
 	return nil, fmt.Errorf("unrecognized stemcell datastore (name: %s)", name)
@@ -80,16 +81,16 @@ func (c *Config) GetStemcellAnalysisIndex(name string) (analysisdatastore.Index,
 		}
 	}
 
-	return c.getAnalysisIndex("default")
+	return c.getAnalysisIndex(config.DefaultName)
 }
 
 // TODO remove/move
 func (c *Config) GetOSIndex(name string) (osversiondatastore.Index, error) {
-	if name != "default" {
+	if name != config.DefaultName {
 		panic("TODO")
 	}
 
-	stemcellVersionIndex, err := c.GetStemcellIndex("default")
+	stemcellVersionIndex, err := c.GetStemcellIndex(config.DefaultName)
 	if err != nil {
 		return nil, errors.Wrap(err, "loading stemcell index")
 	}

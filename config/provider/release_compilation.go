@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/aggregate"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore/scheduler"
@@ -22,7 +23,7 @@ func (c *Config) GetReleaseCompilationIndex(name string) (datastore.Index, error
 		}
 	}
 
-	if name == "default" {
+	if name == config.DefaultName {
 		var all []datastore.Index
 
 		for _, cfg := range c.Config.ReleaseCompilations.Datastores {
@@ -100,12 +101,12 @@ func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatast
 			)
 		}
 
-		return c.getAnalysisIndex("default")
+		return c.getAnalysisIndex(config.DefaultName)
 	}
 
-	if name != "default" {
+	if name != config.DefaultName {
 		return nil, fmt.Errorf("unrecognized release compilation datastore (name: %s)", name)
 	}
 
-	return c.getAnalysisIndex("default")
+	return c.getAnalysisIndex(config.DefaultName)
 }
