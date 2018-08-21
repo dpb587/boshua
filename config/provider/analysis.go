@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/analysis/datastore/aggregate"
@@ -13,6 +14,46 @@ import (
 
 func (c *Config) SetAnalysisFactory(f datastore.Factory) {
 	c.analysisFactory = f
+}
+
+func (c *Config) GetAnalysisIndex(name string) (datastore.Index, error) {
+	if len(name) > 9 && name[0:9] == "internal/" {
+		split := strings.SplitN(name, "/", 3)
+
+		if split[1] == "release" {
+			for _, r := range c.Releases.Datastores {
+				if r.Name != split[2] {
+					continue
+				}
+
+				name = r.AnalysisDatastore.Name
+
+				break
+			}
+		} else if split[1] == "release.compilation" {
+			for _, r := range c.Releases.Datastores {
+				if r.Name != split[2] {
+					continue
+				}
+
+				name = r.CompilationDatastore.AnalysisDatastore.Name
+
+				break
+			}
+		} else if split[1] == "compilation" {
+			for _, r := range c.ReleaseCompilations.Datastores {
+				if r.Name != split[2] {
+					continue
+				}
+
+				name = r.AnalysisDatastore.Name
+
+				break
+			}
+		}
+	}
+
+	return c.getAnalysisIndex(name)
 }
 
 func (c *Config) getAnalysisIndex(name string) (datastore.Index, error) {

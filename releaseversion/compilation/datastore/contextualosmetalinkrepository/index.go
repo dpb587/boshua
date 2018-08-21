@@ -46,6 +46,10 @@ func New(name string, releaseVersionIndex releaseversiondatastore.Index, config 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	if !f.Release.NameSatisfied(i.config.Release) {
 		return nil, nil
@@ -83,7 +87,11 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			return nil, fmt.Errorf("unmarshalling %s: %v", compiledReleasePath, err)
 		}
 
-		if !f.Release.VersionSatisfied(compiledReleaseMeta4.Files[0].Version) {
+		if compiledReleaseMeta4.Files[0].Version == "" {
+			i.logger.Warnf("expected version field in file: %s", compiledReleasePath) // TODO make relative to repository path
+
+			continue
+		} else if !f.Release.VersionSatisfied(compiledReleaseMeta4.Files[0].Version) {
 			continue
 		}
 
@@ -137,9 +145,10 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	}
 
 	mirroredFile := metalink.File{
-		Name:   file.Name,
-		Size:   file.Size,
-		Hashes: file.Hashes,
+		Name:    file.Name,
+		Size:    file.Size,
+		Hashes:  file.Hashes,
+		Version: artifactRef.ReleaseVersion.Version,
 	}
 
 	for _, mirror := range i.config.StorageConfig {

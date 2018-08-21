@@ -43,7 +43,12 @@ func (o *Opts) GetConfig() (*configprovider.Config, error) {
 		return nil, errors.Wrap(err, "loading file")
 	}
 
-	o.parsedConfig = cfg
+	cfg, err = config.Denormalize(*cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "validating")
+	}
+
+	o.parsedConfig = &configprovider.Config{Config: cfg}
 
 	return o.parsedConfig, nil
 }

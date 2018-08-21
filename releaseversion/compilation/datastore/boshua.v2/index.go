@@ -36,6 +36,10 @@ func New(name string, config Config, logger logrus.FieldLogger) datastore.Index 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO this should be using "compilations", not singular compilation
 	fReleaseQueryFilter, fReleaseQueryVarsTypes, fReleaseQueryVars := releaseversiongraphql.BuildListQueryArgs(f.Release)

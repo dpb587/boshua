@@ -32,6 +32,10 @@ func New(name string, config Config, logger logrus.FieldLogger) datastore.Index 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
 	if len(fQueryVarsTypes) > 0 {

@@ -15,6 +15,10 @@ func New() *Index {
 	return &Index{}
 }
 
+func (Index) GetName() string {
+	panic("not supported directly")
+}
+
 func (i *Index) Add(artifact releaseversion.Artifact) {
 	i.artifacts = append(i.artifacts, artifact)
 }

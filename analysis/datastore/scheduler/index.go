@@ -26,6 +26,10 @@ func New(idx datastore.Index, scheduler scheduler.Scheduler, schedulerCallback s
 	}
 }
 
+func (i *index) GetName() string {
+	return i.GetName()
+}
+
 func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	results, err := i.index.GetAnalysisArtifacts(ref)
 	if err != nil {

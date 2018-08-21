@@ -28,6 +28,7 @@ type Cmd struct {
 	ServerCmd server.Cmd `command:"server" description:"For running an API server for remote access"`
 
 	VersionCmd globalcmd.VersionCmd `command:"version" description:"For showing the version of this tool"`
+	// ConfigCmd  configdebug.Cmd      `command:"config" description:"For showing the active config used by this tool" hidden:"true"`
 }
 
 func New(app cli.App) *Cmd {

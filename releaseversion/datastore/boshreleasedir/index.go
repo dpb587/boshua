@@ -35,6 +35,10 @@ func New(name string, config Config, logger logrus.FieldLogger) datastore.Index 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
 	if f.ChecksumExpected {
 		return nil, nil

@@ -1,10 +1,13 @@
 package localexec
 
 import (
+	"fmt"
 	"os/exec"
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/analyzer/factory"
+	"github.com/dpb587/boshua/config"
+	"github.com/dpb587/boshua/config/provider"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	compilationtask "github.com/dpb587/boshua/releaseversion/compilation/task"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
@@ -17,20 +20,18 @@ import (
 )
 
 type Scheduler struct {
-	config               Config
-	logger               logrus.FieldLogger
-	releaseVersionIndex  releaseversiondatastore.Index
-	stemcellVersionIndex stemcellversiondatastore.Index
+	config Config
+	logger logrus.FieldLogger
+	cfg    *provider.Config
 }
 
 var _ scheduler.Scheduler = &Scheduler{}
 
-func New(config Config, releaseVersionIndex releaseversiondatastore.Index, stemcellVersionIndex stemcellversiondatastore.Index, logger logrus.FieldLogger) scheduler.Scheduler {
+func New(config Config, cfg *provider.Config, logger logrus.FieldLogger) scheduler.Scheduler {
 	return Scheduler{
-		config:               config,
-		releaseVersionIndex:  releaseVersionIndex,
-		stemcellVersionIndex: stemcellVersionIndex,
-		logger:               logger,
+		config: config,
+		cfg:    cfg,
+		logger: logger,
 	}
 }
 
@@ -57,13 +58,23 @@ func (s Scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (scheduler.S
 }
 
 func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (scheduler.ScheduledTask, error) {
-	release, err := releaseversiondatastore.GetArtifact(s.releaseVersionIndex, f.Release)
+	releaseVersionIndex, err := s.cfg.GetReleaseIndex(config.DefaultName)
+	if err != nil {
+		return nil, errors.Wrap(err, "loading release index")
+	}
+
+	release, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, f.Release)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding release")
 	}
 
+	stemcellVersionIndex, err := s.cfg.GetStemcellIndex(config.DefaultName)
+	if err != nil {
+		return nil, errors.Wrap(err, "loading stemcell index")
+	}
+
 	// TODO switch to receiving stemcell; override iaas to scheduler config settings
-	stemcell, err := stemcellversiondatastore.GetArtifact(s.stemcellVersionIndex, stemcellversiondatastore.FilterParams{
+	stemcell, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
 		OSExpected:      true,
 		OS:              f.OS.Name,
 		VersionExpected: true,
@@ -82,7 +93,7 @@ func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (sch
 		return nil, errors.Wrap(err, "preparing task")
 	}
 
-	tt = storecommon.AppendCompilationStore(tt, release, stemcell)
+	tt = storecommon.AppendCompilationStore(tt, release, stemcell, fmt.Sprintf("internal/release/%s", release.GetDatastoreName()))
 
 	return s.schedule(tt, f)
 }

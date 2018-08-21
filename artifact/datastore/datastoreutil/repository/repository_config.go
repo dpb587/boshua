@@ -52,7 +52,7 @@ func (c *RepositoryConfig) ApplyDefaults() {
 	if c.LocalPath == "" {
 		hasher := sha1.New()
 		hasher.Write([]byte(c.URI))
-		c.LocalPath = filepath.Join(os.TempDir(), fmt.Sprintf("boshua-%x", hasher.Sum(nil)))
+		c.LocalPath = filepath.Join(os.TempDir(), fmt.Sprintf("boshua-repository-%x", hasher.Sum(nil)))
 	}
 
 	if c.AuthorName == "" {

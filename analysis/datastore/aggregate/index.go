@@ -23,6 +23,10 @@ func New(name string, aggregated ...datastore.Index) datastore.Index {
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	var results []analysis.Artifact
 
@@ -32,11 +36,7 @@ func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifac
 			return nil, fmt.Errorf("listing %d: %v", idxIdx, err)
 		}
 
-		for _, one := range found {
-			one.Datastore = i.name
-
-			results = append(results, one)
-		}
+		results = append(results, found...)
 	}
 
 	return results, nil

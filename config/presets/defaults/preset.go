@@ -13,10 +13,12 @@ import (
 )
 
 func NewConfig() (*provider.Config, error) {
-	cfg, err := loader.LoadFromFile(os.Getenv("BOSHUA_CONFIG"), nil)
+	rawcfg, err := loader.LoadFromFile(os.Getenv("BOSHUA_CONFIG"), nil)
 	if err != nil {
 		return nil, err
 	}
+
+	cfg := &provider.Config{Config: rawcfg}
 
 	cfg.SetAnalysisFactory(analysisfactory.New(cfg.GetLogger()))
 	cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))

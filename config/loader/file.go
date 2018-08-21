@@ -7,14 +7,13 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/config"
-	"github.com/dpb587/boshua/config/provider"
 	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 )
 
 const DefaultPath = "~/.config/boshua/config.yml"
 
-func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
+func LoadFromFile(path string, cfg *config.Config) (*config.Config, error) {
 	// TODO cfg presets should not be overridden?
 	configPath, isDefault := absPath(path)
 
@@ -36,10 +35,11 @@ func LoadFromFile(path string, cfg *config.Config) (*provider.Config, error) {
 		return nil, errors.Wrap(err, "loading options")
 	}
 
-	return &provider.Config{
-		Config:    cfg,
-		RawConfig: configBytes,
-	}, nil
+	cfg.RawConfig = func() ([]byte, error) {
+		return configBytes, nil
+	}
+
+	return cfg, nil
 }
 
 func absPath(path string) (string, bool) {

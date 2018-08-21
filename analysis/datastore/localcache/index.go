@@ -39,6 +39,10 @@ func New(name string, config Config, logger logrus.FieldLogger) datastore.Index 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetAnalysisArtifacts(ref analysis.Reference) ([]analysis.Artifact, error) {
 	cachePath, err := i.cachePath(ref)
 	if err != nil {

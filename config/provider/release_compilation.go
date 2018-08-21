@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/config"
@@ -17,6 +18,22 @@ func (c *Config) SetReleaseCompilationFactory(f datastore.Factory) {
 }
 
 func (c *Config) GetReleaseCompilationIndex(name string) (datastore.Index, error) {
+	if len(name) > 9 && name[0:9] == "internal/" {
+		split := strings.SplitN(name, "/", 3)
+
+		if split[1] == "release" {
+			for _, r := range c.Releases.Datastores {
+				if r.Name != split[2] {
+					continue
+				}
+
+				name = r.CompilationDatastore.Name
+
+				break
+			}
+		}
+	}
+
 	for _, cfg := range c.Config.ReleaseCompilations.Datastores {
 		if cfg.Name == name {
 			return c.requireReleaseCompilationIndex(cfg.Name, cfg.Type, cfg.Options)

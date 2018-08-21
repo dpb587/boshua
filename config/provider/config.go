@@ -15,7 +15,6 @@ import (
 
 type Config struct {
 	*config.Config
-	RawConfig []byte
 
 	logger logrus.FieldLogger
 
@@ -36,8 +35,8 @@ type Config struct {
 }
 
 func (c *Config) Marshal() ([]byte, error) {
-	if c.RawConfig != nil {
-		return c.RawConfig, nil
+	if c.Config.RawConfig != nil {
+		return c.Config.RawConfig()
 	}
 
 	return yaml.Marshal(c.Config)

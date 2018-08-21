@@ -25,6 +25,10 @@ func New(idx datastore.Index, scheduler scheduler.Scheduler, schedulerCallback s
 	}
 }
 
+func (i *index) GetName() string {
+	return i.GetName()
+}
+
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	results, err := i.index.GetCompilationArtifacts(f)
 	if err != nil {

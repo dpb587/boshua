@@ -8,6 +8,8 @@ import (
 
 // Config represents the standard YAML configuration file.
 type Config struct {
+	RawConfig func() ([]byte, error) `yaml:"-"`
+
 	// Global defines common options. These can usually be specified via global
 	// CLI options which take precedent.
 	Global GlobalConfig `yaml:"global,omitempty"`

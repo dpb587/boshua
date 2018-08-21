@@ -47,6 +47,10 @@ func New(name string, releaseVersionIndex releaseversiondatastore.Index, config 
 	}
 }
 
+func (i *index) GetName() string {
+	return i.name
+}
+
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	release, repository, err := i.findReleaseRepository(f.Release)
 	if err != nil {
