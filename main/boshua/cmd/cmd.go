@@ -6,6 +6,7 @@ import (
 	"github.com/dpb587/boshua/cli"
 	"github.com/dpb587/boshua/cli/args"
 	globalcmd "github.com/dpb587/boshua/cli/cmd"
+	"github.com/dpb587/boshua/cli/cmd/configdebug"
 	globalopts "github.com/dpb587/boshua/cli/opts"
 	deployment "github.com/dpb587/boshua/deployment/cli"
 	"github.com/dpb587/boshua/main/boshua/cmd/opts"
@@ -27,8 +28,8 @@ type Cmd struct {
 
 	ServerCmd server.Cmd `command:"server" description:"For running an API server for remote access"`
 
-	VersionCmd globalcmd.VersionCmd `command:"version" description:"For showing the version of this tool"`
-	// ConfigCmd  configdebug.Cmd      `command:"config" description:"For showing the active config used by this tool" hidden:"true"`
+	VersionCmd     globalcmd.VersionCmd `command:"version" description:"For showing the version of this tool"`
+	DebugConfigCmd configdebug.Cmd      `command:"DEBUG:config" description:"For showing the active config used by this tool" hidden:"true"`
 }
 
 func New(app cli.App) *Cmd {
