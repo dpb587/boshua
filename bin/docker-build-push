@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eu
+
+image="${1:-dpb587/boshua:latest}"
+
+docker build -t "$image" .
+docker push "$image"
