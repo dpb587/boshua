@@ -1,6 +1,7 @@
 package concourse
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/dpb587/boshua/task/scheduler"
@@ -56,6 +57,8 @@ func (t *scheduledTask) Status() (scheduler.Status, error) {
 		return scheduler.StatusRunning, nil
 	} else if fields[2] == "succeeded" {
 		return scheduler.StatusSucceeded, nil
+	} else if fields[2] == "aborting" {
+		return scheduler.StatusFailed, nil
 	} else if fields[2] == "aborted" {
 		return scheduler.StatusFailed, nil
 	} else if fields[2] == "failed" {
@@ -68,5 +71,5 @@ func (t *scheduledTask) Status() (scheduler.Status, error) {
 		return scheduler.StatusPending, nil
 	}
 
-	return scheduler.StatusUnknown, errors.New("unrecognized pipeline state")
+	return scheduler.StatusUnknown, fmt.Errorf("unrecognized pipeline state: %s, %s", fields[2], fields[3])
 }
