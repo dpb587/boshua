@@ -32,7 +32,7 @@ func LoadAnalysis(
 
 	result, err := analysisdatastore.GetAnalysisArtifact(analysisIndex, analysisRef)
 	if err != nil {
-		return analysis.Artifact{}, errors.Wrap(err, "finding analysis")
+		return analysis.Artifact{}, err
 	}
 
 	return result, nil
