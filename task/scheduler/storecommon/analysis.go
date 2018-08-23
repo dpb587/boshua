@@ -3,6 +3,7 @@ package storecommon
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/releaseversion"
@@ -18,19 +19,27 @@ import (
 
 func AppendAnalysisStore(tt *task.Task, analysisRef analysis.Reference) *task.Task {
 	var storeArgs []string
+	var storeDatastore string
 
 	switch analysisSubject := analysisRef.Subject.(type) {
 	case stemcellversion.Artifact:
+		storeDatastore = fmt.Sprintf("internal/stemcell/%s", analysisSubject.GetDatastoreName())
 		storeArgs = append(
 			[]string{"stemcell"},
 			stemcelloptsutil.ArgsFromFilterParams(stemcellversiondatastore.FilterParamsFromArtifact(analysisSubject))...,
 		)
 	case releaseversion.Artifact:
+		storeDatastore = fmt.Sprintf("internal/release/%s", analysisSubject.GetDatastoreName())
 		storeArgs = append(
 			[]string{"release"},
 			releaseoptsutil.ArgsFromFilterParams(releaseversiondatastore.FilterParamsFromArtifact(analysisSubject))...,
 		)
 	case compilation.Artifact:
+		storeDatastore = analysisSubject.GetDatastoreName()
+		if storeDatastore[0:9] == "internal/" { // swap release -> compilation
+			storeDatastore = fmt.Sprintf("internal/release.compilation/%s", strings.SplitN(storeDatastore, "/", 3)[2])
+		}
+
 		analysisSubjectRef := analysisSubject.Reference().(compilation.Reference)
 		storeArgs = append(
 			append(
@@ -53,6 +62,7 @@ func AppendAnalysisStore(tt *task.Task, analysisRef analysis.Reference) *task.Ta
 			"analysis",
 			"store-results",
 			fmt.Sprintf("--analyzer=%s", analysisRef.Analyzer),
+			fmt.Sprintf("--datastore=%s", storeDatastore),
 			filepath.Join("input", "results.jsonl.gz"),
 		),
 	})

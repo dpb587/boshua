@@ -122,7 +122,7 @@ func (c *Config) GetReleaseCompilationAnalysisIndex(name string) (analysisdatast
 	}
 
 	if name != config.DefaultName {
-		return nil, fmt.Errorf("unrecognized release compilation datastore (name: %s)", name)
+		return nil, fmt.Errorf("unrecognized release compilation analysis datastore (name: %s)", name)
 	}
 
 	return c.getAnalysisIndex(config.DefaultName)

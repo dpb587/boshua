@@ -50,6 +50,16 @@ func (c *Config) GetAnalysisIndex(name string) (datastore.Index, error) {
 
 				break
 			}
+		} else if split[1] == "stemcell" {
+			for _, r := range c.Stemcells.Datastores {
+				if r.Name != split[2] {
+					continue
+				}
+
+				name = r.AnalysisDatastore.Name
+
+				break
+			}
 		}
 	}
 

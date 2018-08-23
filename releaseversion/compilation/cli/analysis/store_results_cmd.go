@@ -11,6 +11,8 @@ type StoreResultsCmd struct {
 	setter.AppConfig `no-flag:"true"`
 	*CmdOpts         `no-flag:"true"`
 
+	Datastore string `long:"datastore" description:"The datastore name to use" default:"default"`
+
 	clicommon.StoreResultsCmd
 }
 
@@ -18,7 +20,8 @@ func (c *StoreResultsCmd) Execute(_ []string) error {
 	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "release/compilation/analysis/store-results"})
 
 	return c.StoreResultsCmd.ExecuteStore(
-		c.Config.GetReleaseCompilationAnalysisIndex,
+		c.Config.GetAnalysisIndex,
+		c.Datastore,
 		func() (analysis.Subject, error) {
 			return c.CompiledReleaseOpts.Artifact(c.AppConfig.Config)
 		},
