@@ -37,11 +37,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
 		}
 
-		for _, one := range found {
-			one.Datastore = i.name
-
-			results = append(results, one)
-		}
+		results = append(results, found...)
 	}
 
 	return results, nil

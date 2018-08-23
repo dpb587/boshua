@@ -141,9 +141,10 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 	}
 
 	mirroredFile := metalink.File{
-		Name:   file.Name,
-		Size:   file.Size,
-		Hashes: file.Hashes,
+		Name:    file.Name,
+		Size:    file.Size,
+		Hashes:  file.Hashes,
+		Version: artifactRef.ReleaseVersion.Version,
 	}
 
 	for _, mirror := range i.config.StorageConfig {
