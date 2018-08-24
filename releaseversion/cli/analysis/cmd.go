@@ -16,6 +16,7 @@ type Cmd struct {
 	*opts.Opts
 
 	ArtifactCmd     ArtifactCmd     `command:"artifact" description:"For showing the analysis artifact"`
+	DownloadCmd     DownloadCmd     `command:"download" description:"For downloading the analysis locally"`
 	ResultsCmd      ResultsCmd      `command:"results" description:"For showing the results of an analysis"`
 	StoreResultsCmd StoreResultsCmd `command:"store-results" description:"For storing the results of an analysis"`
 }
@@ -60,6 +61,7 @@ func New(app *cmdopts.Opts, release *releaseopts.Opts) *Cmd {
 	}
 
 	cmd.ArtifactCmd.CmdOpts = cmdOpts
+	cmd.DownloadCmd.CmdOpts = cmdOpts
 	cmd.ResultsCmd.CmdOpts = cmdOpts
 	cmd.StoreResultsCmd.CmdOpts = cmdOpts
 
