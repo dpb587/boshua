@@ -38,7 +38,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 		} else if !f.FlavorSatisfied(artifact.Flavor) {
 			continue
 		} else if !f.LabelsSatisfied(artifact.Labels) {
-			return nil, nil
+			continue
 		}
 
 		results = append(results, artifact)
