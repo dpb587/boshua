@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
+	"github.com/dpb587/boshua/util/semverutil"
 )
 
 func FilterParamsFromSlug(slug string) FilterParams {
@@ -75,7 +76,8 @@ func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
 	f.Checksum, f.ChecksumExpected = args["checksum"].(string)
 	f.URI, f.URIExpected = args["uri"].(string)
 
-	if f.VersionExpected {
+	if f.VersionExpected && semverutil.IsConstraint(f.Version) {
+		// ignoring errors since it can fallback to literal match
 		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
 	}
 
