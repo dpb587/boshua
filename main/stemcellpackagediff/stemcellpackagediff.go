@@ -13,6 +13,7 @@ import (
 	"github.com/dpb587/boshua/cli/opts"
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/metalink/analysisprocessor"
+	"github.com/dpb587/boshua/stemcellversion"
 	stemcellpackagesV1result "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
@@ -25,7 +26,14 @@ import (
 
 type cmd struct {
 	AppOpts *opts.Opts
-	Args    struct {
+
+	IaaS       string `long:"iaas" description:"Stemcell IaaS" default:"aws"`
+	Hypervisor string `long:"hypervisor" description:"Stemcell hypervisor" default:"xen-hvm"`
+	DiskFormat string `long:"disk-format" description:"Stemcell disk format"`
+	Flavor     string `long:"flavor" description:"Stemcell flavor (heavy, light)" default:"heavy"`
+
+	Format string `long:"format" description:"Output format (text, markdown, json)" default:"text"`
+	Args   struct {
 		OS     string `positional-arg-name:"OS" description:"Operating system name"`
 		Before string `positional-arg-name:"BEFORE" description:"Earlier version"`
 		After  string `positional-arg-name:"AFTER" description:"Later version"`
@@ -53,29 +61,46 @@ func (c *cmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading analysis index")
 	}
 
-	packagesBefore, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.Before)
+	refBefore := stemcellversion.Reference{
+		IaaS:       c.IaaS,
+		Hypervisor: c.Hypervisor,
+		OS:         c.Args.OS,
+		Version:    c.Args.Before,
+		Flavor:     c.Flavor,
+		DiskFormat: c.DiskFormat,
+	}
+	packagesBefore, err := loadPackages(stemcellIndex, analysisIndex, refBefore)
 	if err != nil {
-		return errors.Wrapf(err, "loading %s/%s", c.Args.OS, c.Args.Before)
+		return errors.Wrapf(err, "loading %s/%s", refBefore.FullName(), refBefore.Version)
 	}
 
-	packagesAfter, err := loadPackages(stemcellIndex, analysisIndex, c.Args.OS, c.Args.After)
+	refAfter := stemcellversion.Reference{
+		IaaS:       c.IaaS,
+		Hypervisor: c.Hypervisor,
+		OS:         c.Args.OS,
+		Version:    c.Args.After,
+		Flavor:     c.Flavor,
+		DiskFormat: c.DiskFormat,
+	}
+	packagesAfter, err := loadPackages(stemcellIndex, analysisIndex, refAfter)
 	if err != nil {
-		return errors.Wrapf(err, "loading %s/%s", c.Args.OS, c.Args.After)
+		return errors.Wrapf(err, "loading %s/%s", refAfter.FullName(), c.Args.After)
 	}
 
-	packages := diffPackages(packagesBefore, packagesAfter)
+	var f Formatter
 
-	for _, pkg := range packages {
-		if pkg.Before == nil {
-			fmt.Printf("+ %s (%s)\n", pkg.Name, pkg.After.Version)
-		} else if pkg.After == nil {
-			fmt.Printf("- %s (%s)\n", pkg.Name, pkg.Before.Version)
-		} else if pkg.Before.Version != pkg.After.Version {
-			fmt.Printf("~ %s (%s --> %s)\n", pkg.Name, pkg.Before.Version, pkg.After.Version)
-		}
+	switch c.Format {
+	case "markdown":
+		f = MarkdownFormatter{}
+	case "text":
+		f = TextFormatter{}
+	case "json":
+		f = JSONFormatter{}
+	default:
+		return fmt.Errorf("invalid format: %s", c.Format)
 	}
 
-	return nil
+	return f.Dump(os.Stdout, diffPackages(packagesBefore, packagesAfter))
 }
 
 var defaultServer string
@@ -103,19 +128,13 @@ func main() {
 	}
 }
 
-type packageDiff struct {
-	Name   string
-	Before *stemcellpackagesV1result.RecordPackage
-	After  *stemcellpackagesV1result.RecordPackage
-}
-
-func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []packageDiff {
-	mappedResults := map[string]packageDiff{}
+func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []PackageDiff {
+	mappedResults := map[string]PackageDiff{}
 
 	for idx := range before {
 		name := before[idx].Name
 
-		mappedResults[name] = packageDiff{
+		mappedResults[name] = PackageDiff{
 			Name:   name,
 			Before: &before[idx],
 		}
@@ -125,20 +144,20 @@ func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []pack
 		name := after[idx].Name
 
 		if _, found := mappedResults[name]; found {
-			mappedResults[name] = packageDiff{
+			mappedResults[name] = PackageDiff{
 				Name:   name,
 				Before: mappedResults[name].Before,
 				After:  &after[idx],
 			}
 		} else {
-			mappedResults[name] = packageDiff{
+			mappedResults[name] = PackageDiff{
 				Name:  name,
 				After: &after[idx],
 			}
 		}
 	}
 
-	var results []packageDiff
+	var results []PackageDiff
 
 	for rIdx := range mappedResults {
 		results = append(results, mappedResults[rIdx])
@@ -151,8 +170,8 @@ func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []pack
 	return results
 }
 
-func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisdatastore.Index, os, version string) ([]stemcellpackagesV1result.RecordPackage, error) {
-	artifact, err := datastore.GetArtifact(index, datastore.FilterParamsFromSlug(fmt.Sprintf("light-bosh-aws-xen-hvm-%s-go_agent/%s", os, version)))
+func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisdatastore.Index, ref stemcellversion.Reference) ([]stemcellpackagesV1result.RecordPackage, error) {
+	artifact, err := datastore.GetArtifact(index, datastore.FilterParamsFromReference(ref))
 	if err != nil {
 		return nil, errors.Wrap(err, "finding stemcell")
 	}
