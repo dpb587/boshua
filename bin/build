@@ -43,7 +43,7 @@ for name in $bin_list ; do
           -X main.defaultServer=${BOSHUA_SERVER:-}
         " \
         -o tmp/$filename \
-        main/$name/$name.go
+        main/$name/*.go
     done
   done
 done
