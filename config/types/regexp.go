@@ -10,8 +10,15 @@ type Regexp struct {
 	*regexp.Regexp
 }
 
-func (r *Regexp) UnmarshalYAML(data []byte) error {
-	parsed, err := regexp.Compile(string(data))
+func (r *Regexp) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+
+	parsed, err := regexp.Compile(s)
 	if err != nil {
 		return errors.Wrap(err, "parsing regexp")
 	}

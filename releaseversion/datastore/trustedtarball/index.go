@@ -1,11 +1,14 @@
 package trustedtarball
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
 )
@@ -65,12 +68,24 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		return nil, nil
 	}
 
+	var hashes []metalink.Hash
+
+	if f.ChecksumExpected {
+		cs, err := checksum.CreateFromString(f.Checksum)
+		if err == nil {
+			hashes = append(hashes, metalinkutil.ChecksumToHash(cs))
+		}
+	}
+
 	return []releaseversion.Artifact{
 		{
 			Datastore: i.name,
 			Name:      f.Name,
 			Version:   f.Version,
 			SourceTarball: metalink.File{
+				Name:    fmt.Sprintf("%s-%s.tgz", f.Name, f.Version),
+				Version: f.Version,
+				Hashes:  hashes,
 				URLs: []metalink.URL{
 					{
 						URL: f.URI,

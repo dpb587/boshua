@@ -8,6 +8,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+func ChecksumToHash(cs checksum.ImmutableChecksum) metalink.Hash {
+	t, err := ToMetalinkHashType(cs.Algorithm().Name())
+	if err != nil {
+		// TODO no panic?
+		panic(errors.Wrap(err, "converting hash type"))
+	}
+
+	return metalink.Hash{
+		Type: t,
+		Hash: fmt.Sprintf("%x", cs.Data()),
+	}
+}
+
 func HashToChecksum(hash metalink.Hash) checksum.ImmutableChecksum {
 	hashType, err := FromMetalinkHashType(hash.Type)
 	if err != nil {
