@@ -19,12 +19,12 @@ func (c *FilterCmd) Execute(_ []string) error {
 
 	index, err := c.Config.GetReleaseIndex(c.CmdOpts.DatastoreOpts.Datastore)
 	if err != nil {
-		return errors.Wrap(err, "loading datastore")
+		return errors.Wrap(err, "loading release index")
 	}
 
 	results, err := index.GetArtifacts(c.ReleaseOpts.FilterParams())
 	if err != nil {
-		return errors.Wrap(err, "filtering")
+		return errors.Wrap(err, "getting artifacts")
 	}
 
 	releaseversion.Sort(results)

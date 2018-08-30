@@ -130,7 +130,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 func (i *index) GetLabels() ([]string, error) {
 	all, err := i.GetArtifacts(datastore.FilterParams{})
 	if err != nil {
-		return nil, errors.Wrap(err, "filtering")
+		return nil, errors.Wrap(err, "getting artifacts")
 	}
 
 	labelsMap := map[string]struct{}{}

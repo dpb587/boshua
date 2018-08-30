@@ -19,12 +19,12 @@ func (c *FilterCmd) Execute(_ []string) error {
 
 	index, err := c.Config.GetStemcellIndex(c.CmdOpts.DatastoreOpts.Datastore)
 	if err != nil {
-		return errors.Wrap(err, "loading datastore")
+		return errors.Wrap(err, "loading stemcell index")
 	}
 
 	results, err := index.GetArtifacts(c.StemcellOpts.FilterParams())
 	if err != nil {
-		return errors.Wrap(err, "filtering")
+		return errors.Wrap(err, "getting stemcell artifacts")
 	}
 
 	stemcellversion.Sort(results)

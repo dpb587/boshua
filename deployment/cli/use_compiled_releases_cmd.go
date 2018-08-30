@@ -96,7 +96,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 
 			result, err := compilationdatastore.GetCompilationArtifact(index, f)
 			if err != nil {
-				parallelLog(errors.Wrap(err, "filtering").Error())
+				parallelLog(errors.Wrap(err, "getting compilation artifact").Error())
 
 				return
 			}

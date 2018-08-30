@@ -19,14 +19,14 @@ type Opts struct {
 func (o *Opts) Artifact(cfg *provider.Config) (compilation.Artifact, error) {
 	index, err := cfg.GetReleaseCompilationIndex(config.DefaultName)
 	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "loading index")
+		return compilation.Artifact{}, errors.Wrap(err, "loading release compilation index")
 	}
 
 	f := o.FilterParams()
 
 	result, err := datastore.GetCompilationArtifact(index, f)
 	if err != nil {
-		return compilation.Artifact{}, errors.Wrap(err, "filtering")
+		return compilation.Artifact{}, errors.Wrap(err, "getting compilation artifact")
 	}
 
 	return result, nil

@@ -32,6 +32,10 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 	for indexIdx, index := range i.indices {
 		results, err := index.GetArtifacts(f)
 		if err != nil {
+			if len(i.indices) == 1 {
+				return nil, err
+			}
+
 			return nil, errors.Wrapf(err, "filtering %d", indexIdx)
 		}
 

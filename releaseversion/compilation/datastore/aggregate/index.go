@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	"github.com/pkg/errors"
 )
 
 type index struct {
@@ -34,7 +35,11 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 		if err == datastore.UnsupportedOperationErr {
 			continue
 		} else if err != nil {
-			return nil, fmt.Errorf("filtering %d: %v", idxIdx, err)
+			if len(i.indices) == 1 {
+				return nil, err
+			}
+
+			return nil, errors.Wrapf(err, "filtering %d", idxIdx)
 		}
 
 		results = append(results, found...)
