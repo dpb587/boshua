@@ -1,4 +1,4 @@
-package boshioreleasesindex
+package boshioindex
 
 import (
 	"fmt"

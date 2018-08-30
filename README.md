@@ -374,7 +374,7 @@ The default configuration lives in `~/.config/boshua/config.yml` - a YAML file d
 
 #### Release Providers
 
- * [`boshioreleasesindex`](releaseversion/datastore/boshioreleasesindex) - [bosh-io/releases-index](https://github.com/bosh-io/releases-index)-style
+ * [`boshioindex`](releaseversion/datastore/boshioindex) - [bosh-io/releases-index](https://github.com/bosh-io/releases-index)-style
  * [`boshreleasedir`](releaseversion/datastore/boshreleasedir) - directly reference a release repository
  * [`boshua.v2`](releaseversion/datastore/boshua.v2) - query a remote boshua API server
  * [`metalinkrepository`](releaseversion/datastore/metalinkrepository) - refer to a metalink repository of pre-built release tarballs

@@ -1,4 +1,4 @@
-package boshioreleasesindex
+package boshioindex
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const ProviderName = "boshioreleasesindex"
+const ProviderName = "boshioindex"
 
 type factory struct {
 	logger logrus.FieldLogger

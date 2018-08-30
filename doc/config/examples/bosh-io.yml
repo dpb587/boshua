@@ -19,4 +19,4 @@ stemcells:
 releases:
   datastores:
   - name: bosh-io/releases-index
-    type: boshioreleasesindex
+    type: boshioindex

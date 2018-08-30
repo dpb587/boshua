@@ -1,4 +1,4 @@
-package boshioreleasesindex
+package boshioindex
 
 import "github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 

@@ -1,4 +1,4 @@
-package boshioreleasesindex
+package boshioindex
 
 type releaseV1 struct {
 	Name    string `yaml:"Name"`
