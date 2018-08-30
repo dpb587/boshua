@@ -5,6 +5,17 @@ For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 > bosh unofficial artifacts
 
 
+## Goals
+
+ * provide consistent ways to generate and store metadata about releases, compilations, and stemcells
+ * support private and public configurations with access to different sets of resources
+ * deprecate one-off, duplicated scripts which have historically implemented these processes
+ * allow compiled releases to be dynamically discovered and avoid hard-coding references
+ * support just-in-time release compilations, shared across environments
+ * focus on CLI and API extensibility to enable this as a building block
+ * support both local and remote execution of any commands
+
+
 ## Core Concepts
 
 First, let's define some of the terminology this uses...
@@ -28,12 +39,12 @@ First, let's define some of the terminology this uses...
 
 ## Usage
 
-*All APIs remain in beta and subject to change while it use cases continue to be tested and explored.*
+*CLI/API remains in beta and subject to change.*
 
 
 ### CLI
 
-The primary tool is the `boshua` CLI. Generally, `-h` should be used to learn more about specific commands and available options.
+The primary tool is the [`boshua`](main/boshua) CLI. Generally, `-h` should be used to learn more about specific commands and available options.
 
 The first level of commands are primarily geared towards specific artifacts (e.g. `release`, `stemcell`)...
 
@@ -241,6 +252,17 @@ The previous command is equivalent to the following examples due to how the `res
     $ boshua release --release=openvpn/5.1.0 analysis --analyzer=releasemanifests.v1 results --raw | boshua analysis formatter releasemanifests.v1 properties --job=openvpn
 
 
+##### Analyzers
+
+The following default analyzers are included...
+
+ * `releaseartifactfiles.v1` - extract file stats and checksums from a release tarball and its embedded tarballs
+ * `releasemanifests.v1` - extract `release.MF` and job `spec` data from a release tarball
+ * `stemcellimagefiles.v1` - extract file stats and checksums from the embedded image of a stemcell tarball
+ * `stemcellmanifest.v1` - extract `stemcell.MF` data from a stemcell tarball
+ * `stemcellpackages.v1` - extract and parse `packages.txt` data from a stemcell tarball
+
+
 #### Server
 
 The CLI provides an HTTP server to allow remote querying and execution of commands. By default, it will listen on `127.0.0.1:4508`.
@@ -255,14 +277,12 @@ The `/cli/` endpoint can be used for providing binaries for download.
 
 ##### Web UI
 
-The `/ui/` endpoint can be used for hosting simple HTML pages.
+The `/ui/` endpoint can be used for hosting simple HTML pages which may use the API.
 
 
 ##### GraphQL API
 
 The `/api/v2/graphql` endpoint provides a GraphQL API with query and mutation support.
-
-*This API has further changes pending; it is not stable.*
 
 
 ###### Query: `release`
@@ -355,15 +375,17 @@ Schedule analysis of a stemcell...
 
 ### Library
 
-Library usage is not yet trivial. See some of the examples in the [`main`](main) package for now.
+Library usage is not yet trivial. See some of the examples in the [`main`](main) packages for now.
 
  * [`staticreleaselookup`](main/staticreleaselookup/staticreleaselookup.go) - "simplest" example to output the `release.MF` file of a hard-coded release
- * [`stemcellpackagediff`](main/stemcellpackagediff/stemcellpackagediff.go) - diff the parsed `packages.txt` data between two stemcell versions
+ * [`stemcellpackagediff`](main/stemcellpackagediff) - diff the parsed `packages.txt` data between two stemcell versions
 
 
 ### Configuration
 
-The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. See the documentation in [`config/config.go`](config/config.go) or examples in [`doc/config/examples`](doc/config/examples).
+The default configuration lives in `~/.config/boshua/config.yml` - a YAML file describing the various datastores that `boshua` can reference. See the partial documentation in [`config/config.go`](config/config.go) or examples in [`doc/config/examples`](doc/config/examples).
+
+When a remote server is available, `$BOSHUA_SERVER` or `--default-server` may be used to automatically configure remote lookups and avoid the need for a configuration file. When building [`boshua`](main/boshua), a default server can be embedded with [link options](https://golang.org/cmd/link/) and the `main.defaultServer` variable.
 
 
 #### Stemcell Providers
@@ -375,17 +397,17 @@ The default configuration lives in `~/.config/boshua/config.yml` - a YAML file d
 #### Release Providers
 
  * [`boshioindex`](releaseversion/datastore/boshioindex) - [bosh-io/releases-index](https://github.com/bosh-io/releases-index)-style
- * [`boshreleasedir`](releaseversion/datastore/boshreleasedir) - directly reference a release repository
+ * [`boshreleasedir`](releaseversion/datastore/boshreleasedir) - directly reference a release repository (i.e. any BOSH repository)
  * [`boshua.v2`](releaseversion/datastore/boshua.v2) - query a remote boshua API server
- * [`metalinkrepository`](releaseversion/datastore/metalinkrepository) - refer to a metalink repository of pre-built release tarballs
- * [`trustedtarball`](releaseversion/datastore/trustedtarball) - dynamically generate artifacts for queried tarballs
+ * [`metalinkrepository`](releaseversion/datastore/metalinkrepository) - refer to a metalink repository of pre-built release tarballs (e.g. [dpb587/openvpn-bosh-release](https://github.com/dpb587/openvpn-bosh-release/tree/artifacts/release/stable))
+ * [`trustedtarball`](releaseversion/datastore/trustedtarball) - dynamically generate artifacts for queried tarballs (e.g. internal dev builds)
 
 
 #### Release Compilation Providers
 
  * [`boshua.v2`](releaseversion/compilation/datastore/boshua.v2) - query a remote boshua API server
- * [`contextualosmetalinkrepository`](releaseversion/compilation/datastore/contextualosmetalinkrepository) - refer to a metalink repository, segmented by OS name and version
- * [`contextualrepoosmetalinkrepository`](releaseversion/compilation/datastore/contextualrepoosmetalinkrepository) - refer to a metalink repository, segmented by `repo`-label and OS name and version
+ * [`contextualosmetalinkrepository`](releaseversion/compilation/datastore/contextualosmetalinkrepository) - refer to a metalink repository, segmented by OS name and version (e.g. [dpb587/openvpn-bosh-release](https://github.com/dpb587/openvpn-bosh-release/tree/artifacts/compiled-release/stable))
+ * [`contextualrepoosmetalinkrepository`](releaseversion/compilation/datastore/contextualrepoosmetalinkrepository) - refer to a metalink repository, segmented by `repo`-label and OS name and version (e.g. internal, shared compilation repository)
 
 
 #### Scheduler Providers
@@ -395,6 +417,51 @@ The default configuration lives in `~/.config/boshua/config.yml` - a YAML file d
  * [`localexec`](task/scheduler/localexec) - run tasks locally
 
 
+## Extra Tools
+
+
+### `stemcellpackagediff`
+
+The [`stemcellpackagediff`](main/stemcellpackagediff) is a standalone CLI which uses the `stemcellpackages.v1` analyzer to compare packages between two versions of a stemcell.
+
+    stemcellpackagediff ubuntu-xenial 97.12 97.15
+    ~ intel-microcode (3.20180807a.0ubuntu0.16.04.1; was 3.20180425.1~ubuntu0.16.04.2)
+    ~ linux-generic-hwe-16.04-edge (4.15.0.33.54; was 4.15.0.32.53)
+    - linux-headers-4.15.0-32 (4.15.0-32.35~16.04.1)
+    - linux-headers-4.15.0-32-generic (4.15.0-32.35~16.04.1)
+    + linux-headers-4.15.0-33 (4.15.0-33.36~16.04.1)
+    + linux-headers-4.15.0-33-generic (4.15.0-33.36~16.04.1)
+    ~ linux-headers-generic-hwe-16.04-edge (4.15.0.33.54; was 4.15.0.32.53)
+    - linux-image-4.15.0-32-generic (4.15.0-32.35~16.04.1)
+    + linux-image-4.15.0-33-generic (4.15.0-33.36~16.04.1)
+    ~ linux-image-generic-hwe-16.04-edge (4.15.0.33.54; was 4.15.0.32.53)
+    ~ linux-libc-dev:amd64 (4.4.0-134.160; was 4.4.0-133.159)
+    - linux-modules-4.15.0-32-generic (4.15.0-32.35~16.04.1)
+    + linux-modules-4.15.0-33-generic (4.15.0-33.36~16.04.1)
+    - linux-modules-extra-4.15.0-32-generic (4.15.0-32.35~16.04.1)
+    + linux-modules-extra-4.15.0-33-generic (4.15.0-33.36~16.04.1)
+
+It supports a `--format` argument where `markdown` (below) or `json` can be used to customize the output.
+
+| Package | Old Version | New Version |
+| ------- | -----------:| -----------:|
+| intel-microcode | 3.20180425.1~ubuntu0.16.04.2 | 3.20180807a.0ubuntu0.16.04.1 |
+| linux-generic-hwe-16.04-edge | 4.15.0.32.53 | 4.15.0.33.54 |
+| linux-headers-4.15.0-32 | 4.15.0-32.35~16.04.1 | &ndash; |
+| linux-headers-4.15.0-32-generic | 4.15.0-32.35~16.04.1 | &ndash; |
+| linux-headers-4.15.0-33 | &ndash; | 4.15.0-33.36~16.04.1 |
+| linux-headers-4.15.0-33-generic | &ndash; | 4.15.0-33.36~16.04.1 |
+| linux-headers-generic-hwe-16.04-edge | 4.15.0.32.53 | 4.15.0.33.54 |
+| linux-image-4.15.0-32-generic | 4.15.0-32.35~16.04.1 | &ndash; |
+| linux-image-4.15.0-33-generic | &ndash; | 4.15.0-33.36~16.04.1 |
+| linux-image-generic-hwe-16.04-edge | 4.15.0.32.53 | 4.15.0.33.54 |
+| linux-libc-dev:amd64 | 4.4.0-133.159 | 4.4.0-134.160 |
+| linux-modules-4.15.0-32-generic | 4.15.0-32.35~16.04.1 | &ndash; |
+| linux-modules-4.15.0-33-generic | &ndash; | 4.15.0-33.36~16.04.1 |
+| linux-modules-extra-4.15.0-32-generic | 4.15.0-32.35~16.04.1 | &ndash; |
+| linux-modules-extra-4.15.0-33-generic | &ndash; | 4.15.0-33.36~16.04.1 |
+
+
 ## Development
 
 
@@ -402,6 +469,7 @@ The default configuration lives in `~/.config/boshua/config.yml` - a YAML file d
 
  * `... datastore filter` ~> `versions`
  * `analysis generate --analyzer=x` ?> `analysis generate x`
+ * configurable analyzers
  * api download mirror/proxy
  * nicer wrapper libraries - `r, _ := boshua.Release("openvpn/5.1.0"); p, _ := r.Packages(); return p[0].Name`
  * testing
