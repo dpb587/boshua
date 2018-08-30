@@ -443,8 +443,8 @@ The [`stemcellpackagediff`](main/stemcellpackagediff) is a standalone CLI which 
 
 It supports a `--format` argument where `markdown` (below) or `json` can be used to customize the output.
 
-| Package | Old Version | New Version |
-| ------- | -----------:| -----------:|
+| ubuntu-xenial | 97.12 | 97.15 |
+|:------------- | -----:| -----:|
 | intel-microcode | 3.20180425.1~ubuntu0.16.04.2 | 3.20180807a.0ubuntu0.16.04.1 |
 | linux-generic-hwe-16.04-edge | 4.15.0.32.53 | 4.15.0.33.54 |
 | linux-headers-4.15.0-32 | 4.15.0-32.35~16.04.1 | &ndash; |

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
+	"github.com/dpb587/boshua/stemcellversion"
 	stemcellpackagesV1result "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/result"
 )
 
@@ -15,12 +17,12 @@ type PackageDiff struct {
 }
 
 type Formatter interface {
-	Dump(io.Writer, []PackageDiff) error
+	Dump(io.Writer, stemcellversion.Reference, stemcellversion.Reference, []PackageDiff) error
 }
 
 type TextFormatter struct{}
 
-func (f TextFormatter) Dump(w io.Writer, packages []PackageDiff) error {
+func (f TextFormatter) Dump(w io.Writer, _ stemcellversion.Reference, _ stemcellversion.Reference, packages []PackageDiff) error {
 	for _, pkg := range packages {
 		if pkg.Before == nil {
 			fmt.Fprintf(w, "+ %s (%s)\n", pkg.Name, pkg.After.Version)
@@ -36,7 +38,7 @@ func (f TextFormatter) Dump(w io.Writer, packages []PackageDiff) error {
 
 type JSONFormatter struct{}
 
-func (f JSONFormatter) Dump(w io.Writer, packages []PackageDiff) error {
+func (f JSONFormatter) Dump(w io.Writer, _ stemcellversion.Reference, _ stemcellversion.Reference, packages []PackageDiff) error {
 	var r []PackageDiff
 
 	for _, pkg := range packages {
@@ -57,9 +59,9 @@ func (f JSONFormatter) Dump(w io.Writer, packages []PackageDiff) error {
 
 type MarkdownFormatter struct{}
 
-func (f MarkdownFormatter) Dump(w io.Writer, packages []PackageDiff) error {
-	fmt.Fprintf(w, "| Package | Old Version | New Version |\n")
-	fmt.Fprintf(w, "| ------- | -----------:| -----------:|\n")
+func (f MarkdownFormatter) Dump(w io.Writer, before stemcellversion.Reference, after stemcellversion.Reference, packages []PackageDiff) error {
+	fmt.Fprintf(w, "| %s | %s | %s |\n", before.OS, before.Version, after.Version)
+	fmt.Fprintf(w, "|:%s | %s:| %s:|\n", strings.Repeat("-", len(before.OS)), strings.Repeat("-", len(before.Version)), strings.Repeat("-", len(after.Version)))
 
 	for _, pkg := range packages {
 		if pkg.Before == nil {

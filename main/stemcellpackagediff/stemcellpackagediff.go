@@ -100,7 +100,7 @@ func (c *cmd) Execute(_ []string) error {
 		return fmt.Errorf("invalid format: %s", c.Format)
 	}
 
-	return f.Dump(os.Stdout, diffPackages(packagesBefore, packagesAfter))
+	return f.Dump(os.Stdout, refBefore, refAfter, diffPackages(packagesBefore, packagesAfter))
 }
 
 var defaultServer string
