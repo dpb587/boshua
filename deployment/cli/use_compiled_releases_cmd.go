@@ -81,6 +81,8 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 					Version:          rel.Version,
 					ChecksumExpected: true,
 					Checksum:         fmt.Sprintf("sha1:%s", rel.Source.Sha1),
+					URIExpected:      true,
+					URI:              rel.Source.URL,
 				},
 				OS: osversiondatastore.FilterParams{
 					NameExpected:    true,
