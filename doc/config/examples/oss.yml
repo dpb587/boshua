@@ -1,4 +1,6 @@
 ---
+scheduler:
+  type: localexec
 stemcells:
   datastores:
   - name: bosh-io/stemcells-core-index
