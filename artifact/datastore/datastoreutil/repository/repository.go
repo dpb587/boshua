@@ -79,7 +79,7 @@ func (i *Repository) ForceReload() error {
 		}
 	}
 
-	err := i.run(args...)
+	err := i.Exec(args...)
 	if err != nil {
 		return errors.Wrap(err, "fetching repository")
 	}
@@ -110,7 +110,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 			return fmt.Errorf("writing file %s: %v", path, err)
 		}
 
-		err = i.run("add", path)
+		err = i.Exec("add", path)
 		if err != nil {
 			return errors.Wrap(err, "adding file")
 		}
@@ -123,13 +123,13 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 		}
 
 		for k, v := range configs {
-			err := i.run("config", k, v)
+			err := i.Exec("config", k, v)
 			if err != nil {
 				return errors.Wrapf(err, "setting %s", k)
 			}
 		}
 
-		err := i.run("commit", "-m", message)
+		err := i.Exec("commit", "-m", message)
 		if err != nil {
 			return errors.Wrap(err, "committing")
 		}
@@ -140,7 +140,7 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 	if !i.config.SkipPush {
 		i.logger.Debug("pushing repository")
 
-		err := i.run("push", i.config.URI, fmt.Sprintf("HEAD:%s", i.config.Branch))
+		err := i.Exec("push", i.config.URI, fmt.Sprintf("HEAD:%s", i.config.Branch))
 		if err != nil {
 			return errors.Wrap(err, "pushing")
 		}
@@ -151,11 +151,11 @@ func (i *Repository) Commit(files map[string][]byte, message string) error {
 	return nil
 }
 
-func (r Repository) run(args ...string) error {
-	return r.runRaw(os.Stderr, args...)
+func (r Repository) Exec(args ...string) error {
+	return r.ExecCapture(os.Stderr, args...)
 }
 
-func (r Repository) runRaw(stdout io.Writer, args ...string) error {
+func (r Repository) ExecCapture(stdout io.Writer, args ...string) error {
 	var executable = "git"
 
 	if r.config.PrivateKey != "" && (args[0] == "clone" || args[0] == "pull" || args[0] == "push") {
