@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
 )
@@ -31,11 +32,11 @@ func (i *Index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 			continue
 		} else if !f.OS.VersionSatisfied(artifact.OS.Version) {
 			continue
-		} else if !f.Release.ChecksumSatisfied(artifact.MetalinkFile().Hashes) {
-			continue
 		} else if !f.Release.NameSatisfied(artifact.Release.Name) {
 			continue
 		} else if !f.Release.VersionSatisfied(artifact.Release.Version) {
+			continue
+		} else if !f.Release.ChecksumSatisfied(metalinkutil.ChecksumsToHashes(artifact.Release.Checksums)) { // TODO avoid conversion
 			continue
 		}
 

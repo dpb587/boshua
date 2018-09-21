@@ -41,7 +41,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 
 	scheduledTask, err := i.scheduler.ScheduleCompilation(f)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating analysis")
+		return nil, errors.Wrap(err, "creating compilation")
 	}
 
 	status, err := scheduler.WaitForScheduledTask(scheduledTask, i.schedulerCallback)

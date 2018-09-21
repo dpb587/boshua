@@ -8,7 +8,13 @@ import (
 func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
 	f := FilterParams{}
 
-	f.Name, f.NameExpected = args["name"].(string)
+	// TODO consolidate os vs name
+	if _, found := args["os"]; found {
+		f.Name, f.NameExpected = args["os"].(string)
+	} else {
+		f.Name, f.NameExpected = args["name"].(string)
+	}
+
 	f.Version, f.VersionExpected = args["version"].(string)
 
 	if f.VersionExpected && semverutil.IsConstraint(f.Version) {

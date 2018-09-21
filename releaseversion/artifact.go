@@ -29,8 +29,9 @@ func (s Artifact) MetalinkFile() metalink.File {
 
 func (s Artifact) Reference() interface{} {
 	return Reference{
-		Name:    s.Name,
-		Version: s.Version,
+		Name:      s.Name,
+		Version:   s.Version,
+		Checksums: metalinkutil.HashesToChecksums(s.SourceTarball.Hashes),
 	}
 }
 

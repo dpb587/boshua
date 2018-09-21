@@ -169,6 +169,8 @@ func (i *index) extractCompilations(opsPath string, commitLoader func(string) (*
 		return nil, errors.Wrap(err, "scanning")
 	}
 
+	i.cacheWarm = true
+
 	return aggregatedPatches, nil
 }
 

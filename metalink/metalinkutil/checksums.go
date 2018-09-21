@@ -46,3 +46,14 @@ func HashesToChecksums(hashes []metalink.Hash) checksum.ImmutableChecksums {
 
 	return checksums
 }
+
+// TODO []checksum.Checksum?
+func ChecksumsToHashes(checksums checksum.ImmutableChecksums) []metalink.Hash {
+	var hashes []metalink.Hash
+
+	for _, cs := range checksums {
+		hashes = append(hashes, ChecksumToHash(cs))
+	}
+
+	return hashes
+}
