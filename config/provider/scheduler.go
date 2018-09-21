@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"errors"
+
 	"github.com/dpb587/boshua/task/scheduler"
 )
 
@@ -11,6 +13,8 @@ func (c *Config) SetSchedulerFactory(f scheduler.Factory) {
 func (c *Config) GetScheduler() (scheduler.Scheduler, error) {
 	if c.scheduler != nil {
 		return c.scheduler, nil
+	} else if c.Config.Scheduler == nil {
+		return nil, errors.New("no scheduler configured")
 	}
 
 	sched, err := c.schedulerFactory.Create(c.Config.Scheduler.Type, c.Config.Scheduler.Options)
