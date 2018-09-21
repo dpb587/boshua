@@ -20,3 +20,7 @@ releases:
   datastores:
   - name: bosh-io/releases-index
     type: boshioindex
+release_compilations:
+  datastores:
+  - name: cloudfoundry/cf-deployment
+    type: cfdeployment
