@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -eu
 
@@ -8,8 +8,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
   set -eu
 
   cd "$DIR"
-
-  source .envrc
 
   name=boshua
   version=0.0.0+dev.1
