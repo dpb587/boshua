@@ -13,7 +13,7 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
-	"github.com/dpb587/boshua/metalink/template"
+	"github.com/dpb587/metalink/template"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"

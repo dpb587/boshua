@@ -6,6 +6,16 @@ import (
 
 type templateFile metalink.File
 
+func (tf templateFile) MD5() string {
+	for _, hash := range tf.Hashes {
+		if hash.Type == "md5" {
+			return hash.Hash
+		}
+	}
+
+	return ""
+}
+
 func (tf templateFile) SHA1() string {
 	for _, hash := range tf.Hashes {
 		if hash.Type == "sha-1" {
@@ -13,7 +23,7 @@ func (tf templateFile) SHA1() string {
 		}
 	}
 
-	panic("sha-1 missing")
+	return ""
 }
 
 func (tf templateFile) SHA256() string {
@@ -23,7 +33,7 @@ func (tf templateFile) SHA256() string {
 		}
 	}
 
-	panic("sha-256 missing")
+	return ""
 }
 
 func (tf templateFile) SHA512() string {
@@ -33,5 +43,5 @@ func (tf templateFile) SHA512() string {
 		}
 	}
 
-	panic("sha-512 missing")
+	return ""
 }
