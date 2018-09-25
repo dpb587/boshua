@@ -10,8 +10,8 @@ type ArtifactCmd struct {
 	clicommon.ArtifactCmd
 }
 
-func (c *ArtifactCmd) ExecuteAnalysis(loader AnalysisLoader) error {
-	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
+func (c *ArtifactCmd) ExecuteAnalysis(downloaderGetter clicommon.DownloaderGetter, loader AnalysisLoader) error {
+	return c.ArtifactCmd.ExecuteArtifact(downloaderGetter, func() (artifact.Artifact, error) {
 		artifact, err := loader()
 		if err != nil {
 			return nil, errors.Wrap(err, "finding analysis")

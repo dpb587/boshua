@@ -16,5 +16,5 @@ type ArtifactCmd struct {
 func (c *ArtifactCmd) Execute(_ []string) error {
 	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/analysis/artifact"})
 
-	return c.ArtifactCmd.ExecuteAnalysis(c.CmdOpts.getAnalysis)
+	return c.ArtifactCmd.ExecuteAnalysis(c.Config.GetDownloader, c.CmdOpts.getAnalysis)
 }

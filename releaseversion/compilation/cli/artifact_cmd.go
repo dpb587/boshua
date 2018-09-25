@@ -17,7 +17,7 @@ type ArtifactCmd struct {
 func (c *ArtifactCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/compilation/artifact"})
 
-	return c.ArtifactCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
+	return c.ArtifactCmd.ExecuteArtifact(c.Config.GetDownloader, func() (artifact.Artifact, error) {
 		return c.CompiledReleaseOpts.Artifact(c.AppConfig.Config)
 	})
 }

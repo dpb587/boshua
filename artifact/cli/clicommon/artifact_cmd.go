@@ -9,15 +9,10 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact"
-	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/dpb587/metalink"
-	"github.com/dpb587/metalink/file/metaurl"
-	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
 	"github.com/pkg/errors"
@@ -28,7 +23,7 @@ type ArtifactCmd struct {
 	Format   string  `long:"format" description:"Output format for the release reference" value-name:"json|metalink|tsv" default:"tsv"`
 }
 
-func (c *ArtifactCmd) ExecuteArtifact(loader artifact.Loader) error {
+func (c *ArtifactCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader artifact.Loader) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -37,12 +32,10 @@ func (c *ArtifactCmd) ExecuteArtifact(loader artifact.Loader) error {
 	artifactMetalinkFile := artifact.MetalinkFile()
 
 	if c.Download != nil {
-		logger := boshlog.NewLogger(boshlog.LevelError)
-		fs := boshsys.NewOsFileSystem(logger)
-
-		urlLoader := urldefaultloader.New(fs)
-		metaurlLoader := metaurl.NewLoaderFactory()
-		metaurlLoader.Add(boshreleasesource.Loader{})
+		urlLoader, metaurlLoader, err := downloaderGetter()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		target := *c.Download
 

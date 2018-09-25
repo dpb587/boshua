@@ -3,9 +3,11 @@ package cli
 import (
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/config/provider/setter"
 )
 
 type DownloadCmd struct {
+	setter.AppConfig`no-flag:"true"`
 	clicommon.DownloadCmd `no-flag:"true"`
 
 	Args DownloadCmdArgs `positional-args:"true" required:"true"`
@@ -20,5 +22,5 @@ func (c *DownloadCmd) Execute(_ []string) error {
 	// cheat and inject targetdir
 	c.DownloadCmd.Args.TargetDir = c.Args.TargetDir
 
-	return c.DownloadCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink))
+	return c.DownloadCmd.ExecuteArtifact(c.Config.GetDownloader, metalinkutil.NewStaticArtifactLoader(c.Args.Metalink))
 }

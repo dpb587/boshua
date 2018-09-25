@@ -7,13 +7,8 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact"
-	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/metalink"
-	"github.com/dpb587/metalink/file/metaurl"
-	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
 	"github.com/pkg/errors"
@@ -27,13 +22,11 @@ type DownloadCmdArgs struct {
 	TargetDir *string `positional-arg-name:"TARGET-DIR" description:"Directory to download files (default: .)"`
 }
 
-func (c *DownloadCmd) ExecuteArtifact(loader artifact.Loader) error {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
-	metaurlLoader := metaurl.NewLoaderFactory()
-	metaurlLoader.Add(boshreleasesource.Loader{})
+func (c *DownloadCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader artifact.Loader) error {
+	urlLoader, metaurlLoader, err := downloaderGetter()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	artifact, err := loader()
 	if err != nil {

@@ -17,7 +17,7 @@ type DownloadCmd struct {
 func (c *DownloadCmd) Execute(_ []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/download"})
 
-	return c.DownloadCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
+	return c.DownloadCmd.ExecuteArtifact(c.Config.GetDownloader, func() (artifact.Artifact, error) {
 		return c.CmdOpts.getAnalysis()
 	})
 }
