@@ -3,9 +3,11 @@ package cli
 import (
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
+	"github.com/dpb587/boshua/config/provider/setter"
 )
 
 type UploadStemcellCmd struct {
+	setter.AppConfig`no-flag:"true"`
 	clicommon.UploadStemcellCmd
 
 	Name    string `long:"name" description:"Stemcell name"`
@@ -18,9 +20,14 @@ type UploadStemcellCmdArgs struct {
 	Metalink string `positional-arg-name:"PATH" description:"Path to the metalink file"`
 }
 
-func (c *UploadStemcellCmd) Execute(_ []string) error {
-	return c.UploadStemcellCmd.ExecuteArtifact(metalinkutil.NewStaticArtifactLoader(c.Args.Metalink), clicommon.UploadStemcellOpts{
-		Name:    c.Name,
-		Version: c.Version,
-	})
+func (c *UploadStemcellCmd) Execute(extra []string) error {
+	return c.UploadStemcellCmd.ExecuteArtifact(
+		c.Config.GetDownloader,
+		metalinkutil.NewStaticArtifactLoader(c.Args.Metalink),
+		clicommon.UploadStemcellOpts{
+			Name:      c.Name,
+			Version:   c.Version,
+			ExtraArgs: extra,
+		},
+	)
 }

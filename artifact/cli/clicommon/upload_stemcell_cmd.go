@@ -2,26 +2,31 @@ package clicommon
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
-	"github.com/dpb587/boshua/artifact"
+	artifactpkg "github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/stemcellversion"
+	"github.com/pkg/errors"
 )
 
 type UploadStemcellCmd struct {
-	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
+	Cmd   bool `long:"cmd" description:"Show the command instead of running it"`
+	Local bool `long:"local" description:"Download the artifact locally before uploading"` // TODO --local-upload? --no-local/--remote-download && default?
 }
 
 type UploadStemcellOpts struct {
-	Name    string
-	Version string
+	Name      string
+	Version   string
+	ExtraArgs []string
 }
 
-func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader, opts UploadStemcellOpts) error {
+func (c *UploadStemcellCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader artifactpkg.Loader, opts UploadStemcellOpts) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -65,6 +70,8 @@ func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader, opts UploadS
 		idArgs = append(idArgs, fmt.Sprintf("--version=%s", effectiveOpts.Version))
 	}
 
+	args = append(args, opts.ExtraArgs...)
+
 	if c.Cmd {
 		fmt.Printf("bosh upload-stemcell %s", strings.Join(idArgs, " "))
 		fmt.Printf(" \\\n  %s", url)
@@ -76,6 +83,29 @@ func (c *UploadStemcellCmd) ExecuteArtifact(loader artifact.Loader, opts UploadS
 		fmt.Printf("\n")
 
 		return nil
+	}
+
+	if c.Local {
+		localTemp, err := ioutil.TempFile("", "local-release-")
+		if err != nil {
+			return errors.Wrap(err, "creating local temp file")
+		}
+
+		defer os.RemoveAll(localTemp.Name())
+
+		url = localTemp.Name()
+		localDir := filepath.Dir(url)
+
+		downloadCmd := &DownloadCmd{Rename: filepath.Base(url), Args: DownloadCmdArgs{TargetDir: &localDir}}
+		err = downloadCmd.ExecuteArtifact(
+			downloaderGetter,
+			func() (artifactpkg.Artifact, error) {
+				return artifact, nil
+			},
+		)
+		if err != nil {
+			return errors.Wrap(err, "downloading file locally")
+		}
 	}
 
 	cmd := exec.Command("bosh", append([]string{"upload-stemcell"}, append(append(idArgs, url), args...)...)...)

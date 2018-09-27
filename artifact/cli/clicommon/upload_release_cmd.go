@@ -2,28 +2,33 @@ package clicommon
 
 import (
 	"fmt"
+	"path/filepath"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 
-	"github.com/dpb587/boshua/artifact"
+	"github.com/pkg/errors"
+	artifactpkg "github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 )
 
 type UploadReleaseCmd struct {
-	Cmd bool `long:"cmd" description:"Show the command instead of running it"`
+	Cmd   bool `long:"cmd" description:"Show the command instead of running it"`
+	Local bool `long:"local" description:"Download the artifact locally before uploading"` // TODO --local-upload? --no-local/--remote-download && default?
 }
 
 type UploadReleaseOpts struct {
-	Name     string
-	Version  string
-	Stemcell string
+	Name      string
+	Version   string
+	Stemcell  string
+	ExtraArgs []string
 }
 
-func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader, opts UploadReleaseOpts) error {
+func (c *UploadReleaseCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader artifactpkg.Loader, opts UploadReleaseOpts) error {
 	artifact, err := loader()
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +86,8 @@ func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader, opts UploadRe
 		args = append(args, fmt.Sprintf("--stemcell=%s", effectiveOpts.Stemcell))
 	}
 
+	args = append(args, opts.ExtraArgs...)
+
 	if c.Cmd {
 		fmt.Printf("bosh upload-release %s", strings.Join(idArgs, " "))
 		fmt.Printf(" \\\n  %s", url)
@@ -92,6 +99,29 @@ func (c *UploadReleaseCmd) ExecuteArtifact(loader artifact.Loader, opts UploadRe
 		fmt.Printf("\n")
 
 		return nil
+	}
+
+	if c.Local {
+		localTemp, err := ioutil.TempFile("", "local-release-")
+		if err != nil {
+			return errors.Wrap(err, "creating local temp file")
+		}
+
+		defer os.RemoveAll(localTemp.Name())
+
+		url = localTemp.Name()
+		localDir := filepath.Dir(url)
+
+		downloadCmd := &DownloadCmd{Rename: filepath.Base(url), Args: DownloadCmdArgs{TargetDir: &localDir}}
+		err = downloadCmd.ExecuteArtifact(
+			downloaderGetter,
+			func() (artifactpkg.Artifact, error) {
+				return artifact, nil
+			},
+		)
+		if err != nil {
+			return errors.Wrap(err, "downloading file locally")
+		}
 	}
 
 	cmd := exec.Command("bosh", append([]string{"upload-release"}, append(append(idArgs, url), args...)...)...)

@@ -14,10 +14,16 @@ type UploadReleaseCmd struct {
 	clicommon.UploadReleaseCmd
 }
 
-func (c *UploadReleaseCmd) Execute(_ []string) error {
+func (c *UploadReleaseCmd) Execute(extra []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "release/compilation/upload-release"})
 
-	return c.UploadReleaseCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
-		return c.CompiledReleaseOpts.Artifact(c.AppConfig.Config)
-	}, clicommon.UploadReleaseOpts{})
+	return c.UploadReleaseCmd.ExecuteArtifact(
+		c.Config.GetDownloader,
+		func() (artifact.Artifact, error) {
+			return c.CompiledReleaseOpts.Artifact(c.AppConfig.Config)
+		},
+		clicommon.UploadReleaseOpts{
+			ExtraArgs: extra,
+		},
+	)
 }

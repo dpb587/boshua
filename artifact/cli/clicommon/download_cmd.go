@@ -15,7 +15,8 @@ import (
 )
 
 type DownloadCmd struct {
-	Args DownloadCmdArgs `positional-args:"true"`
+	Rename string          `long:"rename" description:"Override the downloaded file name"`
+	Args   DownloadCmdArgs `positional-args:"true"`
 }
 
 type DownloadCmdArgs struct {
@@ -36,6 +37,10 @@ func (c *DownloadCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader 
 	file := artifact.MetalinkFile()
 
 	localPath := file.Name
+
+	if c.Rename != "" {
+		localPath = c.Rename
+	}
 
 	if c.Args.TargetDir != nil {
 		localPath = filepath.Join(*c.Args.TargetDir, localPath)

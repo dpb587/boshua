@@ -14,10 +14,14 @@ type UploadStemcellCmd struct {
 	clicommon.UploadStemcellCmd
 }
 
-func (c *UploadStemcellCmd) Execute(_ []string) error {
+func (c *UploadStemcellCmd) Execute(extra []string) error {
 	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "stemcell/upload-stemcell"})
 
-	return c.UploadStemcellCmd.ExecuteArtifact(func() (artifact.Artifact, error) {
-		return c.StemcellOpts.Artifact(c.AppConfig.Config)
-	}, clicommon.UploadStemcellOpts{})
+	return c.UploadStemcellCmd.ExecuteArtifact(
+		c.Config.GetDownloader,
+		func() (artifact.Artifact, error) {
+			return c.StemcellOpts.Artifact(c.AppConfig.Config)
+		},
+		clicommon.UploadStemcellOpts{},
+	)
 }
