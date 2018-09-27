@@ -201,6 +201,8 @@ func (i *index) fillCache() error {
 		return errors.Wrap(err, "reloading repository")
 	}
 
+	i.logger.Debugf("reloading compilation history")
+
 	aggregatedPatches, err := i.extractCompilations(
 		"operations/use-compiled-releases.yml",
 		func(commit string) (*manifestReleases, patch.Ops, error) {
@@ -332,6 +334,8 @@ func (i *index) fillCache() error {
 			),
 		)
 	}
+
+	i.logger.Infof("reloaded compilation history")
 
 	return nil
 }
