@@ -27,3 +27,15 @@ func (r *Regexp) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	return nil
 }
+
+type RegexpList []*Regexp
+
+func (rl RegexpList) AsRegexp() []*regexp.Regexp {
+	var as []*regexp.Regexp
+
+	for _, r := range rl {
+		as = append(as, r.Regexp)
+	}
+
+	return as
+}

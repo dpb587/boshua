@@ -7,10 +7,11 @@ import "fmt"
 // TODO simplify provider lookups once this is verified
 func Denormalize(in Config) (*Config, error) {
 	out := Config{
-		RawConfig: in.RawConfig,
-		Global:    in.Global,
-		Server:    in.Server,
-		Scheduler: in.Scheduler,
+		RawConfig:   in.RawConfig,
+		Global:      in.Global,
+		Server:      in.Server,
+		Scheduler:   in.Scheduler,
+		Downloaders: in.Downloaders,
 	}
 
 	for _, datastore := range in.Analyses.Datastores {

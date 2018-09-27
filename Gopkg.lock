@@ -79,7 +79,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:894d792f422fe176205c5107f826f1ee21dbaff287837835c6b84182291af0fc"
+  digest = "1:e3e7fe9f1ec752978e78aae5b38102db744485e0fd76dfa9d7863c9d81ed5b0d"
   name = "github.com/dpb587/metalink"
   packages = [
     ".",
@@ -97,7 +97,7 @@
     "verification/hash",
   ]
   pruneopts = "NUT"
-  revision = "3f1cf25c79d2fa8f0ade81d282f1256f1197a7cd"
+  revision = "ce03a43828aad21e47f12739d814c9542b9ace6c"
 
 [[projects]]
   branch = "master"
@@ -336,6 +336,7 @@
     "github.com/dpb587/metalink",
     "github.com/dpb587/metalink/file",
     "github.com/dpb587/metalink/file/metaurl",
+    "github.com/dpb587/metalink/file/url",
     "github.com/dpb587/metalink/file/url/defaultloader",
     "github.com/dpb587/metalink/template",
     "github.com/dpb587/metalink/transfer",

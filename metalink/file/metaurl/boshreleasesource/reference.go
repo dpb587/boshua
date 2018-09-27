@@ -17,6 +17,7 @@ import (
 
 type Reference struct {
 	url string
+	// TODO privateKey support
 }
 
 var _ file.Reference = Reference{}

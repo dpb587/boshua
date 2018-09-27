@@ -31,6 +31,9 @@ type Config struct {
 
 	// Server defines how a local API server should run.
 	Server ServerConfig `yaml:"server,omitempty"`
+
+	// Downloaders defines how artifacts should be downloaded.
+	Downloaders DownloadersConfig `yaml:"downloaders,omitempty"`
 }
 
 // GlobalConfig defines common options.
@@ -49,6 +52,12 @@ type GlobalConfig struct {
 	// Quiet defines whether informational or progress information should be
 	// suppressed.
 	Quiet bool `yaml:"quiet"`
+}
+
+type DownloadersConfig struct {
+	DisableDefaultHandlers bool                      `yaml:"disable_default_handlers"`
+	URLHandlers            []DownloaderHandlerConfig `yaml:"url_handlers"`
+	// MetaURLHandlers        []DownloaderHandlerConfig `yaml:"meta_url_handlers"`
 }
 
 // ServerConfig defines local API server options.
@@ -133,6 +142,12 @@ type AnalysisDatastoreConfig struct {
 type SchedulerConfig struct {
 	AbstractComponentConfig `yaml:",inline"`
 	NoWait                  bool `yaml:"no_wait"`
+}
+
+type DownloaderHandlerConfig struct {
+	AbstractComponentConfig `yaml:",inline"`
+	Include                 types.RegexpList `yaml:"include"`
+	Exclude                 types.RegexpList `yaml:"exclude"`
 }
 
 type AbstractComponentConfig struct {

@@ -417,6 +417,21 @@ When a remote server is available, `$BOSHUA_SERVER` or `--default-server` may be
  * [`localexec`](task/scheduler/localexec) - run tasks locally
 
 
+#### Download Handlers
+
+
+##### URLs
+
+ * [`s3`](artifact/downloader/url/s3) - authenticated downloads from S3 buckets
+ * `http` - download from http(s) servers; default
+ * `ftp` - download from ftp servers; default
+
+
+##### MetaURLs
+
+ * `boshreleasesource` - build release tarballs directly from repositories; default
+
+
 ## Extra Tools
 
 
