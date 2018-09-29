@@ -2,7 +2,7 @@ package config
 
 import "fmt"
 
-// TODO refactor
+// TODO refactor!
 // TODO error check, too?
 // TODO simplify provider lookups once this is verified
 func Denormalize(in Config) (*Config, error) {
@@ -16,6 +16,38 @@ func Denormalize(in Config) (*Config, error) {
 
 	for _, datastore := range in.Analyses.Datastores {
 		out.Analyses.Datastores = append(out.Analyses.Datastores, datastore)
+	}
+
+	for _, pivnetfile := range in.PivnetFiles.Datastores {
+		a := pivnetfile.AnalysisDatastore
+
+		if a != nil {
+			if a.Type != "" {
+				a.Name = fmt.Sprintf("internal/pivnetfile/%s", pivnetfile.Name)
+
+				out.Analyses.Datastores = append(
+					out.Analyses.Datastores,
+					AnalysisDatastoreConfig{
+						AbstractComponentConfig: AbstractComponentConfig{
+							Name:    a.Name,
+							Type:    a.Type,
+							Options: a.Options,
+						},
+					},
+				)
+
+				a.Type = ""
+				a.Options = nil
+			}
+		} else {
+			pivnetfile.AnalysisDatastore = &AnalysisDatastoreConfig{
+				AbstractComponentConfig: AbstractComponentConfig{
+					Name: "default",
+				},
+			}
+		}
+
+		out.PivnetFiles.Datastores = append(out.PivnetFiles.Datastores, pivnetfile)
 	}
 
 	for _, stemcell := range in.Stemcells.Datastores {

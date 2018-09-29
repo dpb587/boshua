@@ -8,6 +8,7 @@ import (
 	"github.com/dpb587/boshua/config/provider"
 	compilationfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/defaultfactory"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/defaultfactory"
+	pivnetfilefactory "github.com/dpb587/boshua/pivnetfile/datastore/defaultfactory"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/defaultfactory"
 	schedulerfactory "github.com/dpb587/boshua/task/scheduler/factory"
 	downloaderurlfactory "github.com/dpb587/boshua/artifact/downloader/url/defaultfactory"
@@ -31,6 +32,7 @@ func UseDefaultFactories(cfg *provider.Config) {
 	cfg.SetReleaseFactory(releaseversionfactory.New(cfg.GetLogger()))
 	cfg.SetReleaseCompilationFactory(compilationfactory.New(cfg.GetReleaseIndex, cfg.GetLogger()))
 	cfg.SetStemcellFactory(stemcellversionfactory.New(cfg.GetLogger()))
+	cfg.SetPivnetFileFactory(pivnetfilefactory.New(cfg.GetLogger()))
 	cfg.SetSchedulerFactory(schedulerfactory.New(cfg, cfg.GetLogger()))
 	cfg.SetDownloaderURLFactory(downloaderurlfactory.New(cfg.GetLogger()))
 }

@@ -26,6 +26,9 @@ type Config struct {
 	// ReleaseCompilations defines release compilation datastores and settings.
 	ReleaseCompilations ReleaseCompilationConfigs `yaml:"release_compilations,omitempty"`
 
+	// PivnetFiles defines pivnet file datastores and settings.
+	PivnetFiles PivnetFilesConfig `yaml:"pivnet_files,omitempty"`
+
 	// Analyses defines analysis datastores and settings.
 	Analyses AnalysesConfig `yaml:"analyses,omitempty"`
 
@@ -85,6 +88,20 @@ type ServerMountConfig struct {
 type ServerRedirectConfig struct {
 	// Root defines a target path for clients accessing `/`.
 	Root string `yaml:"root"`
+}
+
+// PivnetFilesConfig defines pivnet file datastores and settings.
+type PivnetFilesConfig struct {
+	// Datastores defines a list of release datastores.
+	Datastores []PivnetFileDatastoreConfig `yaml:"datastores"`
+}
+
+// ReleaseDatastoreConfig defines a release datastore.
+type PivnetFileDatastoreConfig struct {
+	AbstractComponentConfig `yaml:",inline"`
+
+	// Analyses defines an explicit inline or reference to an analysis datastore.
+	AnalysisDatastore *AnalysisDatastoreConfig `yaml:"analysis_datastore"`
 }
 
 // ReleasesConfig defines release datastores and settings.

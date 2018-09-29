@@ -5,6 +5,7 @@ import (
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/config"
+	pivnetfiledatastore "github.com/dpb587/boshua/pivnetfile/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
@@ -27,6 +28,10 @@ type Config struct {
 
 	stemcellFactory stemcellversiondatastore.Factory
 	stemcellIndices map[string]stemcellversiondatastore.Index
+
+	pivnetFileFactory pivnetfiledatastore.Factory
+	pivnetFileIndices map[string]pivnetfiledatastore.Index
+
 
 	analysisFactory analysisdatastore.Factory
 	analysisIndices map[string]analysisdatastore.Index

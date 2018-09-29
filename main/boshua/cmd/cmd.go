@@ -11,6 +11,7 @@ import (
 	deployment "github.com/dpb587/boshua/deployment/cli"
 	"github.com/dpb587/boshua/main/boshua/cmd/opts"
 	releaseversion "github.com/dpb587/boshua/releaseversion/cli"
+	pivnetfile "github.com/dpb587/boshua/pivnetfile/cli"
 	server "github.com/dpb587/boshua/server/cli"
 	stemcellversion "github.com/dpb587/boshua/stemcellversion/cli"
 	"github.com/sirupsen/logrus"
@@ -23,6 +24,7 @@ type Cmd struct {
 	AnalysisCmd   analysis.Cmd         `command:"analysis" description:"For analyzing artifacts"`
 	ArtifactCmd   *artifact.Cmd        `command:"artifact" description:"For referencing artifacts"`
 	ReleaseCmd    *releaseversion.Cmd  `command:"release" description:"For working with releases" subcommands-optional:"true"`
+	PivnetFileCmd *pivnetfile.Cmd      `command:"pivnet-file" description:"For working with Pivotal Network files" subcommands-optional:"true"`
 	DeploymentCmd *deployment.Cmd      `command:"deployment" description:"For working with deployments"`
 	StemcellCmd   *stemcellversion.Cmd `command:"stemcell" description:"For working with stemcells" subcommands-optional:"true"`
 
@@ -46,6 +48,7 @@ func New(app cli.App) *Cmd {
 	cmd.ReleaseCmd = releaseversion.New(cmd.Opts)
 	cmd.DeploymentCmd = deployment.New(cmd.Opts)
 	cmd.StemcellCmd = stemcellversion.New(cmd.Opts)
+	cmd.PivnetFileCmd = pivnetfile.New(cmd.Opts)
 
 	cmd.VersionCmd.App = cmd.App
 
