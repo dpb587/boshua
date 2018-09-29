@@ -192,6 +192,14 @@
   version = "v0.0.3"
 
 [[projects]]
+  digest = "1:bff482b22ebed387378546ba6a7850fdef87fd47f8ee58a7c62124a8e889a56b"
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb"
+  version = "v0.0.3"
+
+[[projects]]
   digest = "1:71d59c3280db6c73dad44714e1cf84416594bc61d0cff814494786579da6dfd3"
   name = "github.com/minio/minio-go"
   packages = [
@@ -222,6 +230,19 @@
   packages = ["."]
   pruneopts = "NUT"
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+
+[[projects]]
+  digest = "1:93ec1aa18857b46f1f2f0729731dc019a026ec67682a07b37ec02f76692fc02e"
+  name = "github.com/pivotal-cf/go-pivnet"
+  packages = [
+    ".",
+    "download",
+    "logger",
+    "logshim",
+  ]
+  pruneopts = "NUT"
+  revision = "ef1eaf8cfb531ed28bfa0a8cb617119f541df3e4"
+  version = "v0.0.48"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -257,6 +278,22 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  pruneopts = "NUT"
+  revision = "4dfa2610cdf3b287375bbba5b8f2a14d3b01d8de"
+
+[[projects]]
+  branch = "master"
+  digest = "1:39ebcc2b11457b703ae9ee2e8cca0f68df21969c6102cb3b705f76cca0ea0239"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "NUT"
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
+
+[[projects]]
+  branch = "master"
   digest = "1:c1002df3205cb2d72159043e55a98401e8fa56d308b4340f9fbe92b2ab5b1152"
   name = "golang.org/x/sys"
   packages = [
@@ -273,6 +310,14 @@
   pruneopts = "NUT"
   revision = "b24eb346a94c3ba12c1da1e564dbac1b498a77ce"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:40a1cbb226e60770882b41e5b8e7f5c38426399c602fe75618de717e70dcb871"
+  name = "gopkg.in/cheggaaa/pb.v1"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2af8bbdea9e99e83b3ac400d8f6b6d1b8cbbf338"
+  version = "v1.0.25"
 
 [[projects]]
   digest = "1:256938e7d43c73bd5e7bb97dd281d1ebe294b2928403ee1fbec96249915d1150"
@@ -338,6 +383,10 @@
     "github.com/dpb587/metalink/file/metaurl",
     "github.com/dpb587/metalink/file/url",
     "github.com/dpb587/metalink/file/url/defaultloader",
+    "github.com/dpb587/metalink/file/url/file",
+    "github.com/dpb587/metalink/file/url/ftp",
+    "github.com/dpb587/metalink/file/url/http",
+    "github.com/dpb587/metalink/file/url/s3",
     "github.com/dpb587/metalink/template",
     "github.com/dpb587/metalink/transfer",
     "github.com/dpb587/metalink/verification",
@@ -346,6 +395,8 @@
     "github.com/graphql-go/graphql",
     "github.com/jessevdk/go-flags",
     "github.com/machinebox/graphql",
+    "github.com/pivotal-cf/go-pivnet",
+    "github.com/pivotal-cf/go-pivnet/logshim",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "gopkg.in/yaml.v2",

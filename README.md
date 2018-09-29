@@ -423,6 +423,7 @@ When a remote server is available, `$BOSHUA_SERVER` or `--default-server` may be
 ##### URLs
 
  * [`s3`](artifact/downloader/url/s3) - authenticated downloads from S3 buckets
+ * [`pivnet`](artifact/downloader/pivnet/s3) - authenticated downloads from [Pivotal Network](https://network.pivotal.io/)
  * `http` - download from http(s) servers; default
  * `ftp` - download from ftp servers; default
 
