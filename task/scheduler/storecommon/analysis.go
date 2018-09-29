@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/dpb587/boshua/analysis"
+	"github.com/dpb587/boshua/pivnetfile"
+	pivnetfileoptsutil "github.com/dpb587/boshua/pivnetfile/cli/opts/optsutil"
+	pivnetfiledatastore "github.com/dpb587/boshua/pivnetfile/datastore"
 	"github.com/dpb587/boshua/releaseversion"
 	releaseoptsutil "github.com/dpb587/boshua/releaseversion/cli/opts/optsutil"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -22,6 +25,12 @@ func AppendAnalysisStore(tt *task.Task, analysisRef analysis.Reference) *task.Ta
 	var storeDatastore string
 
 	switch analysisSubject := analysisRef.Subject.(type) {
+	case pivnetfile.Artifact:
+		storeDatastore = fmt.Sprintf("internal/pivnetfile/%s", analysisSubject.GetDatastoreName())
+		storeArgs = append(
+			[]string{"pivnet-file"},
+			pivnetfileoptsutil.ArgsFromFilterParams(pivnetfiledatastore.FilterParamsFromArtifact(analysisSubject))...,
+		)
 	case stemcellversion.Artifact:
 		storeDatastore = fmt.Sprintf("internal/stemcell/%s", analysisSubject.GetDatastoreName())
 		storeArgs = append(

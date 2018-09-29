@@ -9,6 +9,7 @@ import (
 	stemcellimagefilesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellimagefiles.v1"
 	stemcellmanifestv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1"
 	stemcellpackagesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1"
+	tilereleasemanifestsv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1"
 	"github.com/dpb587/boshua/task"
 )
 
@@ -27,6 +28,8 @@ func (Factory) Create(analyzer analysis.AnalyzerName, path string) (analysis.Ana
 		return stemcellmanifestv1.NewAnalysis(path), nil
 	case stemcellpackagesv1.AnalyzerName:
 		return stemcellpackagesv1.NewAnalysis(path), nil
+	case tilereleasemanifestsv1.AnalyzerName:
+		return tilereleasemanifestsv1.NewAnalysis(path), nil
 	}
 
 	return nil, fmt.Errorf("unknown analyzer: %s", analyzer)
@@ -45,6 +48,8 @@ func (Factory) BuildTask(analyzer analysis.AnalyzerName, subject analysis.Subjec
 		return stemcellmanifestv1.Analyzer.BuildTask(subject)
 	case stemcellpackagesv1.AnalyzerName:
 		return stemcellpackagesv1.Analyzer.BuildTask(subject)
+	case tilereleasemanifestsv1.AnalyzerName:
+		return tilereleasemanifestsv1.Analyzer.BuildTask(subject)
 	}
 
 	return nil, fmt.Errorf("unknown analyzer: %s", analyzer)

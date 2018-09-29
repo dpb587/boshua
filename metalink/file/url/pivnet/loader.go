@@ -17,16 +17,18 @@ import (
 )
 
 type Loader struct {
-	token      string
-	acceptEULA bool
+	defaultHost string
+	token       string
+	acceptEULA  bool
 }
 
 var _ url.Loader = &Loader{}
 
-func NewLoader(token string, acceptEULA bool) url.Loader {
+func NewLoader(defaultHost, token string, acceptEULA bool) url.Loader {
 	return &Loader{
-		token:      token,
-		acceptEULA: acceptEULA,
+		defaultHost: defaultHost,
+		token:       token,
+		acceptEULA:  acceptEULA,
 	}
 }
 
@@ -63,7 +65,7 @@ func (f Loader) Load(source metalink.URL) (file.Reference, error) {
 
 	hostname := parsed.Hostname()
 	if hostname == "" {
-		hostname = pivnet.DefaultHost
+		hostname = f.defaultHost
 	} else {
 		hostname = "https://" + hostname
 	}

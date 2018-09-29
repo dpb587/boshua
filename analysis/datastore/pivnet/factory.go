@@ -3,9 +3,7 @@ package pivnet
 import (
 	"fmt"
 
-	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
-	"github.com/dpb587/metalink/file/url"
-	"github.com/dpb587/boshua/metalink/file/url/pivnet"
+	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/util/configdef"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -17,16 +15,18 @@ type factory struct {
 	logger logrus.FieldLogger
 }
 
-func NewFactory(logger logrus.FieldLogger) downloaderurl.Factory {
+func NewFactory(logger logrus.FieldLogger) datastore.Factory {
 	return &factory{
 		logger: logger,
 	}
 }
 
-func (f *factory) Create(provider downloaderurl.ProviderName, name string, options map[string]interface{}) (url.Loader, error) {
+func (f *factory) Create(provider datastore.ProviderName, name string, options map[string]interface{}) (datastore.Index, error) {
 	if ProviderName != provider {
 		return nil, fmt.Errorf("unsupported type: %s", provider)
 	}
+
+	logger := f.logger.WithField("datastore", fmt.Sprintf("analysis:%s[%s]", provider, name))
 
 	cfg := Config{}
 	err := configdef.RemarshalYAML(options, &cfg)
@@ -34,5 +34,5 @@ func (f *factory) Create(provider downloaderurl.ProviderName, name string, optio
 		return nil, errors.Wrap(err, "loading options")
 	}
 
-	return pivnet.NewLoader(cfg.Host, cfg.Token, cfg.AcceptEULA), nil
+	return New(name, cfg, logger), nil
 }
