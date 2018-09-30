@@ -30,7 +30,7 @@ func (c *FilterCmd) Execute(_ []string) error {
 	pivnetfile.Sort(results)
 
 	for _, result := range results {
-		fmt.Printf("%s\t%d\t%s\t%d\t%s\n", result.ProductName, result.ReleaseID, result.ReleaseVersion, result.FileID, result.File.Name)
+		fmt.Printf("%s\t%d\t%s\t%d\t%s\n", result.ProductSlug, result.ReleaseID, result.ReleaseVersion, result.FileID, result.File.Name)
 	}
 
 	return nil

@@ -10,8 +10,8 @@ import (
 func ArgsFromFilterParams(f datastore.FilterParams) []string {
 	args := []string{}
 
-	if f.ProductNameExpected {
-		args = append(args, fmt.Sprintf("--pivnet-product=%s", f.ProductName))
+	if f.ProductSlugExpected {
+		args = append(args, fmt.Sprintf("--pivnet-product-slug=%s", f.ProductSlug))
 	}
 
 	if f.ReleaseIDExpected {

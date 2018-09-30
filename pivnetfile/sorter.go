@@ -21,7 +21,7 @@ func (s sorter) Swap(i, j int) {
 }
 
 func (s sorter) Less(i, j int) bool {
-	an, bn := s[i].ProductName, s[j].ProductName
+	an, bn := s[i].ProductSlug, s[j].ProductSlug
 	if an == bn {
 		if s[i].ReleaseVersion == s[j].ReleaseVersion {
 			return strings.Compare(s[i].File.Name, s[j].File.Name) < 0

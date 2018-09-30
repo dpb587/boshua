@@ -9,7 +9,7 @@ import (
 type Artifact struct {
 	Datastore string `json:"-"`
 
-	ProductName    string `json:"product_name"`
+	ProductSlug    string `json:"product_slug"`
 	ReleaseID      int    `json:"release_id"`
 	FileID         int    `json:"file_id"`
 
@@ -28,9 +28,9 @@ func (s Artifact) MetalinkFile() metalink.File {
 
 func (s Artifact) Reference() interface{} {
 	return Reference{
-		ProductName:      s.ProductName,
+		ProductSlug: s.ProductSlug,
 		ReleaseID:   s.ReleaseID,
-		FileID: s.FileID,
+		FileID:      s.FileID,
 	}
 }
 

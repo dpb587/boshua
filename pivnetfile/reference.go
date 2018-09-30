@@ -5,7 +5,7 @@ import (
 )
 
 type Reference struct {
-	ProductName    string `json:"product_name"`
+	ProductSlug    string `json:"product_slug"`
 	ReleaseID      int    `json:"release_id"`
 	FileID         int    `json:"file_id"`
 

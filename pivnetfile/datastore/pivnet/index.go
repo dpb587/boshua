@@ -100,7 +100,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]pivnetfile.Artifact, e
 					results,
 					pivnetfile.Artifact{
 						Datastore:      i.name,
-						ProductName:    product.Slug,
+						ProductSlug:    product.Slug,
 						ReleaseID:      release.ID,
 						ReleaseVersion: release.Version,
 						FileID:         file.ID,
@@ -115,10 +115,10 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]pivnetfile.Artifact, e
 }
 
 func (i *index) getProducts(f datastore.FilterParams) ([]pivnet.Product, error) {
-	if f.ProductNameExpected {
+	if f.ProductSlugExpected {
 		return []pivnet.Product{
 			{
-				Slug: f.ProductName,
+				Slug: f.ProductSlug,
 			},
 		}, nil
 	}

@@ -5,8 +5,8 @@ import (
 )
 
 type FilterParams struct {
-	ProductNameExpected bool
-	ProductName         string
+	ProductSlugExpected bool
+	ProductSlug         string
 
 	ReleaseIDExpected bool
 	ReleaseID         int
@@ -22,12 +22,12 @@ type FilterParams struct {
 	FileName         string
 }
 
-func (f *FilterParams) ProductNameSatisfied(actual string) bool {
-	if !f.ProductNameExpected {
+func (f *FilterParams) ProductSlugSatisfied(actual string) bool {
+	if !f.ProductSlugExpected {
 		return true
 	}
 
-	return f.ProductName == actual
+	return f.ProductSlug == actual
 }
 
 func (f *FilterParams) ReleaseIDSatisfied(actual int) bool {

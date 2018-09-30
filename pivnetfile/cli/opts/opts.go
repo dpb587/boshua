@@ -12,9 +12,9 @@ import (
 type Opts struct {
 	AppOpts *cmdopts.Opts `no-flag:"true"`
 
-	PivnetProduct   string `long:"pivnet-product" description:"The product name/slug"`
-	PivnetReleaseID int    `long:"pivnet-release-id" description:"The release ID"`
-	PivnetFileID    int    `long:"pivnet-file-id" description:"The file ID"`
+	PivnetProductSlug string `long:"pivnet-product-slug" description:"The product slug"`
+	PivnetReleaseID   int    `long:"pivnet-release-id" description:"The release ID"`
+	PivnetFileID      int    `long:"pivnet-file-id" description:"The file ID"`
 }
 
 func (o *Opts) Artifact(cfg *provider.Config) (pivnetfile.Artifact, error) {
@@ -34,8 +34,8 @@ func (o *Opts) Artifact(cfg *provider.Config) (pivnetfile.Artifact, error) {
 func (o Opts) FilterParams() datastore.FilterParams {
 	f := datastore.FilterParams{}
 
-	f.ProductNameExpected = o.PivnetProduct != ""
-	f.ProductName = o.PivnetProduct
+	f.ProductSlugExpected = o.PivnetProductSlug != ""
+	f.ProductSlug = o.PivnetProductSlug
 
 	f.ReleaseIDExpected = o.PivnetReleaseID != 0
 	f.ReleaseID = o.PivnetReleaseID

@@ -6,8 +6,8 @@ import (
 
 func FilterParamsFromArtifact(artifact pivnetfile.Artifact) FilterParams {
 	f := FilterParams{
-		ProductNameExpected: true,
-		ProductName:         artifact.ProductName,
+		ProductSlugExpected: true,
+		ProductSlug:         artifact.ProductSlug,
 
 		ReleaseIDExpected: true,
 		ReleaseID:         artifact.ReleaseID,
