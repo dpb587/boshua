@@ -90,6 +90,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 	switch subjectRef := subjectRef.(type) {
 	case pivnetfile.Reference:
 		return filepath.Join(
+			i.config.RepositoryPath,
 			subjectRef.ProductName,
 			strconv.Itoa(subjectRef.ReleaseID),
 			fmt.Sprintf("%s.%s.meta4", strconv.Itoa(subjectRef.FileID), ref.Analyzer),
