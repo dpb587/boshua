@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 	"github.com/dpb587/metalink/template"
 	"github.com/dpb587/boshua/osversion"
@@ -128,10 +126,7 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 		return datastore.UnsupportedOperationErr
 	}
 
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
+	urlLoader := urldefaultloader.New()
 
 	file := artifact.MetalinkFile()
 

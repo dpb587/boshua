@@ -1,8 +1,7 @@
 package clicommon
 
 import (
-	"github.com/dpb587/metalink/file/url"
-	"github.com/dpb587/metalink/file/metaurl"
+	"github.com/dpb587/metalink/transfer"
 )
 
-type DownloaderGetter func () (url.Loader, metaurl.Loader, error)
+type DownloaderGetter func () (transfer.Transfer, error)

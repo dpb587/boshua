@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
@@ -101,10 +99,7 @@ func (i *index) storagePath(ref analysis.Reference) (string, error) {
 }
 
 func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metalink.Metalink) error {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
+	urlLoader := urldefaultloader.New()
 
 	path, err := i.storagePath(ref)
 	if err != nil {

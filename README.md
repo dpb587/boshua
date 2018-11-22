@@ -5,36 +5,11 @@ For providing, using, and inspecting artifacts of [BOSH](https://bosh.io/).
 > bosh unofficial artifacts
 
 
-## Goals
+## Docs
 
- * provide consistent ways to generate and store metadata about releases, compilations, and stemcells
- * support private and public configurations with access to different sets of resources
- * deprecate one-off, duplicated scripts which have historically implemented these processes
- * allow compiled releases to be dynamically discovered and avoid hard-coding references
- * support just-in-time release compilations, shared across environments
- * focus on CLI and API extensibility to enable this as a building block
- * support both local and remote execution of any commands
-
-
-## Core Concepts
-
-First, let's define some of the terminology this uses...
-
- * **Artifact** - an artifact represents something of interest and generally refers to a permanent blob of data somewhere (e.g. a BOSH release tarball stored on Amazon S3). Artifacts are usually identified by a couple pieces of canonical information (e.g. name, version, URI, checksum). There are several primary types of artifacts, each represented by a top-level CLI command or API endpoint.
-    * **Stemcell** - a particular version of a BOSH stemcell for a given IaaS
-    * **Release** - a particular version of a BOSH release
-       * **Compilation** - a particular version of a BOSH release that has been compiled against a particular stemcell or OS and version
-    * **Labels** - used to label artifacts for logical categorization. For hierarchical taxonomies, path-style values with forward slashes can be used. Some standardized label conventions are...
-       * `repo/*` - to identify the source of the release; e.g. `repo/github.com/dpb587/openvpn-bosh-release`
-       * `stability/(alpha|beta|rc|stable)` - identify stability of artifacts
-       * `tag/*` - general, tag-based navigation; e.g. `tag/cpi`, `tag/networking`
-       * `deprecated` - to identify artifacts which are deprecated
- * **Analysis** - an artifact is independently useful, but there is often much more information which can be derived from it (e.g. what OS packages are included in a particular stemcell version). Analysis results are generated metadata which is affiliated with a particular artifact.
-    * **Analyzer** - analyzers are used to generate specific types of metadata about an artifact. Each artifact type has several builtin analyzers.
-    * **Formatters** - formatters are tools for interpreting the raw results and providing them in a more meaningful way. Most analyzers have several builtin formatters.
- * **Datastore** - a datastore is something which can find and/or store details about artifacts and analysis in a permanent way (e.g. a BOSH release repository having release information). Each artifact type has several supported datastores, and datastores can delegate to other, possibly remote datastores (e.g. through APIs).
- * **Scheduler** - a scheduler is used for executing work when results are not already available (e.g. compiling a release). Several types of schedulers are supported to support running work locally or in Docker, remotely on Concourse, or remotely through an API.
- * **Provider** - a specific implementation of a datastore or scheduler. Providers are configured through the config file and their provider-specific `options`.
+ * Introduction
+    * [Project Goals](doc/intro/goals.md)
+    * [Core Concepts](doc/intro/concepts.md)
 
 
 ## Usage
@@ -423,7 +398,7 @@ When a remote server is available, `$BOSHUA_SERVER` or `--default-server` may be
 ##### URLs
 
  * [`s3`](artifact/downloader/url/s3) - authenticated downloads from S3 buckets
- * [`pivnet`](artifact/downloader/pivnet/s3) - authenticated downloads from [Pivotal Network](https://network.pivotal.io/)
+ * [`pivnet`](artifact/downloader/url/pivnet) - authenticated downloads from [Pivotal Network](https://network.pivotal.io/)
  * `http` - download from http(s) servers; default
  * `ftp` - download from ftp servers; default
 

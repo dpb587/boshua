@@ -8,15 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
-	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
+	"github.com/dpb587/metalink/file/url/file"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -93,17 +91,7 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, source metalink.Meta
 
 	defer fh.Close()
 
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
-
-	file := source.Files[0]
-
-	local, err := urlLoader.Load(metalink.URL{URL: file.URLs[0].URL})
-	if err != nil {
-		return errors.Wrap(err, "parsing origin destination")
-	}
+	local := file.NewReference(source.Files[0].URLs[0].URL)
 
 	reader, err := local.Reader()
 	if err != nil {

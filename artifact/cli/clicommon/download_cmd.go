@@ -3,14 +3,14 @@ package clicommon
 import (
 	"bytes"
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/cheggaaa/pb"
 	"github.com/dpb587/boshua/artifact"
-	"github.com/dpb587/metalink"
-	"github.com/dpb587/metalink/transfer"
-	"github.com/dpb587/metalink/verification/hash"
+  "github.com/dpb587/metalink/file/url/file"
+	"github.com/dpb587/metalink/verification"
 	"github.com/pkg/errors"
 )
 
@@ -24,7 +24,7 @@ type DownloadCmdArgs struct {
 }
 
 func (c *DownloadCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader artifact.Loader) error {
-	urlLoader, metaurlLoader, err := downloaderGetter()
+	downloader, err := downloaderGetter()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,9 +34,9 @@ func (c *DownloadCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader 
 		log.Fatal(err)
 	}
 
-	file := artifact.MetalinkFile()
+	artifactMetalinkFile := artifact.MetalinkFile()
 
-	localPath := file.Name
+	localPath := artifactMetalinkFile.Name
 
 	if c.Rename != "" {
 		localPath = c.Rename
@@ -51,17 +51,17 @@ func (c *DownloadCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader 
 		return errors.Wrap(err, "finding output file")
 	}
 
-	local, err := urlLoader.Load(metalink.URL{URL: fullPath})
-	if err != nil {
-		return errors.Wrap(err, "loading download destination")
-	}
-
-	progress := pb.New64(int64(file.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
-	if file.Size == 0 {
+	progress := pb.New64(int64(artifactMetalinkFile.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
+	if artifactMetalinkFile.Size == 0 {
 		progress.SetWriter(bytes.NewBuffer(nil))
 	}
 
-	err = transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(file, local, progress)
+	err = downloader.TransferFile(
+		artifactMetalinkFile,
+		file.NewReference(fullPath),
+		progress,
+		verification.NewSimpleVerificationResultReporter(os.Stdout),
+	)
 	if err != nil {
 		return errors.Wrap(err, "failed transferring")
 	}

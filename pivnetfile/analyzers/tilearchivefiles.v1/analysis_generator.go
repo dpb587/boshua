@@ -94,7 +94,7 @@ func (a *analysisGenerator) analyzeFile(records analysis.Writer, parents []strin
 
 	parents = append(parents, path)
 
-	if len(parents) > 1 {
+	if len(parents) > 2 {
 		// TODO configurable depth
 		return nil
 	}

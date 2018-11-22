@@ -8,8 +8,6 @@ import (
 	"strconv"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/file"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
@@ -21,10 +19,7 @@ import (
 type MirrorHandler struct{}
 
 func (c *MirrorHandler) ServeHTTPArtifact(w http.ResponseWriter, r *http.Request, subject artifact.Artifact) {
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
+	urlLoader := urldefaultloader.New()
 	metaurlLoader := metaurl.NewLoaderFactory()
 	metaurlLoader.Add(boshreleasesource.Loader{})
 

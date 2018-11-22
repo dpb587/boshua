@@ -1,31 +1,35 @@
 package metalinkutil
 
-import "fmt"
+import (
+	"fmt"
 
-func ToMetalinkHashType(algorithm string) (string, error) {
+	"github.com/dpb587/metalink"
+)
+
+func ToMetalinkHashType(algorithm string) (metalink.HashType, error) {
 	switch algorithm {
 	case "md5":
-		return "md5", nil
+		return metalink.HashTypeMD5, nil
 	case "sha1":
-		return "sha-1", nil
+		return metalink.HashTypeSHA1, nil
 	case "sha256":
-		return "sha-256", nil
+		return metalink.HashTypeSHA256, nil
 	case "sha512":
-		return "sha-512", nil
+		return metalink.HashTypeSHA512, nil
 	}
 
 	return "", fmt.Errorf("unrecognized hash type: %s", algorithm)
 }
 
-func FromMetalinkHashType(algorithm string) (string, error) {
+func FromMetalinkHashType(algorithm metalink.HashType) (string, error) {
 	switch algorithm {
-	case "md5":
+	case metalink.HashTypeMD5:
 		return "md5", nil
-	case "sha-1":
+	case metalink.HashTypeSHA1:
 		return "sha1", nil
-	case "sha-256":
+	case metalink.HashTypeSHA256:
 		return "sha256", nil
-	case "sha-512":
+	case metalink.HashTypeSHA512:
 		return "sha512", nil
 	}
 

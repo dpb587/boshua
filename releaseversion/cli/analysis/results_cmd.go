@@ -16,5 +16,10 @@ type ResultsCmd struct {
 func (c *ResultsCmd) Execute(args []string) error {
 	c.AppConfig.AppendLoggerFields(logrus.Fields{"cli.command": "release/analysis/results"})
 
-	return c.ResultsCmd.ExecuteAnalysis(c.CmdOpts.AnalysisOpts.Analyzer, c.CmdOpts.getAnalysis, args)
+	return c.ResultsCmd.ExecuteAnalysis(
+		c.Config.GetDownloader,
+		c.CmdOpts.AnalysisOpts.Analyzer,
+		c.CmdOpts.getAnalysis,
+		args,
+	)
 }

@@ -5,25 +5,19 @@ import (
 	"path"
 
 	"github.com/dpb587/metalink"
-	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
+	"github.com/dpb587/metalink/file/url/file"
 	"github.com/dpb587/metalink/verification"
 	"github.com/dpb587/metalink/verification/hash"
 	"github.com/pkg/errors"
-
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 )
 
 func CreateFromFiles(paths ...string) (*metalink.Metalink, error) {
 	meta4 := metalink.Metalink{}
 
-	logger := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(logger)
-
-	urlLoader := urldefaultloader.New(fs)
-
 	for _, meta4FilePath := range paths {
-		file := metalink.File{
+		var err error
+
+		meta4file := metalink.File{
 			Name: path.Base(meta4FilePath),
 			URLs: []metalink.URL{
 				{
@@ -32,21 +26,18 @@ func CreateFromFiles(paths ...string) (*metalink.Metalink, error) {
 			},
 		}
 
-		origin, err := urlLoader.Load(file.URLs[0])
-		if err != nil {
-			return nil, errors.Wrap(err, "Loading origin")
-		}
+		origin := file.NewReference(meta4FilePath)
 
-		file.Size, err = origin.Size()
+		meta4file.Size, err = origin.Size()
 		if err != nil {
 			return nil, errors.Wrap(err, "Loading size")
 		}
 
 		hashmap := map[string]verification.Signer{
-			"sha-512": hash.SHA512Verification,
-			"sha-256": hash.SHA256Verification,
-			"sha-1":   hash.SHA1Verification,
-			"md5":     hash.MD5Verification,
+			"sha-512": hash.SHA512SignerVerifier,
+			"sha-256": hash.SHA256SignerVerifier,
+			"sha-1":   hash.SHA1SignerVerifier,
+			"md5":     hash.MD5SignerVerifier,
 		}
 
 		for _, hashType := range []string{"sha-512", "sha-256", "sha-1", "md5"} {
@@ -60,13 +51,13 @@ func CreateFromFiles(paths ...string) (*metalink.Metalink, error) {
 				return nil, errors.Wrap(err, "Signing hash")
 			}
 
-			err = verification.Apply(&file)
+			err = verification.Apply(&meta4file)
 			if err != nil {
 				return nil, errors.Wrap(err, "Adding verification to file")
 			}
 		}
 
-		meta4.Files = append(meta4.Files, file)
+		meta4.Files = append(meta4.Files, meta4file)
 	}
 
 	return &meta4, nil

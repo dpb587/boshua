@@ -57,7 +57,7 @@ func (f *FilterParams) ChecksumSatisfied(actual []metalink.Hash) bool {
 	}
 
 	for _, hash := range actual {
-		if f.Checksum == fmt.Sprintf("%s:%s", strings.Replace(hash.Type, "-", "", 1), hash.Hash) {
+		if f.Checksum == fmt.Sprintf("%s:%s", strings.Replace(string(hash.Type), "-", "", 1), hash.Hash) { // TODO propertly convert w/o dash
 			return true
 		}
 	}

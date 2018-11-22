@@ -2,8 +2,6 @@ package provider
 
 import (
 	"github.com/pkg/errors"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/metalink/file/url"
 	fileurl "github.com/dpb587/metalink/file/url/file"
@@ -11,6 +9,8 @@ import (
 	httpurl "github.com/dpb587/metalink/file/url/http"
 	s3url "github.com/dpb587/metalink/file/url/s3"
 	"github.com/dpb587/metalink/file/metaurl"
+	"github.com/dpb587/metalink/transfer"
+	"github.com/dpb587/metalink/verification/hash"
 	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
 	urlfilteredloader "github.com/dpb587/boshua/metalink/file/url/filteredloader"
 )
@@ -19,13 +19,13 @@ func (c *Config) SetDownloaderURLFactory(f downloaderurl.Factory) {
 	c.downloaderUrlFactory = f
 }
 
-func (c *Config) GetDownloader() (url.Loader, metaurl.Loader, error) {
+func (c *Config) GetDownloader() (transfer.Transfer, error) {
 	urlLoader := url.NewLoaderFactory()
 
 	for _, cfg := range c.Downloaders.URLHandlers {
 		handler, err := c.downloaderUrlFactory.Create(downloaderurl.ProviderName(cfg.Type), cfg.Name, cfg.Options)
 		if err != nil {
-			return nil, nil, errors.Wrapf(err, "creating url handler (name: %s)", cfg.Name)
+			return nil, errors.Wrapf(err, "creating url handler (name: %s)", cfg.Name)
 		}
 
 		if len(cfg.Include) > 0 || len(cfg.Exclude) > 0 {
@@ -38,9 +38,7 @@ func (c *Config) GetDownloader() (url.Loader, metaurl.Loader, error) {
 	metaurlLoader := metaurl.NewLoaderFactory()
 
 	if !c.Downloaders.DisableDefaultHandlers {
-		logger := boshlog.NewLogger(boshlog.LevelError)
-		fs := boshsys.NewOsFileSystem(logger)
-		file := fileurl.NewLoader(fs)
+		file := fileurl.NewLoader()
 
 		urlLoader.Add(ftpurl.Loader{})
 		urlLoader.Add(httpurl.Loader{})
@@ -53,5 +51,5 @@ func (c *Config) GetDownloader() (url.Loader, metaurl.Loader, error) {
 		metaurlLoader.Add(boshreleasesource.Loader{})
 	}
 
-	return urlLoader, metaurlLoader, nil
+	return transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestSignerVerifier), nil
 }

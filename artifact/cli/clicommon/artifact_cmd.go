@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,8 +14,8 @@ import (
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/util/checksum/algorithm"
 	"github.com/dpb587/metalink"
-	"github.com/dpb587/metalink/transfer"
-	"github.com/dpb587/metalink/verification/hash"
+	"github.com/dpb587/metalink/file/url/file"
+	"github.com/dpb587/metalink/verification"
 	"github.com/pkg/errors"
 )
 
@@ -32,7 +33,7 @@ func (c *ArtifactCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader 
 	artifactMetalinkFile := artifact.MetalinkFile()
 
 	if c.Download != nil {
-		urlLoader, metaurlLoader, err := downloaderGetter()
+		downloader, err := downloaderGetter()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -48,14 +49,14 @@ func (c *ArtifactCmd) ExecuteArtifact(downloaderGetter DownloaderGetter, loader 
 			return errors.Wrap(err, "finding download path")
 		}
 
-		local, err := urlLoader.Load(metalink.URL{URL: targetPath})
-		if err != nil {
-			return errors.Wrap(err, "loading download destination")
-		}
-
 		progress := pb.New64(int64(artifactMetalinkFile.Size)).Set(pb.Bytes, true).SetRefreshRate(time.Second).SetWidth(80)
 
-		return transfer.NewVerifiedTransfer(metaurlLoader, urlLoader, hash.StrongestVerification).TransferFile(artifactMetalinkFile, local, progress)
+		return downloader.TransferFile(
+			artifactMetalinkFile,
+			file.NewReference(targetPath),
+			progress,
+			verification.NewSimpleVerificationResultReporter(os.Stdout),
+		)
 	}
 
 	if c.Format == "json" {
