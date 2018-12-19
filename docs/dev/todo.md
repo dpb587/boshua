@@ -29,3 +29,4 @@ A place to keep track of intentions and goals...
  * nicer wrapper libraries - `r, _ := boshua.Release("openvpn/5.1.0"); p, _ := r.Packages(); return p[0].Name`
  * testing
  * webui
+ * `deployment download-artifacts-cache-something` for filling ~/.bosh/cache with compiled versions?

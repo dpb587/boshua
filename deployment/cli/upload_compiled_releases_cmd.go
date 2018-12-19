@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/workpool"
-	"github.com/dpb587/boshua/cli/args"
+	"github.com/dpb587/boshua/artifact"
+	"github.com/dpb587/boshua/artifact/cli/clicommon"
 	"github.com/dpb587/boshua/config/provider/setter"
 	"github.com/dpb587/boshua/deployment/manifest"
-	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/osversion"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
@@ -20,42 +20,26 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type UseCompiledReleasesCmd struct {
+type UploadCompiledReleasesCmd struct {
 	setter.AppConfig `no-flag:"true"`
 
 	Release     []string `long:"release" description:"Only check the release(s) matching this name (glob-friendly)"`
 	SkipRelease []string `long:"skip-release" description:"Skip the release(s) matching this name (glob-friendly)"`
 
-	LocalOS args.OS `long:"local-os" description:"Explicit local OS and version (used for bootstrap manifests)"`
-
 	Parallel int `long:"parallel" description:"Maximum number of parallel operations" default:"3"`
+
+	clicommon.UploadReleaseCmd
 }
 
-func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
-	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "deployment/use-compiled-releases"})
-
-	localStemcell := osversion.Reference{
-		Name:    c.LocalOS.Name,
-		Version: c.LocalOS.Version,
-	}
-
-	if localStemcell.Version == "" {
-		bytes, err := ioutil.ReadFile("/var/vcap/bosh/etc/stemcell_version")
-		if err != nil {
-			if _, ok := err.(*os.PathError); !ok {
-				log.Fatalf("reading stemcell_version")
-			}
-		}
-
-		localStemcell.Version = string(bytes)
-	}
+func (c *UploadCompiledReleasesCmd) Execute(_ []string) error {
+	c.Config.AppendLoggerFields(logrus.Fields{"cli.command": "deployment/upload-compiled-releases"})
 
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		return errors.Wrap(err, "reading stdin")
 	}
 
-	man, err := manifest.Parse(bytes, localStemcell)
+	man, err := manifest.Parse(bytes, osversion.Reference{})
 	if err != nil {
 		return errors.Wrap(err, "parsing manifest")
 	}
@@ -103,17 +87,20 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 				return
 			}
 
-			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(result.Tarball.Hashes[0]).String()
-			rel.Compiled.URL = result.Tarball.URLs[0].URL
-
-			err = man.UpdateRelease(rel)
+			err = c.UploadReleaseCmd.ExecuteArtifact(
+				c.Config.GetDownloader,
+				func() (artifact.Artifact, error) {
+					return result, nil
+				},
+				clicommon.UploadReleaseOpts{},
+			)
 			if err != nil {
-				log.Fatalf(fmt.Errorf("skipped: error: updating release: %v", err).Error())
+				log.Fatalf(fmt.Errorf("skipped: error: uploading release: %v", err).Error())
 
 				return
 			}
 
-			parallelLog("added compiled release")
+			parallelLog("uploaded compiled release")
 		})
 	}
 
@@ -122,13 +109,6 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 		log.Fatalf(fmt.Errorf("parallelizing: %v", err).Error())
 	}
 	pool.Work()
-
-	bytes, err = man.Bytes()
-	if err != nil {
-		log.Fatalf(fmt.Errorf("getting bytes: %v", err).Error())
-	}
-
-	fmt.Printf("%s\n", bytes)
 
 	return nil
 }
