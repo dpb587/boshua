@@ -5,8 +5,6 @@ import (
 	"io"
 
 	"github.com/cheggaaa/pb"
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/dpb587/boshua/metalink/file"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/metalink"
@@ -16,10 +14,7 @@ import (
 )
 
 func StreamFile(meta4File metalink.File, w io.WriteCloser) error {
-	bl := boshlog.NewLogger(boshlog.LevelError)
-	fs := boshsys.NewOsFileSystem(bl)
-
-	urlLoader := urldefaultloader.New(fs)
+	urlLoader := urldefaultloader.New()
 	metaurlLoader := metaurl.NewLoaderFactory()
 	metaurlLoader.Add(boshreleasesource.Loader{})
 
