@@ -82,6 +82,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 			Datastore: i.name,
 			Name:      f.Name,
 			Version:   f.Version,
+			Labels:    i.config.Labels,
 			SourceTarball: metalink.File{
 				Name:    fmt.Sprintf("%s-%s.tgz", f.Name, f.Version),
 				Version: f.Version,
