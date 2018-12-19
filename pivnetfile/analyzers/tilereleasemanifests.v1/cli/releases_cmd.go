@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1/formatter"
 )
 
-type ReleasesCmd struct {}
+type ReleasesCmd struct{}
 
 func (c *ReleasesCmd) Execute(_ []string) error {
 	f := formatter.Releases{}

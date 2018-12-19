@@ -2,12 +2,12 @@ package cli
 
 import (
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
-	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/config/provider/setter"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 )
 
 type DownloadCmd struct {
-	setter.AppConfig`no-flag:"true"`
+	setter.AppConfig      `no-flag:"true"`
 	clicommon.DownloadCmd `no-flag:"true"`
 
 	Args DownloadCmdArgs `positional-args:"true" required:"true"`

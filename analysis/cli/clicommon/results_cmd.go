@@ -3,10 +3,10 @@ package clicommon
 import (
 	"compress/gzip"
 	"io"
-	"os"
-	"os/exec"
 	"io/ioutil"
 	"log"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/cheggaaa/pb"

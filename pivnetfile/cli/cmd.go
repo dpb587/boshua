@@ -16,12 +16,12 @@ type Cmd struct {
 	setter.AppConfig `no-flag:"true"`
 	*opts.Opts
 
-	AnalysisCmd    *analysis.Cmd    `command:"analysis" description:"For analyzing the pivnet file" subcommands-optional:"true"`
-	DatastoreCmd   *datastore.Cmd   `command:"datastore" description:"For interacting with pivnet file datastores"`
+	AnalysisCmd  *analysis.Cmd  `command:"analysis" description:"For analyzing the pivnet file" subcommands-optional:"true"`
+	DatastoreCmd *datastore.Cmd `command:"datastore" description:"For interacting with pivnet file datastores"`
 
-	AnalyzersCmd     AnalyzersCmd     `command:"analyzers" description:"For showing the supported analyzers"`
-	ArtifactCmd      ArtifactCmd      `command:"artifact" description:"For showing the pivnet file artifact"`
-	DownloadCmd      DownloadCmd      `command:"download" description:"For downloading the pivnet file locally"`
+	AnalyzersCmd AnalyzersCmd `command:"analyzers" description:"For showing the supported analyzers"`
+	ArtifactCmd  ArtifactCmd  `command:"artifact" description:"For showing the pivnet file artifact"`
+	DownloadCmd  DownloadCmd  `command:"download" description:"For downloading the pivnet file locally"`
 }
 
 func (c *Cmd) Execute(extra []string) error {

@@ -1,18 +1,18 @@
 package provider
 
 import (
-	"github.com/pkg/errors"
+	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
+	urlfilteredloader "github.com/dpb587/boshua/metalink/file/url/filteredloader"
+	"github.com/dpb587/metalink/file/metaurl"
 	"github.com/dpb587/metalink/file/url"
 	fileurl "github.com/dpb587/metalink/file/url/file"
 	ftpurl "github.com/dpb587/metalink/file/url/ftp"
 	httpurl "github.com/dpb587/metalink/file/url/http"
 	s3url "github.com/dpb587/metalink/file/url/s3"
-	"github.com/dpb587/metalink/file/metaurl"
 	"github.com/dpb587/metalink/transfer"
 	"github.com/dpb587/metalink/verification/hash"
-	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
-	urlfilteredloader "github.com/dpb587/boshua/metalink/file/url/filteredloader"
+	"github.com/pkg/errors"
 )
 
 func (c *Config) SetDownloaderURLFactory(f downloaderurl.Factory) {

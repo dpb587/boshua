@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/pivotal-cf/go-pivnet"
+	"github.com/pkg/errors"
 )
 
 type reader struct {

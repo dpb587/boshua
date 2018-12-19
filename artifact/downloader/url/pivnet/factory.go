@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
-	"github.com/dpb587/metalink/file/url"
 	"github.com/dpb587/boshua/metalink/file/url/pivnet"
 	"github.com/dpb587/boshua/util/configdef"
+	"github.com/dpb587/metalink/file/url"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

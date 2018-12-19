@@ -9,7 +9,7 @@ import (
 
 	"github.com/cheggaaa/pb"
 	"github.com/dpb587/boshua/artifact"
-  "github.com/dpb587/metalink/file/url/file"
+	"github.com/dpb587/metalink/file/url/file"
 	"github.com/dpb587/metalink/verification"
 	"github.com/pkg/errors"
 )

@@ -79,7 +79,7 @@ func (a *analysisGenerator) Analyze(records analysis.Writer) error {
 		filestat.Checksums = checksums.ImmutableChecksums()
 
 		err = records.Write(result.Record{
-			Result:   filestat,
+			Result: filestat,
 		})
 		if err != nil {
 			return errors.Wrap(err, "writing result")

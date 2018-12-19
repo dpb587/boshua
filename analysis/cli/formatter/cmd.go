@@ -1,13 +1,13 @@
 package formatter
 
 import (
+	tilearchivefilesv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilearchivefiles.v1/cli"
+	tilereleasemanifestsv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1/cli"
 	releaseartifactfilesv1 "github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1/cli"
 	releasemanifestsv1 "github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1/cli"
 	stemcellimagefilesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellimagefiles.v1/cli"
 	stemcellmanifestv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1/cli"
 	stemcellpackagesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1/cli"
-	tilearchivefilesv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilearchivefiles.v1/cli"
-	tilereleasemanifestsv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1/cli"
 )
 
 type Cmd struct {

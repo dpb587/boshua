@@ -11,7 +11,6 @@ import (
 
 	"github.com/cheggaaa/pb"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
-	"github.com/dpb587/metalink/template"
 	"github.com/dpb587/boshua/osversion"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
@@ -19,6 +18,7 @@ import (
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
+	"github.com/dpb587/metalink/template"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

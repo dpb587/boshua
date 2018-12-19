@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/analysis"
+	tilearchivefilesv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilearchivefiles.v1"
+	tilereleasemanifestsv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1"
 	releaseartifactfilesv1 "github.com/dpb587/boshua/releaseversion/analyzers/releaseartifactfiles.v1"
 	releasemanifestsv1 "github.com/dpb587/boshua/releaseversion/analyzers/releasemanifests.v1"
 	stemcellimagefilesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellimagefiles.v1"
 	stemcellmanifestv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellmanifest.v1"
 	stemcellpackagesv1 "github.com/dpb587/boshua/stemcellversion/analyzers/stemcellpackages.v1"
-	tilereleasemanifestsv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilereleasemanifests.v1"
-	tilearchivefilesv1 "github.com/dpb587/boshua/pivnetfile/analyzers/tilearchivefiles.v1"
 	"github.com/dpb587/boshua/task"
 )
 

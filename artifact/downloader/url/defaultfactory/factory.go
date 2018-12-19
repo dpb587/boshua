@@ -2,9 +2,9 @@ package factory
 
 import (
 	"github.com/dpb587/boshua/artifact/downloader/url"
-	"github.com/dpb587/boshua/artifact/downloader/url/s3"
-	"github.com/dpb587/boshua/artifact/downloader/url/pivnet"
 	"github.com/dpb587/boshua/artifact/downloader/url/factory"
+	"github.com/dpb587/boshua/artifact/downloader/url/pivnet"
+	"github.com/dpb587/boshua/artifact/downloader/url/s3"
 	"github.com/sirupsen/logrus"
 )
 

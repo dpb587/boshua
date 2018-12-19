@@ -2,12 +2,12 @@ package cli
 
 import (
 	"github.com/dpb587/boshua/artifact/cli/clicommon"
-	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/config/provider/setter"
+	"github.com/dpb587/boshua/metalink/metalinkutil"
 )
 
 type UploadReleaseCmd struct {
-	setter.AppConfig`no-flag:"true"`
+	setter.AppConfig `no-flag:"true"`
 	clicommon.UploadReleaseCmd
 
 	Name     string `long:"name" description:"Release name"`

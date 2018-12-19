@@ -27,9 +27,9 @@ func (c *Cmd) Execute(extra []string) error {
 }
 
 type CmdOpts struct {
-	AppOpts      *cmdopts.Opts `no-flag:"true"`
-	PivnetFileOpts  *pivnetfileopts.Opts
-	AnalysisOpts *opts.Opts
+	AppOpts        *cmdopts.Opts `no-flag:"true"`
+	PivnetFileOpts *pivnetfileopts.Opts
+	AnalysisOpts   *opts.Opts
 }
 
 func (o *CmdOpts) getAnalysis() (analysis.Artifact, error) {

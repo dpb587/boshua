@@ -10,10 +10,10 @@ import (
 	"github.com/dpb587/boshua/pivnetfile"
 	"github.com/dpb587/boshua/pivnetfile/datastore"
 	"github.com/dpb587/metalink"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/logshim"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type index struct {
@@ -39,9 +39,9 @@ func New(name string, config Config, logger logrus.FieldLogger) datastore.Index 
 	pivnetLogger := logshim.NewLogShim(stdoutLogger, stderrLogger, verbose)
 
 	return &index{
-		name:       name,
-		logger:     logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
-		client:     pivnet.NewClient(clientConfig, pivnetLogger),
+		name:   name,
+		logger: logger.WithField("build.package", reflect.TypeOf(index{}).PkgPath()),
+		client: pivnet.NewClient(clientConfig, pivnetLogger),
 	}
 }
 
@@ -76,7 +76,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]pivnetfile.Artifact, e
 				}
 
 				if file.MD5 != "" {
-					metalinkFile .Hashes = append(metalinkFile.Hashes, metalink.Hash{
+					metalinkFile.Hashes = append(metalinkFile.Hashes, metalink.Hash{
 						Type: "md5",
 						Hash: file.MD5,
 					})

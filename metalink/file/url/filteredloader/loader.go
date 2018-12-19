@@ -9,14 +9,14 @@ import (
 )
 
 type filteredLoader struct {
-	loader url.Loader
+	loader  url.Loader
 	include []*regexp.Regexp
 	exclude []*regexp.Regexp
 }
 
 func NewLoader(loader url.Loader, include []*regexp.Regexp, exclude []*regexp.Regexp) url.Loader {
 	return &filteredLoader{
-		loader: loader,
+		loader:  loader,
 		include: include,
 		exclude: exclude,
 	}

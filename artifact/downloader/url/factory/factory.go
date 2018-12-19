@@ -3,8 +3,8 @@ package factory
 import (
 	"fmt"
 
-	fileurl "github.com/dpb587/metalink/file/url"
 	"github.com/dpb587/boshua/artifact/downloader/url"
+	fileurl "github.com/dpb587/metalink/file/url"
 )
 
 type Factory struct {

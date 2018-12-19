@@ -9,9 +9,9 @@ import (
 type Artifact struct {
 	Datastore string `json:"-"`
 
-	ProductSlug    string `json:"product_slug"`
-	ReleaseID      int    `json:"release_id"`
-	FileID         int    `json:"file_id"`
+	ProductSlug string `json:"product_slug"`
+	ReleaseID   int    `json:"release_id"`
+	FileID      int    `json:"file_id"`
 
 	ReleaseVersion string        `json:"release_version"`
 	File           metalink.File `json:"file"`

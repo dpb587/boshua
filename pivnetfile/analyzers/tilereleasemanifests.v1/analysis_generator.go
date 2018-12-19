@@ -1,8 +1,8 @@
 package analyzer
 
 import (
-	"archive/zip"
 	"archive/tar"
+	"archive/zip"
 	"compress/gzip"
 	"fmt"
 	"io"

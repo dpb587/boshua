@@ -13,10 +13,10 @@ import (
 	"github.com/dpb587/boshua/analysis"
 	"github.com/dpb587/boshua/analysis/datastore"
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
-	"github.com/dpb587/metalink/template"
 	"github.com/dpb587/boshua/pivnetfile"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
+	"github.com/dpb587/metalink/template"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )

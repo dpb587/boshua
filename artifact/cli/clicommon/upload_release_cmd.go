@@ -2,18 +2,18 @@ package clicommon
 
 import (
 	"fmt"
-	"path/filepath"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
 	artifactpkg "github.com/dpb587/boshua/artifact"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
+	"github.com/pkg/errors"
 )
 
 type UploadReleaseCmd struct {

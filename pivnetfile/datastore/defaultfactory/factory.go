@@ -2,8 +2,8 @@ package factory
 
 import (
 	"github.com/dpb587/boshua/pivnetfile/datastore"
-	"github.com/dpb587/boshua/pivnetfile/datastore/pivnet"
 	"github.com/dpb587/boshua/pivnetfile/datastore/factory"
+	"github.com/dpb587/boshua/pivnetfile/datastore/pivnet"
 	"github.com/sirupsen/logrus"
 )
 

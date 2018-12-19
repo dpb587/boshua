@@ -4,12 +4,12 @@ import (
 	"os"
 
 	analysisdatastore "github.com/dpb587/boshua/analysis/datastore"
+	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
 	"github.com/dpb587/boshua/config"
 	pivnetfiledatastore "github.com/dpb587/boshua/pivnetfile/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
 	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	stemcellversiondatastore "github.com/dpb587/boshua/stemcellversion/datastore"
-	downloaderurl "github.com/dpb587/boshua/artifact/downloader/url"
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -31,7 +31,6 @@ type Config struct {
 
 	pivnetFileFactory pivnetfiledatastore.Factory
 	pivnetFileIndices map[string]pivnetfiledatastore.Index
-
 
 	analysisFactory analysisdatastore.Factory
 	analysisIndices map[string]analysisdatastore.Index

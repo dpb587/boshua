@@ -8,7 +8,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type Releases struct {}
+type Releases struct{}
 
 func (f Releases) Format(writer io.Writer, reader io.Reader) error {
 	return result.NewProcessor(reader, func(record result.Record) error {

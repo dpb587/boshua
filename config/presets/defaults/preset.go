@@ -4,14 +4,14 @@ import (
 	"os"
 
 	analysisfactory "github.com/dpb587/boshua/analysis/datastore/defaultfactory"
+	downloaderurlfactory "github.com/dpb587/boshua/artifact/downloader/url/defaultfactory"
 	"github.com/dpb587/boshua/config/loader"
 	"github.com/dpb587/boshua/config/provider"
+	pivnetfilefactory "github.com/dpb587/boshua/pivnetfile/datastore/defaultfactory"
 	compilationfactory "github.com/dpb587/boshua/releaseversion/compilation/datastore/defaultfactory"
 	releaseversionfactory "github.com/dpb587/boshua/releaseversion/datastore/defaultfactory"
-	pivnetfilefactory "github.com/dpb587/boshua/pivnetfile/datastore/defaultfactory"
 	stemcellversionfactory "github.com/dpb587/boshua/stemcellversion/datastore/defaultfactory"
 	schedulerfactory "github.com/dpb587/boshua/task/scheduler/factory"
-	downloaderurlfactory "github.com/dpb587/boshua/artifact/downloader/url/defaultfactory"
 )
 
 func NewConfig() (*provider.Config, error) {
