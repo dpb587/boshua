@@ -13,9 +13,7 @@ import (
 	"github.com/dpb587/boshua/deployment/manifest"
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/osversion"
-	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	compilationdatastore "github.com/dpb587/boshua/releaseversion/compilation/datastore"
-	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -73,24 +71,7 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 		rel := requirements[relIdx]
 
 		parallelize = append(parallelize, func() {
-			f := compilationdatastore.FilterParams{
-				Release: releaseversiondatastore.FilterParams{
-					NameExpected:     true,
-					Name:             rel.Name,
-					VersionExpected:  true,
-					Version:          rel.Version,
-					ChecksumExpected: true,
-					Checksum:         fmt.Sprintf("sha1:%s", rel.Source.Sha1),
-					URIExpected:      true,
-					URI:              rel.Source.URL,
-				},
-				OS: osversiondatastore.FilterParams{
-					NameExpected:    true,
-					Name:            rel.Stemcell.OS,
-					VersionExpected: true,
-					Version:         rel.Stemcell.Version,
-				},
-			}
+			f := rel.FilterParams()
 
 			parallelLog := func(msg string) {
 				fmt.Fprintf(os.Stderr, fmt.Sprintf("%s [%s/%s %s/%s] %s\n", time.Now().Format("15:04:05"), rel.Stemcell.OS, rel.Stemcell.Version, rel.Name, rel.Version, msg))
