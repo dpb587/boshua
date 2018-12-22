@@ -67,14 +67,14 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 
 	requirements := man.ReleaseRequirements()
 
-	for relIdx := range requirements {
-		rel := requirements[relIdx]
+	for reqIdx := range requirements {
+		req := requirements[reqIdx]
 
 		parallelize = append(parallelize, func() {
-			f := rel.FilterParams()
+			f := req.FilterParams()
 
 			parallelLog := func(msg string) {
-				fmt.Fprintf(os.Stderr, fmt.Sprintf("%s [%s/%s %s/%s] %s\n", time.Now().Format("15:04:05"), rel.Stemcell.OS, rel.Stemcell.Version, rel.Name, rel.Version, msg))
+				fmt.Fprintf(os.Stderr, fmt.Sprintf("%s [%s/%s %s/%s] %s\n", time.Now().Format("15:04:05"), req.Stemcell.OS, req.Stemcell.Version, req.Name, req.Version, msg))
 			}
 
 			result, err := compilationdatastore.GetCompilationArtifact(index, f)
@@ -84,10 +84,10 @@ func (c *UseCompiledReleasesCmd) Execute(_ []string) error {
 				return
 			}
 
-			rel.Compiled.Sha1 = metalinkutil.HashToChecksum(result.Tarball.Hashes[0]).String()
-			rel.Compiled.URL = result.Tarball.URLs[0].URL
+			req.Compiled.Sha1 = metalinkutil.HashToChecksum(result.Tarball.Hashes[0]).String()
+			req.Compiled.URL = result.Tarball.URLs[0].URL
 
-			err = man.UpdateRelease(rel)
+			err = man.UpdateRelease(req)
 			if err != nil {
 				log.Fatalf(fmt.Errorf("skipped: error: updating release: %v", err).Error())
 

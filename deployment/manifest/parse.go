@@ -26,6 +26,7 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 	}
 
 	var releaseRequirements []ReleasePatch
+	var stemcellRequirements []StemcellPatch
 
 	var stemcell parseManifestStemcell
 
@@ -50,6 +51,17 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 			return &Manifest{parsed: parsedRaw}, nil
 		}
 	}
+
+	// hacky emulation of release parsing
+	// TODO support multiple stemcells
+	stemcellRequirements = append(
+		stemcellRequirements,
+		StemcellPatch{
+			OS:      stemcell.OS,
+			Name:    stemcell.Name,
+			Version: stemcell.Version,
+		},
+	)
 
 	var cloudProviderRelease *parseManifestReleaseRef
 	var cloudProviderReleaseInstalled bool
@@ -101,7 +113,8 @@ func Parse(manifestBytes []byte, localStemcell osversion.Reference) (*Manifest, 
 	}
 
 	return &Manifest{
-		parsed:              parsedRaw,
-		releaseRequirements: releaseRequirements,
+		parsed:               parsedRaw,
+		releaseRequirements:  releaseRequirements,
+		stemcellRequirements: stemcellRequirements,
 	}, nil
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/dpb587/boshua/util/semverutil"
 )
 
+// TODO should not be panicing
 func FilterParamsFromSlug(slug string) FilterParams {
 	f := FilterParams{}
 
