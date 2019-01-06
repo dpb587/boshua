@@ -58,7 +58,8 @@ func AppendAnalysisStore(tt *task.Task, analysisRef analysis.Reference) *task.Ta
 				),
 				"compilation",
 			),
-			fmt.Sprintf("--os=%s/%s", analysisSubjectRef.OSVersion.Name, analysisSubjectRef.OSVersion.Version),
+			fmt.Sprintf("--stemcell-os=%s", analysisSubjectRef.OSVersion.Name),
+			fmt.Sprintf("--stemcell-version=%s", analysisSubjectRef.OSVersion.Version),
 		)
 	default:
 		panic(errors.New("unsupported analysis subject")) // TODO panic?

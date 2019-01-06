@@ -20,7 +20,8 @@ func AppendCompilationStore(tt *task.Task, release releaseversion.Artifact, stem
 				releaseoptsutil.ArgsFromFilterParams(releaseversiondatastore.FilterParamsFromArtifact(release))...,
 			),
 			"compilation",
-			fmt.Sprintf("--os=%s/%s", stemcell.OS, stemcell.Version),
+			fmt.Sprintf("--stemcell-os=%s", stemcell.OS),
+			fmt.Sprintf("--stemcell-version=%s", stemcell.Version),
 			"datastore",
 			fmt.Sprintf("--datastore=%s", datastore), // TODO dynamic service name to avoid passing datastore?
 			"store",
