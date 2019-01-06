@@ -18,7 +18,6 @@ import (
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/metalink"
 	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
-	fileurl "github.com/dpb587/metalink/file/url/file"
 	"github.com/dpb587/metalink/template"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -129,7 +128,10 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 
 	file := artifactMeta4.Files[0]
 
-	local := fileurl.NewReference(file.URLs[0].URL)
+	local, err := urlLoader.Load(file.URLs[0])
+	if err != nil {
+		return errors.Wrap(err, "parsing source URL")
+	}
 
 	mirroredFile := metalink.File{
 		Name:   fmt.Sprintf("%s.jsonl", ref.Analyzer),
@@ -152,6 +154,10 @@ func (i *index) StoreAnalysisResult(ref analysis.Reference, artifactMeta4 metali
 			// TODO unset/revert after?
 			os.Setenv(k, v)
 		}
+
+		// TODO recreating this after os.Setenv because it currently reads them at that time; should find better ways to pass
+		// these options; probably similar to dpb587/metalink-repository-resource
+		urlLoader = urldefaultloader.New()
 
 		remote, err := urlLoader.Load(metalink.URL{URL: mirrorWriterURI})
 		if err != nil {

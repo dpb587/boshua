@@ -136,7 +136,7 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 
 	file := artifact.MetalinkFile()
 
-	local, err := urlLoader.Load(metalink.URL{URL: file.URLs[0].URL})
+	local, err := urlLoader.Load(file.URLs[0])
 	if err != nil {
 		return errors.Wrap(err, "parsing origin destination")
 	}
@@ -163,6 +163,10 @@ func (i *index) StoreCompilationArtifact(artifact compilation.Artifact) error {
 			// TODO unset/revert after?
 			os.Setenv(k, v)
 		}
+
+		// TODO recreating this after os.Setenv because it currently reads them at that time; should find better ways to pass
+		// these options; probably similar to dpb587/metalink-repository-resource
+		urlLoader = urldefaultloader.New()
 
 		remote, err := urlLoader.Load(metalink.URL{URL: mirrorWriterURI})
 		if err != nil {

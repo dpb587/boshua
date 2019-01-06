@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/dpb587/metalink"
-	"github.com/dpb587/metalink/file/url/file"
+	urldefaultloader "github.com/dpb587/metalink/file/url/defaultloader"
 	"github.com/dpb587/metalink/verification"
 	"github.com/dpb587/metalink/verification/hash"
 	"github.com/pkg/errors"
@@ -13,6 +13,8 @@ import (
 
 func CreateFromFiles(paths ...string) (*metalink.Metalink, error) {
 	meta4 := metalink.Metalink{}
+
+	urlLoader := urldefaultloader.New()
 
 	for _, meta4FilePath := range paths {
 		var err error
@@ -26,7 +28,10 @@ func CreateFromFiles(paths ...string) (*metalink.Metalink, error) {
 			},
 		}
 
-		origin := file.NewReference(meta4FilePath)
+		origin, err := urlLoader.Load(meta4file.URLs[0])
+		if err != nil {
+			return nil, errors.Wrap(err, "parsing origin destination")
+		}
 
 		meta4file.Size, err = origin.Size()
 		if err != nil {
