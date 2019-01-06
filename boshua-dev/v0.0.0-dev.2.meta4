@@ -1,0 +1,85 @@
+<metalink xmlns="urn:ietf:params:xml:ns:metalink">
+  <file name="boshua-0.0.0-dev.2-darwin-amd64">
+    <hash type="sha-512">59a8dec1b1cddc303ddced4f6a8d6ce45ab651d73119e36dec80cca6161d8af75e70dc67e78543ca61fc318a8ca72e234ff2bc5190f2d7e8230c11684ac5b76e</hash>
+    <hash type="sha-256">1d4679c41b98c63a12aaa68f6b934a59c1a5beda94daf8099d323ef0491f3e03</hash>
+    <hash type="sha-1">c6b5bb3758552f30eaff944dea272ce4ab2c430c</hash>
+    <hash type="md5">d92f5c8e449c4519cfac6c75a263deb7</hash>
+    <size>17633640</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/boshua-0.0.0-dev.2-darwin-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="boshua-0.0.0-dev.2-linux-amd64">
+    <hash type="sha-512">14df8bc2ab694b3825ce734cb95ab2f07348c6dcb06861d23a667d3305a225b1196c367e9aeb7b24b60d9567df7deb558278f542245a0c55dff85ea4ee7e0ac5</hash>
+    <hash type="sha-256">0eefa059da31d47782a63853671ffd68aed204919b0f30febd631f17d7ef6842</hash>
+    <hash type="sha-1">3f4dda5f45d76193b378eb6ea292e66a0f5d7fb7</hash>
+    <hash type="md5">80b2b6af31b126214c41c3d3895dfa25</hash>
+    <size>17909721</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/boshua-0.0.0-dev.2-linux-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="boshua-0.0.0-dev.2-windows-amd64.exe">
+    <hash type="sha-512">1d6b9e1488a5fa55afd27dfeae771cee0fd34e0a40f9b3a430cde1f7604f7d03e57c7708a0e67f7897c0e2e73d87160efc48736a6adec5698678b62065a67821</hash>
+    <hash type="sha-256">1463aa48e8f9768e3c1e93930022c6f119528c3631b20b819c6d2b9827a851eb</hash>
+    <hash type="sha-1">569b3454230040126ef435976579d30bb5512ece</hash>
+    <hash type="md5">a85f7f51962057e56f7b00ed53d2dee2</hash>
+    <size>17753088</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/boshua-0.0.0-dev.2-windows-amd64.exe</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="staticreleaselookup-0.0.0-dev.2-darwin-amd64">
+    <hash type="sha-512">2ca148852df55b87491647932faf139e112185c091d5587c836156d82c63e8b051fa8520dac09ffb7ed8bac74a64599ce71f1f45b887836d50900c2c0654a2e7</hash>
+    <hash type="sha-256">a998bd5fc1476e5eb85f650d2abb31bcc66a656748b9cf3b5fcb83e5e9641954</hash>
+    <hash type="sha-1">de3d782a21a912fd11698cd90f0331a9ef1c80a6</hash>
+    <hash type="md5">791cd18f3108c9f4c2c415906d85ed68</hash>
+    <size>13764152</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/staticreleaselookup-0.0.0-dev.2-darwin-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="staticreleaselookup-0.0.0-dev.2-linux-amd64">
+    <hash type="sha-512">f36ff321327615e42d6c8e8364b2ad32ae96971019502c58436828f975c02b68e7833f4b4a00b765913a27d7b6389a2965e4027bbff2bcd4be31c3494db40fb8</hash>
+    <hash type="sha-256">d6eaddb84285cf31bc9e51f9ac43790bf919d5b1c0a2168f118bbc73d303724a</hash>
+    <hash type="sha-1">695d314bcb400565e5ce9993c4766962eec5ba9b</hash>
+    <hash type="md5">7b29fbf4f03092d126c9c159637ceae9</hash>
+    <size>14001867</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/staticreleaselookup-0.0.0-dev.2-linux-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="staticreleaselookup-0.0.0-dev.2-windows-amd64.exe">
+    <hash type="sha-512">5f568f7351f68233f5e29ffa6345054297d7b6f5cab93547806f509711ce5b5bba1275dfa6737445fd8d715aeda013a9ba5c0c2ed700f0934d34732d49e16090</hash>
+    <hash type="sha-256">e90a28f59a4033cafe57ac099b1aa2e9c129a5df9031b16bc9166e812aacac5b</hash>
+    <hash type="sha-1">214c976a1fe9970d398b590529ac2f3e1337f2f4</hash>
+    <hash type="md5">b8606cbdfee20aee52c0b0043b3f3cda</hash>
+    <size>13787648</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/staticreleaselookup-0.0.0-dev.2-windows-amd64.exe</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="stemcellpackagediff-0.0.0-dev.2-darwin-amd64">
+    <hash type="sha-512">d0237dc477542a7e4f33262cb43d9fab8e2102de680d596c3c75294a669695859fa538ece4cc195a6e7f79c3a24064828b25522a2dd8fd4d8b89a733a1a3bc8d</hash>
+    <hash type="sha-256">3edda85a4d7393db60bfe333c3d6dc8fc0ae8dc73763181f6083c6177ba728ee</hash>
+    <hash type="sha-1">1111388dd307fbe196d667d0f76b987a5da63ac9</hash>
+    <hash type="md5">144b9806421d4497446c4657a58e28b6</hash>
+    <size>12223080</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/stemcellpackagediff-0.0.0-dev.2-darwin-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="stemcellpackagediff-0.0.0-dev.2-linux-amd64">
+    <hash type="sha-512">ff22619ec5393bf5ad693fa4424f3de99df894956b40a52b9a84b774a8b59b6cf1458929043cd645eb944bdb1d527892cb1cf130ea764e3ee9a83fc39d8bfcd7</hash>
+    <hash type="sha-256">f434e1d4624886b892f13ef89df18507bb281d6ce630abc389549c1c9b200444</hash>
+    <hash type="sha-1">0a75dad2a1a8cdfdb3aff1cabbf3d46621b85449</hash>
+    <hash type="md5">f5ce13c45c2a4f889d325c43ca7d25d3</hash>
+    <size>12408343</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/stemcellpackagediff-0.0.0-dev.2-linux-amd64</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <file name="stemcellpackagediff-0.0.0-dev.2-windows-amd64.exe">
+    <hash type="sha-512">310412fa49987d61d57264e83379b7e2de12c9e38a828c88a1ae0bf9159ba5ea1f1b5cef29ceec82251b79c011bb456be878965a08d5f6b6f581139ab01373d5</hash>
+    <hash type="sha-256">fcd0f4f1b6f9163e81daefcd432f90a0312dfdb9132b15ca77938c94b6a77901</hash>
+    <hash type="sha-1">2292a38dc6f90f698e509e1f138d1882fc787080</hash>
+    <hash type="md5">a8a64ae703585fc2e5a06041a6308bde</hash>
+    <size>12260864</size>
+    <url>https://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v0.0.0-dev.2/stemcellpackagediff-0.0.0-dev.2-windows-amd64.exe</url>
+    <version>0.0.0-dev.2</version>
+  </file>
+  <generator>metalink-repository-resource/0.0.0</generator>
+  <published>2019-01-06T23:13:03.645466252Z</published>
+</metalink>
