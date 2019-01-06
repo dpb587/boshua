@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,16 +40,21 @@ func (o Reference) Size() (uint64, error) {
 }
 
 func (o Reference) Reader() (io.ReadCloser, error) {
-	schemeSplit := strings.SplitN(o.url, "://", 2)
-
-	uriSplit := strings.SplitN(schemeSplit[1], "//", 2)
-
-	if !strings.HasPrefix(schemeSplit[0], "git+") {
-		schemeSplit[0] = fmt.Sprintf("git+%s", schemeSplit[0]) // TODO normalize repository uris
-		// return nil, fmt.Errorf("unsupported scheme: %s", schemeSplit[0])
+	uri, err := url.Parse(o.url)
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing url")
 	}
 
-	repoURI := fmt.Sprintf("%s://%s", schemeSplit[0][4:], uriSplit[0])
+	scheme := uri.Scheme
+	pathSplit := strings.SplitN(uri.Path, "//", 2)
+
+	if !strings.HasPrefix(scheme, "git+") {
+		scheme = fmt.Sprintf("git+%s", scheme) // TODO normalize repository uris
+		// return nil, fmt.Errorf("unsupported scheme: %s", scheme)
+	}
+
+	// TODO port missing
+	repoURI := fmt.Sprintf("%s://%s%s", scheme[4:], uri.Hostname(), pathSplit[0])
 
 	tmpdir, err := ioutil.TempDir("", "boshrelease-")
 	if err != nil {
@@ -73,13 +79,71 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 		return nil, errors.Wrap(err, "creating tempfile")
 	}
 
-	{ // build release
-		cmd := exec.Command("bosh", "create-release", fmt.Sprintf("--dir=%s", tmpdir), fmt.Sprintf("--tarball=%s", tmptar.Name()), fmt.Sprintf("%s/%s", tmpdir, uriSplit[1]))
+	if uri.Query().Get("dev_release") == "true" {
+		checkout := uri.Query().Get("checkout")
+		devName := uri.Query().Get("name")
+		devVersion := uri.Query().Get("version")
+
+		if checkout != "" {
+			// checkout-specific
+			cmd := exec.Command(
+				"git",
+				fmt.Sprintf("--git-dir=%s/.git", tmpdir),
+				fmt.Sprintf("--git-dir=%s", tmpdir),
+				"checkout",
+				checkout,
+			)
+			stderr := bytes.NewBuffer(nil)
+			cmd.Stderr = stderr
+
+			err := cmd.Run()
+			if err != nil {
+				os.RemoveAll(tmptar.Name()) // TODO ignored err
+
+				return nil, fmt.Errorf("checkout out %s: %v: %s", checkout, err, stderr.Bytes())
+			}
+		}
+
+		version := "--timestamp-version"
+		if devVersion != "" {
+			version = fmt.Sprintf("--version=%s", devVersion)
+		}
+
+		// build release
+		cmd := exec.Command(
+			"bosh",
+			"create-release",
+			fmt.Sprintf("--dir=%s", tmpdir),
+			fmt.Sprintf("--tarball=%s", tmptar.Name()),
+			"--force",
+			fmt.Sprintf("--name=%s", devName),
+			version,
+		)
 		stderr := bytes.NewBuffer(nil)
 		cmd.Stderr = stderr
 
 		err := cmd.Run()
 		if err != nil {
+			os.RemoveAll(tmptar.Name()) // TODO ignored err
+
+			return nil, fmt.Errorf("creating release: %v: %s", err, stderr.Bytes())
+		}
+	} else {
+		// build release
+		cmd := exec.Command(
+			"bosh",
+			"create-release",
+			fmt.Sprintf("--dir=%s", tmpdir),
+			fmt.Sprintf("--tarball=%s", tmptar.Name()),
+			fmt.Sprintf("%s/%s", tmpdir, pathSplit[1]),
+		)
+		stderr := bytes.NewBuffer(nil)
+		cmd.Stderr = stderr
+
+		err := cmd.Run()
+		if err != nil {
+			os.RemoveAll(tmptar.Name()) // TODO ignored err
+
 			return nil, fmt.Errorf("creating release: %v: %s", err, stderr.Bytes())
 		}
 	}

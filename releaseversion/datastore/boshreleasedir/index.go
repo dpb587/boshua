@@ -3,9 +3,11 @@ package boshreleasedir
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
@@ -125,6 +127,11 @@ func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) 
 		}
 	}
 
+	if len(results) == 0 && i.config.DevReleases {
+		// not really practical to support enumerating every commit of the repo as a version
+		results = i.attemptDevReleaseFallback(f)
+	}
+
 	return inmemory.LimitArtifacts(results, l)
 }
 
@@ -154,4 +161,43 @@ func (i *index) GetLabels() ([]string, error) {
 func (i *index) FlushCache() error {
 	// TODO defer reload?
 	return i.repository.ForceReload()
+}
+
+var devReleaseVersionRegex = regexp.MustCompile(`[^\-]+-.*commit\.([a-f0-9]{7,})`)
+
+func (i *index) attemptDevReleaseFallback(f datastore.FilterParams) []releaseversion.Artifact {
+	if !f.NameExpected || !f.VersionExpected {
+		// name, version are expected, required
+		return nil
+	}
+
+	match := devReleaseVersionRegex.FindStringSubmatch(f.Version)
+	if match == nil {
+		return nil
+	}
+
+	return []releaseversion.Artifact{
+		{
+			Datastore: i.name,
+			Name:      f.Name,
+			Version:   f.Version,
+			Labels:    append(i.config.Labels, i.config.DevLabels...),
+			SourceTarball: metalink.File{
+				Name:    fmt.Sprintf("%s-%s.tgz", f.Name, f.Version),
+				Version: f.Version,
+				MetaURLs: []metalink.MetaURL{
+					{
+						URL: fmt.Sprintf(
+							"%s?dev_release=true&name=%s&version=%s&checkout=%s",
+							i.config.RepositoryConfig.URI,
+							url.QueryEscape(f.Name),
+							url.QueryEscape(f.Version),
+							url.QueryEscape(match[1]),
+						),
+						MediaType: boshreleasesource.DefaultMediaType,
+					},
+				},
+			},
+		},
+	}
 }

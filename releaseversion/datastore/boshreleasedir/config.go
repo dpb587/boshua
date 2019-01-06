@@ -7,5 +7,7 @@ import (
 type Config struct {
 	repository.RepositoryConfig `yaml:"repository"`
 	Release                     string   `yaml:"release"`
-	Labels                      []string `yaml:"labels"`
+	Labels                      []string `yaml:"labels"` // TODO no way for labels to be applied to only final/non-dev releases
+	DevReleases                 bool     `yaml:"dev_releases"`
+	DevLabels                   []string `yaml:"dev_labels"`
 }
