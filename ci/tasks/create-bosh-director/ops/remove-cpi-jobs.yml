@@ -1,5 +1,0 @@
-- path: /instance_groups/name=bosh/jobs/name=aws_cpi?
-  type: remove
-
-- path: /instance_groups/name=bosh/jobs/name=google_cpi?
-  type: remove
