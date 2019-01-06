@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/pkg/errors"
 )
 
@@ -26,11 +27,11 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	aggregateResults := map[string][]releaseversion.Artifact{}
 
 	for indexIdx, index := range i.indices {
-		results, err := index.GetArtifacts(f)
+		results, err := index.GetArtifacts(f, datastore.LimitParams{}) // TODO okay to limit on aggregated set?
 		if err != nil {
 			if len(i.indices) == 1 {
 				return nil, err
@@ -64,7 +65,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		results = append(results, aggregatedResult)
 	}
 
-	return results, nil
+	return inmemory.LimitArtifacts(results, l)
 }
 
 func (i *index) merge(results []releaseversion.Artifact) (releaseversion.Artifact, error) {

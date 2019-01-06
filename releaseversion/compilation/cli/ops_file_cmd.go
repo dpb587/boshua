@@ -47,8 +47,8 @@ func (c *OpsFileCmd) Execute(_ []string) error {
 				"sha1":    strings.TrimPrefix(metalinkutil.HashToChecksum(artifact.MetalinkFile().Hashes[0]).String(), "sha1:"), // TODO .Preferred()
 				"url":     artifact.MetalinkFile().URLs[0].URL,
 				"stemcell": map[string]string{
-					"os":      c.CompiledReleaseOpts.OS.Name,
-					"version": c.CompiledReleaseOpts.OS.Version,
+					"os":      c.CompiledReleaseOpts.StemcellOpts.OS,
+					"version": c.CompiledReleaseOpts.StemcellOpts.Version,
 				},
 			},
 		},

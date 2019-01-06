@@ -57,11 +57,9 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 		graphql.ObjectConfig{
 			Name: "Query",
 			Fields: graphql.Fields{
-				"release":        releaseversiongraphql.NewQuery(h.releaseIndex, h.releaseCompilationIndex, h.releaseAnalysisIndexGetter),
-				"releases":       releaseversiongraphql.NewListQuery(h.releaseIndex),
+				"releases":       releaseversiongraphql.NewListQuery(h.releaseIndex, h.releaseCompilationIndex, h.releaseAnalysisIndexGetter),
 				"release_labels": releaseversiongraphql.NewLabelsQuery(h.releaseIndex),
-				"stemcell":       stemcellversiongraphql.NewQuery(h.stemcellIndex, h.stemcellAnalysisIndexGetter),
-				"stemcells":      stemcellversiongraphql.NewListQuery(h.stemcellIndex),
+				"stemcells":      stemcellversiongraphql.NewListQuery(h.stemcellIndex, h.stemcellAnalysisIndexGetter),
 			},
 		},
 	)
@@ -106,6 +104,8 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err)
 		}
 
+		fmt.Printf("%s\n", requestBytes)
+
 		// TODO switch to post?
 		result := graphql.Do(graphql.Params{
 			Schema:         schema,
@@ -124,6 +124,8 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 		if err != nil {
 			panic(err) // TODO !panic
 		}
+
+		fmt.Printf("%s\n", responseBytes)
 
 		// h.logger.WithField("response.body", string(responseBytes)).Debug("sending response")
 

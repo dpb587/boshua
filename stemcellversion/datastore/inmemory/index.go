@@ -23,7 +23,7 @@ func (i *Index) Add(artifact stemcellversion.Artifact) {
 	i.artifacts = append(i.artifacts, artifact)
 }
 
-func (i *Index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]stemcellversion.Artifact, error) {
 	var results = []stemcellversion.Artifact{}
 
 	for _, artifact := range i.artifacts {
@@ -44,7 +44,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 		results = append(results, artifact)
 	}
 
-	return results, nil
+	return LimitArtifacts(results, l)
 }
 
 func (i *Index) FlushCache() error {

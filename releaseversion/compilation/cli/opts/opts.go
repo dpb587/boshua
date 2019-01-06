@@ -1,19 +1,19 @@
 package opts
 
 import (
-	"github.com/dpb587/boshua/cli/args"
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	osversiondatastore "github.com/dpb587/boshua/osversion/datastore"
 	releaseversionopts "github.com/dpb587/boshua/releaseversion/cli/opts"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	stemcellversionopts "github.com/dpb587/boshua/stemcellversion/cli/opts"
 	"github.com/pkg/errors"
 )
 
 type Opts struct {
-	ReleaseOpts *releaseversionopts.Opts `no-flag:"true"`
-	OS          args.OS                  `long:"os" description:"The OS in name/version format"`
+	ReleaseOpts  *releaseversionopts.Opts `no-flag:"true"`
+	StemcellOpts *stemcellversionopts.Opts
 }
 
 func (o *Opts) Artifact(cfg *provider.Config) (compilation.Artifact, error) {
@@ -33,13 +33,17 @@ func (o *Opts) Artifact(cfg *provider.Config) (compilation.Artifact, error) {
 }
 
 func (o Opts) FilterParams() datastore.FilterParams {
+	releaseFilterParams, _ := o.ReleaseOpts.ArtifactParams()
+	stemcellFilterParams, _ := o.StemcellOpts.ArtifactParams()
+
 	return datastore.FilterParams{
-		Release: o.ReleaseOpts.FilterParams(),
+		Release: releaseFilterParams,
 		OS: osversiondatastore.FilterParams{
-			NameExpected:    o.OS.Name != "",
-			Name:            o.OS.Name,
-			VersionExpected: o.OS.Version != "",
-			Version:         o.OS.Version,
+			NameExpected:      stemcellFilterParams.OSExpected,
+			Name:              stemcellFilterParams.OS,
+			VersionExpected:   stemcellFilterParams.VersionExpected,
+			VersionConstraint: stemcellFilterParams.VersionConstraint,
+			Version:           stemcellFilterParams.Version,
 		},
 	}
 }

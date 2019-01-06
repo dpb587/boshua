@@ -1,10 +1,15 @@
 package opts
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/util/semverutil"
 	"github.com/pkg/errors"
 )
 
@@ -25,15 +30,21 @@ func (o *Opts) Artifact(cfg *provider.Config) (stemcellversion.Artifact, error) 
 		return stemcellversion.Artifact{}, errors.Wrap(err, "loading index")
 	}
 
-	result, err := datastore.GetArtifact(index, o.FilterParams())
+	f, l := o.ArtifactParams()
+	l.MinExpected = true
+	l.Min = 1
+	l.LimitExpected = true
+	l.Limit = 1
+
+	results, err := index.GetArtifacts(f, l)
 	if err != nil {
 		return stemcellversion.Artifact{}, errors.Wrap(err, "finding stemcell")
 	}
 
-	return result, nil
+	return results[0], nil
 }
 
-func (o Opts) FilterParams() datastore.FilterParams {
+func (o Opts) ArtifactParams() (datastore.FilterParams, datastore.LimitParams) {
 	f := datastore.FilterParams{
 		FlavorExpected: o.Flavor != "",
 		Flavor:         o.Flavor,
@@ -74,5 +85,28 @@ func (o Opts) FilterParams() datastore.FilterParams {
 		f.Flavor = "heavy"
 	}
 
-	return f
+	l := datastore.LimitParams{}
+
+	if f.VersionExpected {
+		l.MinExpected = true
+		l.Min = 1
+
+		if f.Version == "latest" {
+			f.VersionExpected = false
+			f.Version = ""
+			l.LimitExpected = true
+			l.Limit = 1
+		} else if strings.HasSuffix(f.Version, ".latest") {
+			f.Version = fmt.Sprintf("%s.x", strings.TrimSuffix(f.Version, ".latest"))
+			l.LimitExpected = true
+			l.Limit = 1
+		}
+	}
+
+	if f.VersionExpected && semverutil.IsConstraint(f.Version) {
+		// ignoring errors since it can fallback to literal match
+		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
+	}
+
+	return f, l
 }

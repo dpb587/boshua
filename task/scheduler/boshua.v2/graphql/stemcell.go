@@ -31,10 +31,12 @@ func NewStemcellAnalysisField(s scheduler.Scheduler, index datastore.Index, anal
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			result, err := datastore.GetArtifact(index, f)
+			results, err := index.GetArtifacts(f, datastore.SingleArtifactLimitParams)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding stemcell")
 			}
+
+			result := results[0]
 
 			analysisRef := analysis.Reference{
 				Subject:  result,

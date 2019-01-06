@@ -87,9 +87,12 @@ func (i *index) getQuery(ref analysis.Reference) (string, string, map[string]int
 
 	switch subjectRef := subjectRef.(type) {
 	case releaseversion.Reference:
-		fQuery, fQueryVarsTypes, fQueryVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromReference(subjectRef))
+		fQuery, fQueryVarsTypes, fQueryVars := releaseversiongraphql.BuildListQueryArgs(
+			releaseversiondatastore.FilterParamsFromReference(subjectRef),
+			releaseversiondatastore.SingleArtifactLimitParams,
+		)
 
-		return fmt.Sprintf(`release(%s) {
+		return fmt.Sprintf(`releases(%s) {
 			analysis {
 				results(analyzers: [$analyzer]) {
 					artifact {
@@ -111,11 +114,14 @@ func (i *index) getQuery(ref analysis.Reference) (string, string, map[string]int
 			}
 		}`, fQuery), fQueryVarsTypes, fQueryVars, nil
 	case compilation.Reference:
-		fQuery, fQueryVarsTypes, fQueryVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromReference(subjectRef.ReleaseVersion))
+		fQuery, fQueryVarsTypes, fQueryVars := releaseversiongraphql.BuildListQueryArgs(
+			releaseversiondatastore.FilterParamsFromReference(subjectRef.ReleaseVersion),
+			releaseversiondatastore.SingleArtifactLimitParams,
+		)
 		fQueryVarsTypes = fmt.Sprintf("%s, $queryStemcellOS: String!, $queryStemcellVersion: String!", fQueryVarsTypes)
 		fQueryVars["queryStemcellOS"] = subjectRef.OSVersion.Name
 		fQueryVars["queryStemcellVersion"] = subjectRef.OSVersion.Version
-		return fmt.Sprintf(`release(%s) {
+		return fmt.Sprintf(`releases(%s) {
 				compilations(os: $queryStemcellOS, version: $queryStemcellVersion) {
 					analysis {
 						results(analyzers: [$analyzer]) {
@@ -139,9 +145,12 @@ func (i *index) getQuery(ref analysis.Reference) (string, string, map[string]int
 				}
 			}`, fQuery), fQueryVarsTypes, fQueryVars, nil
 	case stemcellversion.Reference:
-		fQuery, fQueryVarsTypes, fQueryVars := stemcellversiongraphql.BuildListQueryArgs(stemcellversiondatastore.FilterParamsFromReference(subjectRef))
+		fQuery, fQueryVarsTypes, fQueryVars := stemcellversiongraphql.BuildListQueryArgs(
+			stemcellversiondatastore.FilterParamsFromReference(subjectRef),
+			stemcellversiondatastore.SingleArtifactLimitParams,
+		)
 
-		return fmt.Sprintf(`stemcell(%s) {
+		return fmt.Sprintf(`stemcells(%s) {
 				analysis {
 					results(analyzers: [$analyzer]) {
 						artifact {

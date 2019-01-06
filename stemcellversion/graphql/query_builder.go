@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/stemcellversion/datastore"
 )
 
-func BuildListQueryArgs(f datastore.FilterParams) (string, string, map[string]interface{}) {
+func BuildListQueryArgs(f datastore.FilterParams, l datastore.LimitParams) (string, string, map[string]interface{}) {
 	var queryFilter, queryVarsTypes []string
 	var queryVars = map[string]interface{}{}
 
@@ -50,6 +50,30 @@ func BuildListQueryArgs(f datastore.FilterParams) (string, string, map[string]in
 		queryFilter = append(queryFilter, "labels: $qStemcellLabels")
 		queryVarsTypes = append(queryVarsTypes, "$qStemcellLabels: [String!]")
 		queryVars["qStemcellLabels"] = f.Labels
+	}
+
+	if l.MinExpected {
+		queryFilter = append(queryFilter, "limitMin: $qStemcellLimitMin")
+		queryVarsTypes = append(queryVarsTypes, "$qStemcellLimitMin: Float!")
+		queryVars["qStemcellLimitMin"] = l.Min
+	}
+
+	if l.MaxExpected {
+		queryFilter = append(queryFilter, "limitMax: $qStemcellLimitMax")
+		queryVarsTypes = append(queryVarsTypes, "$qStemcellLimitMax: Float!")
+		queryVars["qStemcellLimitMax"] = l.Max
+	}
+
+	if l.LimitExpected {
+		queryFilter = append(queryFilter, "limitFirst: $qStemcellLimitFirst")
+		queryVarsTypes = append(queryVarsTypes, "$qStemcellLimitFirst: Float!")
+		queryVars["qStemcellLimitFirst"] = l.Limit
+	}
+
+	if l.OffsetExpected {
+		queryFilter = append(queryFilter, "limitOffset: $qStemcellLimitOffset")
+		queryVarsTypes = append(queryVarsTypes, "$qStemcellLimitOffset: Float!")
+		queryVars["qStemcellLimitOffset"] = l.Offset
 	}
 
 	return strings.Join(queryFilter, ", "), strings.Join(queryVarsTypes, ", "), queryVars

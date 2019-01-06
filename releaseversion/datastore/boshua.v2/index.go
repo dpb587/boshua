@@ -8,6 +8,7 @@ import (
 	boshuaV2 "github.com/dpb587/boshua/artifact/datastore/datastoreutil/boshua.v2"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	datastoregraphql "github.com/dpb587/boshua/releaseversion/graphql"
 	"github.com/machinebox/graphql"
 	"github.com/pkg/errors"
@@ -36,8 +37,8 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
-	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
+	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f, l)
 	if len(fQueryVarsTypes) > 0 {
 		fQueryVarsTypes = fmt.Sprintf(`(%s)`, fQueryVarsTypes)
 	}
@@ -88,7 +89,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		results[resultIdx].Datastore = i.name
 	}
 
-	return results, nil
+	return inmemory.LimitArtifacts(results, l)
 }
 
 func (i *index) GetLabels() ([]string, error) {

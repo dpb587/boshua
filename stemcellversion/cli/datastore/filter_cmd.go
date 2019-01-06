@@ -22,7 +22,9 @@ func (c *FilterCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading stemcell index")
 	}
 
-	results, err := index.GetArtifacts(c.StemcellOpts.FilterParams())
+	f, l := c.StemcellOpts.ArtifactParams()
+
+	results, err := index.GetArtifacts(f, l)
 	if err != nil {
 		return errors.Wrap(err, "getting stemcell artifacts")
 	}

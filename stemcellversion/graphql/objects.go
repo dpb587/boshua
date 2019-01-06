@@ -50,12 +50,19 @@ func newStemcellObject(index datastore.Index, analysisGetter analysisdatastore.N
 						f := datastore.FilterParamsFromArtifact(source)
 						f.Flavor = "light"
 
-						result, err := datastore.GetArtifact(index, f)
+						l := datastore.LimitParams{
+							MinExpected:   true,
+							Min:           1,
+							LimitExpected: true,
+							Limit:         1,
+						}
+
+						results, err := index.GetArtifacts(f, l)
 						if err != nil {
 							return nil, errors.Wrap(err, "finding light stemcell")
 						}
 
-						return result.MetalinkFile(), nil
+						return results[0].MetalinkFile(), nil
 					},
 				},
 				"tarball": tarballField,
@@ -82,20 +89,3 @@ func newStemcellObject(index datastore.Index, analysisGetter analysisdatastore.N
 		},
 	)
 }
-
-var ListedStemcell = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name:        "StemcellSummary",
-		Description: "A specific version of a stemcell.",
-		Fields: graphql.Fields{
-			"os":         osField,
-			"version":    versionField,
-			"labels":     labelsField,
-			"iaas":       iaasField,
-			"hypervisor": hypervisorField,
-			"diskFormat": diskFormatField,
-			"flavor":     flavorField,
-			"tarball":    tarballField,
-		},
-	},
-)

@@ -36,8 +36,8 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifact, error) {
-	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f)
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]stemcellversion.Artifact, error) {
+	fQueryFilter, fQueryVarsTypes, fQueryVars := datastoregraphql.BuildListQueryArgs(f, l)
 	if len(fQueryVarsTypes) > 0 {
 		fQueryVarsTypes = fmt.Sprintf(`(%s)`, fQueryVarsTypes)
 	}

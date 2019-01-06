@@ -9,6 +9,7 @@ import (
 	"github.com/dpb587/boshua/artifact/datastore/datastoreutil/repository"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -36,7 +37,7 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	if !f.NameSatisfied(i.config.Release) {
 		return nil, nil
 	} else if !f.LabelsSatisfied(i.config.Labels) {
@@ -91,7 +92,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		})
 	}
 
-	return results, nil
+	return inmemory.LimitArtifacts(results, l)
 }
 
 func (i *index) GetLabels() ([]string, error) {

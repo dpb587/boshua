@@ -6,7 +6,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion/datastore"
 )
 
-func BuildListQueryArgs(f datastore.FilterParams) (string, string, map[string]interface{}) {
+func BuildListQueryArgs(f datastore.FilterParams, l datastore.LimitParams) (string, string, map[string]interface{}) {
 	var queryFilter, queryVarsTypes []string
 	var queryVars = map[string]interface{}{}
 
@@ -38,6 +38,30 @@ func BuildListQueryArgs(f datastore.FilterParams) (string, string, map[string]in
 		queryFilter = append(queryFilter, "labels: $qReleaseLabels")
 		queryVarsTypes = append(queryVarsTypes, "$qReleaseLabels: [String!]")
 		queryVars["qReleaseLabels"] = f.Labels
+	}
+
+	if l.LimitExpected {
+		queryFilter = append(queryFilter, "limitFirst: $qReleaseLimitFirst")
+		queryVarsTypes = append(queryVarsTypes, "$qReleaseLimitFirst: Float!")
+		queryVars["qReleaseLimitFirst"] = l.Limit
+	}
+
+	if l.OffsetExpected {
+		queryFilter = append(queryFilter, "limitOffset: $qReleaseLimitOffset")
+		queryVarsTypes = append(queryVarsTypes, "$qReleaseLimitOffset: Float!")
+		queryVars["qReleaseLimitOffset"] = l.Offset
+	}
+
+	if l.MinExpected {
+		queryFilter = append(queryFilter, "limitMin: $qReleaseLimitMin")
+		queryVarsTypes = append(queryVarsTypes, "$qReleaseLimitMin: Float!")
+		queryVars["qReleaseLimitMin"] = l.Min
+	}
+
+	if l.MaxExpected {
+		queryFilter = append(queryFilter, "limitMax: $qReleaseLimitMax")
+		queryVarsTypes = append(queryVarsTypes, "$qReleaseLimitMax: Float!")
+		queryVars["qReleaseLimitMax"] = l.Max
 	}
 
 	return strings.Join(queryFilter, ", "), strings.Join(queryVarsTypes, ", "), queryVars

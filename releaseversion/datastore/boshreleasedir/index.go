@@ -11,6 +11,7 @@ import (
 	"github.com/dpb587/boshua/metalink/file/metaurl/boshreleasesource"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/dpb587/metalink"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -39,7 +40,7 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	if f.ChecksumExpected {
 		return nil, nil
 	} else if !f.LabelsSatisfied(i.config.Labels) {
@@ -124,11 +125,11 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		}
 	}
 
-	return results, nil
+	return inmemory.LimitArtifacts(results, l)
 }
 
 func (i *index) GetLabels() ([]string, error) {
-	all, err := i.GetArtifacts(datastore.FilterParams{})
+	all, err := i.GetArtifacts(datastore.FilterParams{}, datastore.LimitParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting artifacts")
 	}

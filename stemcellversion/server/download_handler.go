@@ -29,10 +29,10 @@ func (h *DownloadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic(errors.Wrap(err, "parsing request")) // TODO !panic
 	}
 
-	result, err := datastore.GetArtifact(h.index, filterParams)
+	results, err := h.index.GetArtifacts(filterParams, datastore.SingleArtifactLimitParams)
 	if err != nil {
 		panic(errors.Wrap(err, "finding stemcell")) // TODO !panic
 	}
 
-	h.MirrorHandler.ServeHTTPArtifact(w, r, result)
+	h.MirrorHandler.ServeHTTPArtifact(w, r, results[0])
 }

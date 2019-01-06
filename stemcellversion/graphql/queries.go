@@ -9,49 +9,42 @@ import (
 
 func NewFilterArgs() graphql.FieldConfigArgument {
 	return graphql.FieldConfigArgument{
-		"os":         osArgument,
-		"version":    versionArgument,
-		"iaas":       iaasArgument,
-		"hypervisor": hypervisorArgument,
-		"diskFormat": diskFormatArgument,
-		"flavor":     flavorArgument,
-		"labels":     labelsArgument,
+		"os":          osArgument,
+		"version":     versionArgument,
+		"iaas":        iaasArgument,
+		"hypervisor":  hypervisorArgument,
+		"diskFormat":  diskFormatArgument,
+		"flavor":      flavorArgument,
+		"labels":      labelsArgument,
+		"limitMin":    limitMinArgument,
+		"limitMax":    limitMaxArgument,
+		"limitFirst":  limitFirstArgument,
+		"limitOffset": limitOffsetArgument,
 	}
 }
 
-func NewListQuery(index datastore.Index) *graphql.Field {
+func NewListQuery(index datastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Field {
 	return &graphql.Field{
 		Name: "StemcellListQuery",
-		Type: graphql.NewList(ListedStemcell),
+		Type: graphql.NewList(newStemcellObject(index, analysisGetter)),
 		Args: NewFilterArgs(),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			f, err := datastore.FilterParamsFromMap(p.Args)
 			if err != nil {
-				return nil, errors.Wrap(err, "parsing args")
+				return nil, errors.Wrap(err, "parsing filter args")
 			}
 
-			return index.GetArtifacts(f)
-		},
-	}
-}
-
-func NewQuery(index datastore.Index, analysisGetter analysisdatastore.NamedGetter) *graphql.Field {
-	return &graphql.Field{
-		Name: "StemcellQuery",
-		Type: newStemcellObject(index, analysisGetter),
-		Args: NewFilterArgs(),
-		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			f, err := datastore.FilterParamsFromMap(p.Args)
+			l, err := datastore.LimitParamsFromMap(p.Args)
 			if err != nil {
-				return nil, errors.Wrap(err, "parsing args")
+				return nil, errors.Wrap(err, "parsing limit args")
 			}
 
-			result, err := datastore.GetArtifact(index, f)
+			results, err := index.GetArtifacts(f, l)
 			if err != nil {
-				return nil, errors.Wrap(err, "finding stemcell")
+				return nil, errors.Wrap(err, "finding stemcells")
 			}
 
-			return result, nil
+			return results, nil
 		},
 	}
 }

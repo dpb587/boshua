@@ -31,10 +31,12 @@ func NewReleaseAnalysisField(s scheduler.Scheduler, index datastore.Index, analy
 				return nil, errors.Wrap(err, "parsing args")
 			}
 
-			result, err := datastore.GetArtifact(index, f)
+			results, err := index.GetArtifacts(f, datastore.SingleArtifactLimitParams)
 			if err != nil {
 				return nil, errors.Wrap(err, "finding release")
 			}
+
+			result := results[0]
 
 			analysisRef := analysis.Reference{
 				Subject:  result,

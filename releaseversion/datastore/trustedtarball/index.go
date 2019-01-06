@@ -8,6 +8,7 @@ import (
 	"github.com/dpb587/boshua/metalink/metalinkutil"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/releaseversion/datastore/inmemory"
 	"github.com/dpb587/boshua/util/checksum"
 	"github.com/dpb587/metalink"
 	"github.com/sirupsen/logrus"
@@ -34,7 +35,7 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	if !f.NameExpected || !f.URIExpected || !f.VersionExpected {
 		// name, uri, version are expected, required
 		return nil, nil
@@ -77,24 +78,27 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		}
 	}
 
-	return []releaseversion.Artifact{
-		{
-			Datastore: i.name,
-			Name:      f.Name,
-			Version:   f.Version,
-			Labels:    i.config.Labels,
-			SourceTarball: metalink.File{
-				Name:    fmt.Sprintf("%s-%s.tgz", f.Name, f.Version),
-				Version: f.Version,
-				Hashes:  hashes,
-				URLs: []metalink.URL{
-					{
-						URL: f.URI,
+	return inmemory.LimitArtifacts(
+		[]releaseversion.Artifact{
+			{
+				Datastore: i.name,
+				Name:      f.Name,
+				Version:   f.Version,
+				Labels:    i.config.Labels,
+				SourceTarball: metalink.File{
+					Name:    fmt.Sprintf("%s-%s.tgz", f.Name, f.Version),
+					Version: f.Version,
+					Hashes:  hashes,
+					URLs: []metalink.URL{
+						{
+							URL: f.URI,
+						},
 					},
 				},
 			},
 		},
-	}, nil
+		l,
+	)
 }
 
 func (i *index) GetLabels() ([]string, error) {

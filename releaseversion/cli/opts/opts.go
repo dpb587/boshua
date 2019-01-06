@@ -1,12 +1,17 @@
 package opts
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/Masterminds/semver"
 	"github.com/dpb587/boshua/cli/args"
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider"
 	cmdopts "github.com/dpb587/boshua/main/boshua/cmd/opts"
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/datastore"
+	"github.com/dpb587/boshua/util/semverutil"
 	"github.com/pkg/errors"
 )
 
@@ -28,15 +33,21 @@ func (o *Opts) Artifact(cfg *provider.Config) (releaseversion.Artifact, error) {
 		return releaseversion.Artifact{}, errors.Wrap(err, "loading release index")
 	}
 
-	result, err := datastore.GetArtifact(index, o.FilterParams())
+	f, l := o.ArtifactParams()
+	l.MinExpected = true
+	l.Min = 1
+	l.LimitExpected = true
+	l.Limit = 1
+
+	results, err := index.GetArtifacts(f, l)
 	if err != nil {
 		return releaseversion.Artifact{}, errors.Wrap(err, "finding release")
 	}
 
-	return result, nil
+	return results[0], nil
 }
 
-func (o Opts) FilterParams() datastore.FilterParams {
+func (o Opts) ArtifactParams() (datastore.FilterParams, datastore.LimitParams) {
 	f := datastore.FilterParams{
 		LabelsExpected: len(o.Labels) > 0,
 		Labels:         o.Labels,
@@ -69,5 +80,28 @@ func (o Opts) FilterParams() datastore.FilterParams {
 		f.Checksum = o.Checksum.ImmutableChecksum.String()
 	}
 
-	return f
+	l := datastore.LimitParams{}
+
+	if f.VersionExpected {
+		l.MinExpected = true
+		l.Min = 1
+
+		if f.Version == "latest" {
+			f.VersionExpected = false
+			f.Version = ""
+			l.LimitExpected = true
+			l.Limit = 1
+		} else if strings.HasSuffix(f.Version, ".latest") {
+			f.Version = fmt.Sprintf("%s.x", strings.TrimSuffix(f.Version, ".latest"))
+			l.LimitExpected = true
+			l.Limit = 1
+		}
+	}
+
+	if f.VersionExpected && semverutil.IsConstraint(f.Version) {
+		// ignoring errors since it can fallback to literal match
+		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
+	}
+
+	return f, l
 }

@@ -23,7 +23,7 @@ func (i *Index) Add(artifact releaseversion.Artifact) {
 	i.artifacts = append(i.artifacts, artifact)
 }
 
-func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *Index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	var results = []releaseversion.Artifact{}
 
 	for _, artifact := range i.artifacts {
@@ -40,7 +40,7 @@ func (i *Index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifac
 		results = append(results, artifact)
 	}
 
-	return results, nil
+	return LimitArtifacts(results, l)
 }
 
 func (i *Index) GetLabels() ([]string, error) {

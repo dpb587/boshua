@@ -45,7 +45,7 @@ func (c *StoreCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading os index")
 	}
 
-	osVersion, err := osVersionIndex.Find(osversion.Reference{Name: c.CompiledReleaseOpts.OS.Name, Version: c.CompiledReleaseOpts.OS.Version})
+	osVersion, err := osVersionIndex.Find(osversion.Reference{Name: c.CompiledReleaseOpts.StemcellOpts.OS, Version: c.CompiledReleaseOpts.StemcellOpts.Version})
 	if err != nil {
 		return errors.Wrap(err, "finding os")
 	}

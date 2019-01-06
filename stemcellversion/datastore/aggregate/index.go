@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpb587/boshua/stemcellversion"
 	"github.com/dpb587/boshua/stemcellversion/datastore"
+	"github.com/dpb587/boshua/stemcellversion/datastore/inmemory"
 	"github.com/pkg/errors"
 )
 
@@ -26,12 +27,12 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]stemcellversion.Artifact, error) {
 	// TODO merging behavior
 	var results []stemcellversion.Artifact
 
 	for idxIdx, idx := range i.indices {
-		found, err := idx.GetArtifacts(f)
+		found, err := idx.GetArtifacts(f, datastore.LimitParams{})
 		if err != nil {
 			if len(i.indices) == 1 {
 				return nil, err
@@ -43,7 +44,7 @@ func (i *index) GetArtifacts(f datastore.FilterParams) ([]stemcellversion.Artifa
 		results = append(results, found...)
 	}
 
-	return results, nil
+	return inmemory.LimitArtifacts(results, l)
 }
 
 func (i *index) FlushCache() error {

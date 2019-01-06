@@ -51,7 +51,10 @@ func (s scheduler) ScheduleAnalysis(analysisRef analysis.Reference) (schedulerpk
 }
 
 func (s scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (schedulerpkg.ScheduledTask, error) {
-	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(f.Release)
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(
+		f.Release,
+		releaseversiondatastore.LimitParams{},
+	)
 	mutationVars["osName"] = f.OS.Name
 	mutationVars["osVersion"] = f.OS.Version
 
@@ -86,7 +89,10 @@ func (s scheduler) schedule(subject interface{}, mutationQuery string, mutationV
 }
 
 func (s scheduler) scheduleStemcellAnalysis(analysisRef analysis.Reference, subject stemcellversion.Artifact) (schedulerpkg.ScheduledTask, error) {
-	mutationFilter, mutationVarsTypes, mutationVars := stemcellversiongraphql.BuildListQueryArgs(stemcellversiondatastore.FilterParamsFromArtifact(subject))
+	mutationFilter, mutationVarsTypes, mutationVars := stemcellversiongraphql.BuildListQueryArgs(
+		stemcellversiondatastore.FilterParamsFromArtifact(subject),
+		stemcellversiondatastore.LimitParams{},
+	)
 	mutationVars["analyzer"] = analysisRef.Analyzer
 
 	return s.schedule(
@@ -97,7 +103,10 @@ func (s scheduler) scheduleStemcellAnalysis(analysisRef analysis.Reference, subj
 }
 
 func (s scheduler) scheduleReleaseAnalysis(analysisRef analysis.Reference, subject releaseversion.Artifact) (schedulerpkg.ScheduledTask, error) {
-	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromArtifact(subject))
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(
+		releaseversiondatastore.FilterParamsFromArtifact(subject),
+		releaseversiondatastore.LimitParams{},
+	)
 	mutationVars["analyzer"] = analysisRef.Analyzer
 
 	return s.schedule(
@@ -108,7 +117,10 @@ func (s scheduler) scheduleReleaseAnalysis(analysisRef analysis.Reference, subje
 }
 
 func (s scheduler) scheduleReleaseCompilationAnalysis(analysisRef analysis.Reference, subject compilation.Artifact) (schedulerpkg.ScheduledTask, error) {
-	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(releaseversiondatastore.FilterParamsFromReference(subject.Release))
+	mutationFilter, mutationVarsTypes, mutationVars := releaseversiongraphql.BuildListQueryArgs(
+		releaseversiondatastore.FilterParamsFromReference(subject.Release),
+		releaseversiondatastore.LimitParams{},
+	)
 	mutationVars["osName"] = subject.OS.Name
 	mutationVars["osVersion"] = subject.OS.Version
 	mutationVars["analyzer"] = analysisRef.Analyzer

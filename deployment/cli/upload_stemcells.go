@@ -77,12 +77,14 @@ func (c *UploadStemcellsCmd) Execute(_ []string) error {
 				fmt.Fprintf(os.Stderr, fmt.Sprintf("%s [%s] %s\n", time.Now().Format("15:04:05"), req.Slug(), msg))
 			}
 
-			result, err := stemcellversiondatastore.GetArtifact(index, f)
+			results, err := index.GetArtifacts(f, stemcellversiondatastore.SingleArtifactLimitParams)
 			if err != nil {
 				parallelLog(errors.Wrap(err, "skipped: error: getting stemcell artifact").Error())
 
 				return
 			}
+
+			result := results[0]
 
 			err = c.UploadStemcellCmd.ExecuteArtifact(
 				c.Config.GetDownloader,

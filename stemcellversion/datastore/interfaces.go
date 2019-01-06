@@ -14,6 +14,6 @@ type NamedGetter func(name string) (Index, error)
 
 type Index interface {
 	GetName() string
-	GetArtifacts(f FilterParams) ([]stemcellversion.Artifact, error)
+	GetArtifacts(f FilterParams, l LimitParams) ([]stemcellversion.Artifact, error)
 	FlushCache() error
 }

@@ -39,8 +39,8 @@ func (c *ExportReleaseCmd) Execute(_ []string) error {
 		"%s-%s-on-%s-stemcell-%s",
 		c.CompiledReleaseOpts.ReleaseOpts.Name,
 		c.CompiledReleaseOpts.ReleaseOpts.Version,
-		c.CompiledReleaseOpts.OS.Name,
-		c.CompiledReleaseOpts.OS.Version,
+		c.CompiledReleaseOpts.StemcellOpts.OS,
+		c.CompiledReleaseOpts.StemcellOpts.Version,
 	)
 
 	_, err = manifestFile.Write([]byte(fmt.Sprintf(`name: "%s"
@@ -61,8 +61,8 @@ update:
 		deploymentName,
 		c.CompiledReleaseOpts.ReleaseOpts.Name,
 		c.CompiledReleaseOpts.ReleaseOpts.Version,
-		c.CompiledReleaseOpts.OS.Name,
-		c.CompiledReleaseOpts.OS.Version,
+		c.CompiledReleaseOpts.StemcellOpts.OS,
+		c.CompiledReleaseOpts.StemcellOpts.Version,
 	)))
 	if err != nil {
 		return errors.Wrap(err, "writing deployment manifest")
@@ -87,7 +87,7 @@ update:
 		fmt.Sprintf("-d=%s", deploymentName),
 		"export-release",
 		fmt.Sprintf("%s/%s", c.CompiledReleaseOpts.ReleaseOpts.Name, c.CompiledReleaseOpts.ReleaseOpts.Version),
-		fmt.Sprintf("%s/%s", c.CompiledReleaseOpts.OS.Name, c.CompiledReleaseOpts.OS.Version),
+		fmt.Sprintf("%s/%s", c.CompiledReleaseOpts.StemcellOpts.OS, c.CompiledReleaseOpts.StemcellOpts.Version),
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

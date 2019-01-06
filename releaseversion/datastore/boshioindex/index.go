@@ -48,13 +48,13 @@ func (i *index) GetName() string {
 	return i.name
 }
 
-func (i *index) GetArtifacts(f datastore.FilterParams) ([]releaseversion.Artifact, error) {
+func (i *index) GetArtifacts(f datastore.FilterParams, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
 	err := i.fillCache()
 	if err != nil {
 		return nil, err
 	}
 
-	return i.cache.GetArtifacts(f)
+	return i.cache.GetArtifacts(f, l)
 }
 
 func (i *index) fillCache() error {

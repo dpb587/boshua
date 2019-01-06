@@ -5,7 +5,7 @@ import (
 )
 
 type filterResponse struct {
-	Release filterReleaseResponse `json:"release"`
+	Releases []filterReleaseResponse `json:"releases"`
 }
 
 type filterReleaseResponse struct {

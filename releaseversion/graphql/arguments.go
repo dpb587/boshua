@@ -23,3 +23,19 @@ var uriArgument = &graphql.ArgumentConfig{
 var labelsArgument = &graphql.ArgumentConfig{
 	Type: graphql.NewList(graphql.String),
 }
+
+var limitMinArgument = &graphql.ArgumentConfig{
+	Type: graphql.Float,
+}
+
+var limitMaxArgument = &graphql.ArgumentConfig{
+	Type: graphql.Float,
+}
+
+var limitFirstArgument = &graphql.ArgumentConfig{
+	Type: graphql.Float,
+}
+
+var limitOffsetArgument = &graphql.ArgumentConfig{
+	Type: graphql.Float,
+}

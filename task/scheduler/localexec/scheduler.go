@@ -63,10 +63,12 @@ func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (sch
 		return nil, errors.Wrap(err, "loading release index")
 	}
 
-	release, err := releaseversiondatastore.GetArtifact(releaseVersionIndex, f.Release)
+	releases, err := releaseVersionIndex.GetArtifacts(f.Release, releaseversiondatastore.SingleArtifactLimitParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding release")
 	}
+
+	release := releases[0]
 
 	stemcellVersionIndex, err := s.cfg.GetStemcellIndex(config.DefaultName)
 	if err != nil {
@@ -74,19 +76,24 @@ func (s Scheduler) ScheduleCompilation(f compilationdatastore.FilterParams) (sch
 	}
 
 	// TODO switch to receiving stemcell; override iaas to scheduler config settings
-	stemcell, err := stemcellversiondatastore.GetArtifact(stemcellVersionIndex, stemcellversiondatastore.FilterParams{
-		OSExpected:      true,
-		OS:              f.OS.Name,
-		VersionExpected: true,
-		Version:         f.OS.Version,
-		IaaSExpected:    true,
-		IaaS:            "aws",
-		FlavorExpected:  true,
-		Flavor:          "light",
-	})
+	stemcells, err := stemcellVersionIndex.GetArtifacts(
+		stemcellversiondatastore.FilterParams{
+			OSExpected:      true,
+			OS:              f.OS.Name,
+			VersionExpected: true,
+			Version:         f.OS.Version,
+			IaaSExpected:    true,
+			IaaS:            "aws",
+			FlavorExpected:  true,
+			Flavor:          "light",
+		},
+		stemcellversiondatastore.SingleArtifactLimitParams,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "filtering stemcell")
 	}
+
+	stemcell := stemcells[0]
 
 	tt, err := compilationtask.New(release, stemcell)
 	if err != nil {

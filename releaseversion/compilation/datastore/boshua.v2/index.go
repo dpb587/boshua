@@ -12,6 +12,7 @@ import (
 	"github.com/dpb587/boshua/releaseversion"
 	"github.com/dpb587/boshua/releaseversion/compilation"
 	"github.com/dpb587/boshua/releaseversion/compilation/datastore"
+	releaseversiondatastore "github.com/dpb587/boshua/releaseversion/datastore"
 	releaseversiongraphql "github.com/dpb587/boshua/releaseversion/graphql"
 	"github.com/machinebox/graphql"
 	"github.com/pkg/errors"
@@ -42,7 +43,10 @@ func (i *index) GetName() string {
 
 func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation.Artifact, error) {
 	// TODO this should be using "compilations", not singular compilation
-	fReleaseQueryFilter, fReleaseQueryVarsTypes, fReleaseQueryVars := releaseversiongraphql.BuildListQueryArgs(f.Release)
+	fReleaseQueryFilter, fReleaseQueryVarsTypes, fReleaseQueryVars := releaseversiongraphql.BuildListQueryArgs(
+		f.Release,
+		releaseversiondatastore.SingleArtifactLimitParams,
+	)
 	if len(fReleaseQueryFilter) > 0 {
 		fReleaseQueryFilter = fmt.Sprintf(`(%s)`, fReleaseQueryFilter)
 	}
@@ -60,7 +64,7 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 	// TODO weird singular vs multiple queries
 
 	cmd := fmt.Sprintf(`query %s {
-  release %s {
+  releases %s {
 		name
 		version
 		labels
@@ -108,17 +112,19 @@ func (i *index) GetCompilationArtifacts(f datastore.FilterParams) ([]compilation
 
 	var results []compilation.Artifact
 
-	for _, compl := range resp.Release.Compilations {
-		results = append(results, compilation.Artifact{
-			Datastore: i.name,
-			OS:        osversion.Reference{Name: compl.OS, Version: compl.Version},
-			Release: releaseversion.Reference{
-				Name:    resp.Release.Name,
-				Version: resp.Release.Version,
-			},
-			Tarball: compl.Tarball,
-			Labels:  compl.Labels,
-		})
+	for _, respRelease := range resp.Releases {
+		for _, compl := range respRelease.Compilations {
+			results = append(results, compilation.Artifact{
+				Datastore: i.name,
+				OS:        osversion.Reference{Name: compl.OS, Version: compl.Version},
+				Release: releaseversion.Reference{
+					Name:    respRelease.Name,
+					Version: respRelease.Version,
+				},
+				Tarball: compl.Tarball,
+				Labels:  compl.Labels,
+			})
+		}
 	}
 
 	return results, nil

@@ -6,20 +6,20 @@ import (
 )
 
 type filterResponse struct {
-	Release  filterReleaseResponse  `json:"release"`
-	Stemcell filterStemcellResponse `json:"stemcell"`
+	Releases  []filterReleasesResponse  `json:"releases"`
+	Stemcells []filterStemcellsResponse `json:"stemcells"`
 }
 
-type filterReleaseResponse struct {
-	Compilations []filterReleaseCompilationResponse `json:"compilations"`
-	Analysis     *filterAnalysisResponse            `json:"analysis"`
+type filterReleasesResponse struct {
+	Compilations []filterReleasesCompilationsResponse `json:"compilations"`
+	Analysis     *filterAnalysisResponse              `json:"analysis"`
 }
 
-type filterReleaseCompilationResponse struct {
+type filterReleasesCompilationsResponse struct {
 	Analysis *filterAnalysisResponse `json:"analysis"`
 }
 
-type filterStemcellResponse struct {
+type filterStemcellsResponse struct {
 	Analysis *filterAnalysisResponse `json:"analysis"`
 }
 
@@ -33,12 +33,17 @@ type filterAnalysisResultResponse struct {
 }
 
 func (r filterResponse) GetAnalysis() []filterAnalysisResultResponse {
-	if r.Release.Analysis != nil {
-		return r.Release.Analysis.Results
-	} else if len(r.Release.Compilations) > 0 {
-		return r.Release.Compilations[0].Analysis.Results
-	} else if r.Stemcell.Analysis != nil {
-		return r.Stemcell.Analysis.Results
+	// TODO this is bad; it's assuming a single result for these lookups; could technically batch results
+	if len(r.Releases) > 0 {
+		if r.Releases[0].Analysis != nil {
+			return r.Releases[0].Analysis.Results
+		} else if len(r.Releases[0].Compilations) > 0 {
+			return r.Releases[0].Compilations[0].Analysis.Results
+		}
+	} else if len(r.Stemcells) > 0 {
+		if r.Stemcells[0].Analysis != nil {
+			return r.Stemcells[0].Analysis.Results
+		}
 	}
 
 	panic("unexpected results") // !panic

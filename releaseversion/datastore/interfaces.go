@@ -14,7 +14,7 @@ type NamedGetter func(name string) (Index, error)
 
 type Index interface {
 	GetName() string
-	GetArtifacts(f FilterParams) ([]releaseversion.Artifact, error)
+	GetArtifacts(f FilterParams, l LimitParams) ([]releaseversion.Artifact, error)
 	GetLabels() ([]string, error)
 	FlushCache() error
 }

@@ -294,18 +294,23 @@ func (i *index) fillCache() error {
 	}
 
 	for _, patch := range aggregatedPatches {
-		release, err := releaseversiondatastore.GetArtifact(i.releaseVersionIndex, releaseversiondatastore.FilterParams{
-			NameExpected:     true,
-			Name:             patch.Name,
-			VersionExpected:  true,
-			Version:          patch.Version,
-			ChecksumExpected: true,
-			Checksum:         fmt.Sprintf("sha1:%s", patch.Source.Sha1), // TODO sha256 support
-		})
+		releases, err := i.releaseVersionIndex.GetArtifacts(
+			releaseversiondatastore.FilterParams{
+				NameExpected:     true,
+				Name:             patch.Name,
+				VersionExpected:  true,
+				Version:          patch.Version,
+				ChecksumExpected: true,
+				Checksum:         fmt.Sprintf("sha1:%s", patch.Source.Sha1), // TODO sha256 support
+			},
+			releaseversiondatastore.SingleArtifactLimitParams,
+		)
 		if err != nil {
 			// TODO warn and continue?
 			return errors.Wrapf(err, "finding release %s/%s", patch.Name, patch.Version)
 		}
+
+		release := releases[0]
 
 		i.cache.Add(
 			compilation.New(

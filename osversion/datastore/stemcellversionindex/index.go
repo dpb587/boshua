@@ -59,7 +59,7 @@ func (i *index) Find(ref osversion.Reference) (osversion.Artifact, error) {
 func (i *index) list() ([]osversion.Artifact, error) {
 	matches := map[osversion.Reference]osversion.Artifact{}
 
-	stemcells, err := i.stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{})
+	stemcells, err := i.stemcellVersionIndex.GetArtifacts(stemcellversiondatastore.FilterParams{}, stemcellversiondatastore.LimitParams{})
 	if err != nil {
 		return nil, errors.Wrap(err, "listing stemcell versions")
 	}

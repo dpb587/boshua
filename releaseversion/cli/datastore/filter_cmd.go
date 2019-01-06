@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/dpb587/boshua/config/provider/setter"
-	"github.com/dpb587/boshua/releaseversion"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -22,12 +21,12 @@ func (c *FilterCmd) Execute(_ []string) error {
 		return errors.Wrap(err, "loading release index")
 	}
 
-	results, err := index.GetArtifacts(c.ReleaseOpts.FilterParams())
+	f, l := c.ReleaseOpts.ArtifactParams()
+
+	results, err := index.GetArtifacts(f, l)
 	if err != nil {
 		return errors.Wrap(err, "getting artifacts")
 	}
-
-	releaseversion.Sort(results)
 
 	for _, result := range results {
 		fmt.Printf("%s\t%s\n", result.Name, result.Version)
