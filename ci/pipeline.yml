@@ -87,7 +87,7 @@ resources:
   source: &repo
     uri: git@github.com:dpb587/boshua.git
     branch: master
-    private_key: ((git_private_key))
+    private_key: ((ci_deploy_ssh_key))
 - name: repo-dev-artifacts
   type: metalink-repository
   source:
@@ -98,16 +98,10 @@ resources:
   source:
     << : *release_artifacts
     uri: git+ssh://git@github.com:dpb587/boshua.git//boshua-final#artifacts
-- name: "repo-artifacts"
-  type: "git"
-  source:
-    uri: git@github.com:dpb587/boshua.git
-    branch: artifacts
-    private_key: ((git_private_key))
 - name: github-release
   type: github-release
   source:
-    access_token: ((repo_github_token))
+    access_token: ((ci_github_token))
     repository: boshua
     user: dpb587
 - name: "version"
@@ -130,9 +124,9 @@ resource_types:
 shared:
   release_artifacts: &release_artifacts
     mirror_files:
-    - destination: s3://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v{{.Version}}/{{.SHA1}}
+    - destination: s3://s3-external-1.amazonaws.com/dpb587-boshua-us-east-1/artifacts/v{{.Version}}/{{.Name}}
       env:
-        AWS_ACCESS_KEY_ID: ((artifacts_s3_access_key))
-        AWS_SECRET_ACCESS_KEY: ((artifacts_s3_secret_key))
+        AWS_ACCESS_KEY_ID: ((ci_access_key))
+        AWS_SECRET_ACCESS_KEY: ((ci_secret_key))
     options:
-      private_key: ((git_private_key))
+      private_key: ((ci_deploy_ssh_key))
