@@ -19,22 +19,27 @@ func main() {
 		panic(err)
 	}
 
-	releases, err := cfg.GetReleaseIndex(config.DefaultName)
+	releaseIndex, err := cfg.GetReleaseIndex(config.DefaultName)
 	if err != nil {
 		panic(err)
 	}
 
-	release, err := releasedatastore.GetArtifact(releases, releasedatastore.FilterParamsFromSlug("openvpn/5.1.0"))
+	releases, err := releaseIndex.GetArtifacts(
+		releasedatastore.FilterParamsFromSlug("openvpn/5.1.0"),
+		releasedatastore.SingleArtifactLimitParams,
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	analyses, err := cfg.GetReleaseAnalysisIndex(release.GetDatastoreName())
+	release := releases[0]
+
+	analysisIndex, err := cfg.GetReleaseAnalysisIndex(release.GetDatastoreName())
 	if err != nil {
 		panic(err)
 	}
 
-	analysis, err := analysisdatastore.GetAnalysisArtifact(analyses, analysis.Reference{
+	analysis, err := analysisdatastore.GetAnalysisArtifact(analysisIndex, analysis.Reference{
 		Subject:  release,
 		Analyzer: "releasemanifests.v1",
 	})

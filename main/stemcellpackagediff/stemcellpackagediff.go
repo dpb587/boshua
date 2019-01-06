@@ -171,10 +171,12 @@ func diffPackages(before, after []stemcellpackagesV1result.RecordPackage) []Pack
 }
 
 func loadPackages(index stemcellversiondatastore.Index, analysisIndex analysisdatastore.Index, ref stemcellversion.Reference) ([]stemcellpackagesV1result.RecordPackage, error) {
-	artifact, err := datastore.GetArtifact(index, datastore.FilterParamsFromReference(ref))
+	artifacts, err := index.GetArtifacts(datastore.FilterParamsFromReference(ref), datastore.SingleArtifactLimitParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding stemcell")
 	}
+
+	artifact := artifacts[0]
 
 	analysis, err := analysisdatastore.GetAnalysisArtifact(analysisIndex, analysis.Reference{
 		Analyzer: "stemcellpackages.v1",
