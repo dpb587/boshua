@@ -104,8 +104,6 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err)
 		}
 
-		fmt.Printf("%s\n", requestBytes)
-
 		// TODO switch to post?
 		result := graphql.Do(graphql.Params{
 			Schema:         schema,
@@ -125,9 +123,7 @@ func (h *GraphqlV2) Mount(m *mux.Router) {
 			panic(err) // TODO !panic
 		}
 
-		fmt.Printf("%s\n", responseBytes)
-
-		// h.logger.WithField("response.body", string(responseBytes)).Debug("sending response")
+		h.logger.WithField("response.body", string(responseBytes)).Debug("sending response")
 
 		w.Write(responseBytes)
 		w.Write([]byte("\n"))
