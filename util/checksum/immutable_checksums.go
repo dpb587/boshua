@@ -1,5 +1,7 @@
 package checksum
 
+import "fmt"
+
 type ImmutableChecksums []ImmutableChecksum
 
 func (c ImmutableChecksums) Prioritized() ImmutableChecksums {
@@ -19,15 +21,24 @@ func (c ImmutableChecksums) Prioritized() ImmutableChecksums {
 }
 
 func (c ImmutableChecksums) Preferred() ImmutableChecksum {
-	for _, algorithm := range []string{"sha256", "sha1"} {
-		for _, checksum := range c {
-			if checksum.Algorithm().Name() == algorithm {
-				return checksum
-			}
+	for _, name := range []string{"sha256", "sha1"} {
+		checksum, err := c.GetByAlgorithm(name)
+		if err == nil {
+			return checksum
 		}
 	}
 
 	panic("missing sha1 or sha256")
+}
+
+func (c ImmutableChecksums) GetByAlgorithm(name string) (ImmutableChecksum, error) {
+	for _, checksum := range c {
+		if checksum.Algorithm().Name() == name {
+			return checksum, nil
+		}
+	}
+
+	return ImmutableChecksum{}, fmt.Errorf("unable to find checksum: %s", name)
 }
 
 func (c ImmutableChecksums) Contains(expected Checksum) bool {

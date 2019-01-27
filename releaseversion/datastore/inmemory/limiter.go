@@ -6,6 +6,10 @@ import (
 )
 
 func LimitArtifacts(artifacts []releaseversion.Artifact, l datastore.LimitParams) ([]releaseversion.Artifact, error) {
+	if artifacts == nil {
+		return artifacts, nil
+	}
+
 	artifactsLen := len(artifacts)
 
 	// min/max BEFORE limiting; used to assert quality of results before getting them
@@ -30,7 +34,12 @@ func LimitArtifacts(artifacts []releaseversion.Artifact, l datastore.LimitParams
 	}
 
 	if l.LimitExpected {
-		artifacts = artifacts[:l.Limit]
+		ll := l.Limit
+		if lla := len(artifacts); ll > lla {
+			ll = lla
+		}
+
+		artifacts = artifacts[:ll]
 	}
 
 	return artifacts, nil

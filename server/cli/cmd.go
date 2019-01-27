@@ -61,6 +61,7 @@ func (c *Cmd) Execute(extra []string) error {
 	}
 
 	stemcellversionserver.NewHandlers(stemcellIndex).Mount(r)
+
 	handlers.NewGraphqlV2(
 		c.AppConfig.GetLogger(),
 		releaseIndex,
@@ -69,6 +70,12 @@ func (c *Cmd) Execute(extra []string) error {
 		stemcellIndex,
 		c.AppConfig.GetStemcellAnalysisIndex,
 		scheduler,
+	).Mount(r)
+
+	handlers.NewBOSHioV2(
+		c.AppConfig.GetLogger(),
+		releaseIndex,
+		stemcellIndex,
 	).Mount(r)
 
 	return http.ListenAndServe(cfg.Bind, r)

@@ -30,7 +30,12 @@ func LimitArtifacts(artifacts []stemcellversion.Artifact, l datastore.LimitParam
 	}
 
 	if l.LimitExpected {
-		artifacts = artifacts[:l.Limit]
+		ll := l.Limit
+		if lla := len(artifacts); ll > lla {
+			ll = lla
+		}
+
+		artifacts = artifacts[:ll]
 	}
 
 	return artifacts, nil
