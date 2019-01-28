@@ -63,8 +63,16 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 
 	defer os.RemoveAll(tmpdir)
 
+	devRelease := uri.Query().Get("dev_release") == "true"
+
 	{ // clone
-		cmd := exec.Command("git", "clone", "--depth=1", repoURI, tmpdir)
+		args := []string{repoURI, tmpdir}
+
+		if !devRelease {
+			args = append([]string{"--depth=1"}, args...)
+		}
+
+		cmd := exec.Command("git", append([]string{"clone"}, args...)...)
 		stderr := bytes.NewBuffer(nil)
 		cmd.Stderr = stderr
 
@@ -79,7 +87,7 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 		return nil, errors.Wrap(err, "creating tempfile")
 	}
 
-	if uri.Query().Get("dev_release") == "true" {
+	if devRelease {
 		checkout := uri.Query().Get("checkout")
 		devName := uri.Query().Get("name")
 		devVersion := uri.Query().Get("version")
@@ -88,19 +96,18 @@ func (o Reference) Reader() (io.ReadCloser, error) {
 			// checkout-specific
 			cmd := exec.Command(
 				"git",
-				fmt.Sprintf("--git-dir=%s/.git", tmpdir),
-				fmt.Sprintf("--git-dir=%s", tmpdir),
 				"checkout",
 				checkout,
 			)
 			stderr := bytes.NewBuffer(nil)
+			cmd.Dir = tmpdir
 			cmd.Stderr = stderr
 
 			err := cmd.Run()
 			if err != nil {
 				os.RemoveAll(tmptar.Name()) // TODO ignored err
 
-				return nil, fmt.Errorf("checkout out %s: %v: %s", checkout, err, stderr.Bytes())
+				return nil, fmt.Errorf("checking out %s: %v: %s", checkout, err, stderr.Bytes())
 			}
 		}
 

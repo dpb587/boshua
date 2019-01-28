@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"errors"
+	"net/url"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -90,6 +91,49 @@ func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
 		}
 
 		f.Labels = append(f.Labels, labelStr)
+	}
+
+	return f, nil
+}
+
+func FilterParamsFromURLValues(uv url.Values) (FilterParams, error) {
+	f := FilterParams{}
+
+	if values, found := uv["release-name"]; found {
+		// TODO validate len == 1
+		f.NameExpected = true
+		f.Name = values[0]
+	}
+
+	if values, found := uv["release-version"]; found {
+		// TODO validate len == 1
+		f.VersionExpected = true
+		f.Version = values[0]
+	}
+
+	if values, found := uv["release-checksum"]; found {
+		// TODO validate len == 1
+		f.ChecksumExpected = true
+		f.Checksum = values[0]
+	}
+
+	if values, found := uv["release-uri"]; found {
+		// TODO validate len == 1
+		f.URIExpected = true
+		f.URI = values[0]
+	}
+
+	if f.VersionExpected && semverutil.IsConstraint(f.Version) {
+		// ignoring errors since it can fallback to literal match
+		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
+	}
+
+	if values, found := uv["release-labels"]; found {
+		f.LabelsExpected = true
+
+		for _, value := range values {
+			f.Labels = append(f.Labels, value)
+		}
 	}
 
 	return f, nil

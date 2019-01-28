@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"errors"
+	"net/url"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -147,6 +148,55 @@ func FilterParamsFromMap(args map[string]interface{}) (FilterParams, error) {
 		}
 
 		f.Labels = append(f.Labels, labelStr)
+	}
+
+	return f, nil
+}
+
+func FilterParamsFromURLValues(uv url.Values) (FilterParams, error) {
+	f := FilterParams{}
+
+	if values, found := uv["stemcell-os"]; found {
+		// TODO validate len == 1
+		f.OSExpected = true
+		f.OS = values[0]
+	}
+
+	if values, found := uv["stemcell-version"]; found {
+		// TODO validate len == 1
+		f.VersionExpected = true
+		f.Version = values[0]
+	}
+
+	if values, found := uv["stemcell-iaas"]; found {
+		// TODO validate len == 1
+		f.IaaSExpected = true
+		f.IaaS = values[0]
+	}
+
+	if values, found := uv["stemcell-hypervisor"]; found {
+		// TODO validate len == 1
+		f.HypervisorExpected = true
+		f.Hypervisor = values[0]
+	}
+
+	if values, found := uv["stemcell-flavor"]; found {
+		// TODO validate len == 1
+		f.FlavorExpected = true
+		f.Flavor = values[0]
+	}
+
+	if f.VersionExpected && semverutil.IsConstraint(f.Version) {
+		// ignoring errors since it can fallback to literal match
+		f.VersionConstraint, _ = semver.NewConstraint(f.Version)
+	}
+
+	if values, found := uv["stemcell-labels"]; found {
+		f.LabelsExpected = true
+
+		for _, value := range values {
+			f.Labels = append(f.Labels, value)
+		}
 	}
 
 	return f, nil

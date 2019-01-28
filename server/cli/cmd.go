@@ -7,7 +7,6 @@ import (
 	// releaseversionv2 "github.com/dpb587/boshua/releaseversion/api/v2/server"
 	"github.com/dpb587/boshua/config"
 	"github.com/dpb587/boshua/config/provider/setter"
-	stemcellversionserver "github.com/dpb587/boshua/stemcellversion/server"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -60,8 +59,6 @@ func (c *Cmd) Execute(extra []string) error {
 		return errors.Wrap(err, "loading scheduler")
 	}
 
-	stemcellversionserver.NewHandlers(stemcellIndex).Mount(r)
-
 	handlers.NewGraphqlV2(
 		c.AppConfig.GetLogger(),
 		releaseIndex,
@@ -70,6 +67,21 @@ func (c *Cmd) Execute(extra []string) error {
 		stemcellIndex,
 		c.AppConfig.GetStemcellAnalysisIndex,
 		scheduler,
+	).Mount(r)
+
+	downloader, err := c.AppConfig.GetDownloader()
+	if err != nil {
+		return errors.Wrap(err, "loading downloader")
+	}
+
+	handlers.NewMirrorsV2(
+		c.AppConfig.GetLogger(),
+		releaseIndex,
+		c.AppConfig.GetReleaseAnalysisIndex,
+		releaseComilationIndex,
+		stemcellIndex,
+		c.AppConfig.GetStemcellAnalysisIndex,
+		downloader,
 	).Mount(r)
 
 	handlers.NewBOSHioV2(
