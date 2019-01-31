@@ -2,7 +2,9 @@ package concourse
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/dpb587/boshua/task/scheduler"
 	"github.com/pkg/errors"
@@ -66,6 +68,18 @@ func (t *scheduledTask) Status() (scheduler.Status, error) {
 	} else if fields[2] == "errored" {
 		return scheduler.StatusFailed, nil
 	} else if fields[3] == "pending" {
+		// concourse seems to have a bug where it can miss scheduling resources
+		// (particularly if resources are created in the exact same instant which
+		// can easily happen in parallel commands); do a best effort to reschedule
+		// it occasionally
+
+		// TODO rand seed elsewhere/global
+		rand.Seed(time.Now().UnixNano())
+
+		if rand.Intn(4) == 0 {
+			t.fly.Run("check-resource", "--resource", fmt.Sprintf("%s/trigger", t.pipelineName))
+		}
+
 		return scheduler.StatusPending, nil
 	} else if fields[2] == "n/a" && fields[3] == "n/a" {
 		return scheduler.StatusPending, nil
